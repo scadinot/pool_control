@@ -22,5 +22,4 @@ schedule taking into account the pool water temperature.
 
 ## Minimum requirements
 
-* A switch supported in Home Assistant that can turn on/off power to your
-  pool pump.
+* A switch supported in Home Assistant that can turn on/off power to your pool pump.
