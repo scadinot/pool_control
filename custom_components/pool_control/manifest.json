@@ -1,7 +1,6 @@
 {
     "domain": "pool_control",
     "name": "Pool Control",
-    "config_flow": true,
     "documentation": "https://github.com/scadinot/pool_control",
     "dependencies": [],
     "requirements": [],
