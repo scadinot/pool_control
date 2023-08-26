@@ -1,4 +1,6 @@
-# Plugin permettant de gérer la filtration d'une piscine en fonction de la température.
+# Pool Control
+
+_Plugin permettant de gérer la filtration d'une piscine en fonction de la température._
 
 _Component developed by using the amazing development template [blueprint][blueprint]._
 
