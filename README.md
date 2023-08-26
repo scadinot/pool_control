@@ -2,16 +2,12 @@
 
 _Plugin permettant de gérer la filtration d'une piscine en fonction de la température._
 
-_Component developed by using the amazing development template [blueprint][blueprint]._
+_Component _
 
 This custom component for Home Assistant can be used to automatically control
 a pool pump that is turned on/off by a switch that Home Assistant can control.
 
-This component is based on the work of [@scadinot](https://github.com/exxamalte/home-assistant-customisations/tree/master/pool-pump).
-
-On top of the original version by @exxamalte, this version can be installed by HACS
-and you can use the [blueprint][blueprint] feature to quickly fork this repo and
-have a working development environment in a container.
+This component is based on the work of [@scadinot](https://github.com/scadinot/pool).
 
 I will adapt it to my needs. At completion this plugin will compute the filtering
 schedule taking into account the pool water temperature.
