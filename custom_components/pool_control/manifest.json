@@ -1,0 +1,11 @@
+{
+    "domain": "pool_control",
+    "name": "Pool Control",
+    "config_flow": true,
+    "documentation": "https://github.com/scadinot/pool_control",
+    "dependencies": [],
+    "requirements": [],
+    "codeowners": ["@scadinot"],
+    "icon": "mdi:pool",
+    "version": "1.0.0"
+}
