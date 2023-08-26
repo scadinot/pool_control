@@ -1,10 +1,4 @@
-# Pool Pump Manager
-
-[![GitHub Release][releases-shield]][releases]
-[![GitHub Activity][commits-shield]][commits]
-[![License][license-shield]](LICENSE)
-
-[![hacs][hacsbadge]][hacs]
+# Plugin permettant de gérer la filtration d'une piscine en fonction de la température.
 
 _Component developed by using the amazing development template [blueprint][blueprint]._
 
