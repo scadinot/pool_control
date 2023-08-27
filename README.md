@@ -83,5 +83,6 @@ pool_control:
 
 Tous les paramètres sont obligatoires sauf ceux après le commentaire # optionnel.
 
-Vous devrez définir boutons (input_button) pour l'utiliser. 
-Veuillez lire le fichier [README.md](https://github.com/scadinot/pool_control/blob/main/README.md) pour plus de détails.
+Vous devrez définir des boutons (input_button) pour l'utiliser. 
+
+
