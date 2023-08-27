@@ -5,6 +5,6 @@ _Plugin permettant de gérer la filtration d'une piscine en fonction de la temp�
 
 Le plugin gère également les fonctions suivantes :
 
+- Hivernage actif.
 - Filtre à sable.
 - Surpresseur pour robot nettoyeur.
-- Hivernage actif.
