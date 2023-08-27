@@ -511,7 +511,7 @@ class PoolController:
         filtrationTemperature = 0
         filtrationDebut = self.get_data("filtrationDebut", 0)
         filtrationPauseDebut = self.get_data("filtrationPauseDebut", 0)
-        filtrationPauseFin = self.get_data("filtrationPauseFin", 0))
+        filtrationPauseFin = self.get_data("filtrationPauseFin", 0)
         filtrationFin = self.get_data("filtrationFin", 0)
 
         timeNow = time.time()
