@@ -90,7 +90,7 @@ class PoolController:
 
         self.secondCronCancel = None
 
-        # Propriétés de l'objet
+        # PropriÃ©tÃ©s de l'objet
         self.filtrationRefreshCounter = 0
 
         return None
@@ -124,7 +124,7 @@ class PoolController:
         return
 
     async def pull(self, now=None):
-        """Boucle secondaire appellée toutes les 5 secondes"""
+        """Boucle secondaire appellÃ©e toutes les 5 secondes"""
 
         _LOGGER.debug("pull() begin")
 
@@ -159,7 +159,7 @@ class PoolController:
             timeRestant = timeFin - time.time()
 
             if timeRestant > 0:
-                display = "Rinçage"
+                display = "RinÃ§age"
                 display += " : "
                 display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
                 self.hass.states.async_set(
@@ -184,7 +184,7 @@ class PoolController:
         return
 
     async def cron(self, now=None):
-        """Boucle principale appellée toutes les 1 minute"""
+        """Boucle principale appellÃ©e toutes les 1 minute"""
 
         _LOGGER.debug("cron() begin")
 
@@ -197,7 +197,7 @@ class PoolController:
         ###########################################################################################
 
         if self.filtrationRefreshCounter >= 5:
-            # Refresh appellé toutes les 5 minutes
+            # Refresh appellÃ© toutes les 5 minutes
 
             _LOGGER.info(
                 f"Time = {datetime.fromtimestamp(time.time()).strftime('%H:%M %d-%m-%Y')}"
@@ -253,17 +253,17 @@ class PoolController:
 
         if int(self.get_data("arretTotal", 0)) == 0:
             if int(self.get_data("marcheForcee", 0)) == 1:
-                # Marche forcée, filtration desactivée
+                # Marche forcÃ©e, filtration desactivÃ©e
                 status = "Actif"
                 status = self.getStatusHivernage(status)
                 self.hass.states.async_set("input_text.asservissementStatus", status)
             else:
-                # Mode Auto, filtration pendant les plages programmées
+                # Mode Auto, filtration pendant les plages programmÃ©es
                 status = "Auto"
                 status = self.getStatusHivernage(status)
                 self.hass.states.async_set("input_text.asservissementStatus", status)
         else:
-            # Arret total, prioritaire > (tout est stoppé)
+            # Arret total, prioritaire > (tout est stoppÃ©)
             status = "Inactif"
             status = self.getStatusHivernage(status)
             self.hass.states.async_set("input_text.asservissementStatus", status)
@@ -325,7 +325,7 @@ class PoolController:
         # Arrondi en minutes
         dureeHeures = int(dureeHeures * 60) / 60
 
-        # La durée ne peut pas être supérieure à 24 H
+        # La durÃ©e ne peut pas Ãªtre supÃ©rieure Ã  24 H
         dureeHeures = min(dureeHeures, 24.00)
 
         # Conversion en secondes pour les calculs
@@ -342,10 +342,10 @@ class PoolController:
     ###############################################################################################################################################################################
 
     def calculateTimeFiltrationWithCurve(self, temperatureWater):
-        # Pour assurer un temps minimum de filtration, la température de calcul est forcée à 10°C
+        # Pour assurer un temps minimum de filtration, la tempÃ©rature de calcul est forcÃ©e Ã  10Â°C
         temperature = max(temperatureWater, 10.0)
 
-        # Coefficients de l'équation
+        # Coefficients de l'Ã©quation
         a = 0.00335
         b = -0.14953
         c = 2.43489
@@ -369,7 +369,7 @@ class PoolController:
         return dureeHeures
 
     def calculateTimeFiltrationWithTemperatureReducedByHalf(self, temperatureWater):
-        # Calcul simplifié
+        # Calcul simplifiÃ©
         dureeHeures = temperatureWater / 2.0
 
         # Coefficient d'ajustement (suivant config)
@@ -420,7 +420,7 @@ class PoolController:
         # si la somme de filtrationSecondes et pausePivotSecondes est superieure a 24h on reduit pausePivotSecondes
         if (filtrationSecondes + pausePivotSecondes) > (3600 * 24):
             _LOGGER.info(
-                f"duree pausePivot Ajustée={datetime.fromtimestamp(pausePivotSecondes).strftime('%H:%M')} >> {datetime.fromtimestamp((3600 * 24) - filtrationSecondes).strftime('%H:%M')}"
+                f"duree pausePivot AjustÃ©e={datetime.fromtimestamp(pausePivotSecondes).strftime('%H:%M')} >> {datetime.fromtimestamp((3600 * 24) - filtrationSecondes).strftime('%H:%M')}"
             )
             pausePivotSecondes = (3600 * 24) - filtrationSecondes
 
@@ -463,7 +463,7 @@ class PoolController:
             display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
             display += " : "
             display += str(temperatureCalcul)
-            display += "°C"
+            display += "Â°C"
             self.hass.states.async_set("input_text.filtrationSchedule", display)
         else:
             display = datetime.fromtimestamp(filtrationDebut).strftime("%H:%M")
@@ -471,7 +471,7 @@ class PoolController:
             display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
             display += " : "
             display += str(temperatureCalcul)
-            display += "°C"
+            display += "Â°C"
             self.hass.states.async_set("input_text.filtrationSchedule", display)
 
         self.set_data("filtrationDebut", int(filtrationDebut))
@@ -479,7 +479,7 @@ class PoolController:
         self.set_data("filtrationPauseDebut", int(filtrationPauseDebut))
         self.set_data("filtrationPauseFin", int(filtrationPauseFin))
 
-        self.set_data("calculateStatus", 1)  # 1 >> calcul effectué
+        self.set_data("calculateStatus", 1)  # 1 >> calcul effectuÃ©
 
         if flgTomorrow == True:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
@@ -506,7 +506,7 @@ class PoolController:
         return
 
     async def calculateStatusFiltration(self, temperatureWater):
-        """Calcul de l'état de la filtration en mode Saison"""
+        """Calcul de l'Ã©tat de la filtration en mode Saison"""
 
         filtrationTemperature = 0
         filtrationDebut = self.get_data("filtrationDebut", 0)
@@ -526,10 +526,10 @@ class PoolController:
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
-            # Le calcul n'a jamais ete lancé, on le lance maintenant
+            # Le calcul n'a jamais ete lancÃ©, on le lance maintenant
             self.calculateTimeFiltration(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
+            # Verifie si la plage calculÃ©e est passÃ©e
             filtrationFin = self.get_data("filtrationFin", 0)
             timeNow = time.time()
 
@@ -728,13 +728,13 @@ class PoolController:
         display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
         display += " : "
         display += str(temperatureCalcul)
-        display += "°C"
+        display += "Â°C"
         self.hass.states.async_set("input_text.filtrationSchedule", display)
 
         self.set_data("filtrationDebut", int(filtrationDebut))
         self.set_data("filtrationFin", int(filtrationFin))
 
-        self.set_data("calculateStatus", 1)  # 1 >> calcul effectué
+        self.set_data("calculateStatus", 1)  # 1 >> calcul effectuÃ©
 
         if flgTomorrow == True:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
@@ -752,7 +752,7 @@ class PoolController:
     async def calculateStatusFiltrationHivernage(
         self, temperatureWater, temperatureOutdoor
     ):
-        """Calcul de l'état de la filtration en mode Saison"""
+        """Calcul de l'Ã©tat de la filtration en mode Saison"""
 
         filtrationHivernage = 0
 
@@ -771,10 +771,10 @@ class PoolController:
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
-            # Le calcul n'a jamais ete lancé, on le lance maintenant
+            # Le calcul n'a jamais ete lancÃ©, on le lance maintenant
             self.calculateTimeFiltrationHivernage(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
+            # Verifie si la plage calculÃ©e est passÃ©e
             filtrationFin = self.get_data("filtrationFin", 0)
             timeNow = time.time()
 
@@ -848,21 +848,21 @@ class PoolController:
                 self.temperatureSecurite + self.temperatureHysteresis
             ):
                 _LOGGER.debug(
-                    f"Arret securité gel sur temperature exterieure > {self.temperatureSecurite + self.temperatureHysteresis}"
+                    f"Arret securitÃ© gel sur temperature exterieure > {self.temperatureSecurite + self.temperatureHysteresis}"
                 )
 
                 filtrationHivernageSecurite = 0
 
         elif temperatureOutdoor < self.temperatureSecurite:
             _LOGGER.debug(
-                f"Securité gel sur temperature exterieure < {self.temperatureSecurite}"
+                f"SecuritÃ© gel sur temperature exterieure < {self.temperatureSecurite}"
             )
 
             filtrationHivernageSecurite = 1
 
         self.set_data("filtrationHivernageSecurite", filtrationHivernageSecurite)
 
-        # Securité gel sur temperature exterieure < temperatureSecurite
+        # SecuritÃ© gel sur temperature exterieure < temperatureSecurite
         if filtrationHivernageSecurite != 0:
             filtrationHivernage = 1
 
@@ -896,7 +896,7 @@ class PoolController:
     ###############################################################################################################################################################################
 
     def getTemperatureWater(self) -> float:
-        """Récupére la température de l'eau"""
+        """RÃ©cupÃ©re la tempÃ©rature de l'eau"""
 
         temperatureState = self.hass.states.get(self.temperatureWater)
 
@@ -913,7 +913,7 @@ class PoolController:
         return temperatureWater
 
     def getTemperatureOutdoor(self) -> float:
-        """Récupére la température de l'air"""
+        """RÃ©cupÃ©re la tempÃ©rature de l'air"""
 
         temperatureState = self.hass.states.get(self.temperatureOutdoor)
 
@@ -930,7 +930,7 @@ class PoolController:
         return temperatureWater
 
     def getLeverSoleil(self) -> str:
-        """Récupére l'heure de lever du soleil"""
+        """RÃ©cupÃ©re l'heure de lever du soleil"""
 
         leverSoleilState = self.hass.states.get(self.leverSoleil)
 
@@ -938,13 +938,13 @@ class PoolController:
             _LOGGER.error(f"Lever du soleil {self.leverSoleil} not found")
             return str("06:00")
 
-        # Extraire l'heure de lever du soleil à partir de l'état
+        # Extraire l'heure de lever du soleil Ã  partir de l'Ã©tat
         sunriseTimeStr = leverSoleilState.state
 
-        # Convertir la chaîne de caractères ISO 8601 en objet datetime
+        # Convertir la chaÃ®ne de caractÃ¨res ISO 8601 en objet datetime
         sunriseTime = datetime.fromisoformat(sunriseTimeStr)
 
-        # Convertir l'objet datetime en chaîne de caractères dans le format "06:00"
+        # Convertir l'objet datetime en chaÃ®ne de caractÃ¨res dans le format "06:00"
         return sunriseTime.strftime("%H:%M")
 
     ###############################################################################################################################################################################
@@ -1013,16 +1013,16 @@ class PoolController:
         return
 
     async def executeFiltreSableLavageOn(self):
-        """Lance le lavage du filtre à sable"""
+        """Lance le lavage du filtre Ã  sable"""
 
         if self.get_data("filtrationSurpresseur", 0) == 0:
             lavageState = int(self.get_data("filtrationLavageEtat", 0))
 
             if lavageState == 0:
-                # Arrêt, mettre la vanne sur la position lavage
+                # ArrÃªt, mettre la vanne sur la position lavage
                 self.set_data("filtrationLavageEtat", 1)
                 self.hass.states.async_set(
-                    "input_text.filtreSableLavageStatus", "Arrêt, position lavage"
+                    "input_text.filtreSableLavageStatus", "ArrÃªt, position lavage"
                 )
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
@@ -1031,8 +1031,8 @@ class PoolController:
 
             elif lavageState == 1:
                 if self.rincageDuree == 0:
-                    # Si le temps de rinçage est == 0 on passe directement à la fin
-                    self.set_data("filtrationLavageEtat", 4)  # Rinçage en cours...
+                    # Si le temps de rinÃ§age est == 0 on passe directement Ã  la fin
+                    self.set_data("filtrationLavageEtat", 4)  # RinÃ§age en cours...
                 else:
                     self.set_data("filtrationLavageEtat", 2)  # Lavage en cours...
 
@@ -1050,22 +1050,22 @@ class PoolController:
                 await self.activatingDevices()
 
             elif lavageState == 2:
-                # Arrêt, mettre la vanne sur la position rinçage
+                # ArrÃªt, mettre la vanne sur la position rinÃ§age
                 self.set_data("filtrationLavageEtat", 3)
                 self.hass.states.async_set(
-                    "input_text.filtreSableLavageStatus", "Arrêt, position rinçage"
+                    "input_text.filtreSableLavageStatus", "ArrÃªt, position rinÃ§age"
                 )
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
 
             elif lavageState == 3:
-                # Rinçage en cours...
+                # RinÃ§age en cours...
                 self.set_data("filtrationLavageEtat", 4)
                 timeFin = time.time() + (self.rincageDuree * 60)
                 self.set_data("filtrationTempsRestant", int(timeFin))
 
                 timeRestant = timeFin - time.time()
-                display = "Rinçage"
+                display = "RinÃ§age"
                 display += " : "
                 display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
                 self.hass.states.async_set(
@@ -1075,19 +1075,19 @@ class PoolController:
                 await self.activatingDevices()
 
             elif lavageState == 4:
-                # Arrêt, mettre la vanne sur la position filtration
+                # ArrÃªt, mettre la vanne sur la position filtration
                 self.set_data("filtrationLavageEtat", 5)
                 self.hass.states.async_set(
-                    "input_text.filtreSableLavageStatus", "Arrêt, position filtration"
+                    "input_text.filtreSableLavageStatus", "ArrÃªt, position filtration"
                 )
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
 
             elif lavageState == 5:
-                # Arrêté
+                # ArrÃªtÃ©
                 self.set_data("filtrationLavageEtat", 0)
                 self.hass.states.async_set(
-                    "input_text.filtreSableLavageStatus", "Arrêté"
+                    "input_text.filtreSableLavageStatus", "ArrÃªtÃ©"
                 )
                 self.set_data("filtrationLavage", 0)
                 await self.activatingDevices()
@@ -1115,19 +1115,19 @@ class PoolController:
         return
 
     async def executePoolStop(self):
-        """Arrête le surpresseur / lavage filtre"""
+        """ArrÃªte le surpresseur / lavage filtre"""
 
         await self.stopSecondCron()
 
         if int(self.get_data("filtrationSurpresseur", 0)) == 1:
             self.set_data("filtrationSurpresseur", 0)
-            self.hass.states.async_set("input_text.surpresseurStatus", "Arrêté")
+            self.hass.states.async_set("input_text.surpresseurStatus", "ArrÃªtÃ©")
             await self.activatingDevices()
 
         if int(self.get_data("filtrationLavageEtat", 0)) != 0:
             self.set_data("filtrationLavageEtat", 0)
             self.set_data("filtrationLavage", 0)
-            self.hass.states.async_set("input_text.filtreSableLavageStatus", "Arrêté")
+            self.hass.states.async_set("input_text.filtreSableLavageStatus", "ArrÃªtÃ©")
             await self.activatingDevices()
 
         return
@@ -1163,7 +1163,7 @@ class PoolController:
 
             self.calculateTimeFiltrationHivernage(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
+            # Verifie si la plage calculÃ©e est passÃ©e
             filtrationFin = self.get_data("filtrationFin", 0)
             timeNow = time.time()
 
@@ -1188,7 +1188,7 @@ class PoolController:
             temperatureWater = self.getTemperatureWater()
             self.calculateTimeFiltration(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
+            # Verifie si la plage calculÃ©e est passÃ©e
             filtrationFin = self.get_data("filtrationFin", 0)
             timeNow = time.time()
 
@@ -1212,7 +1212,7 @@ class PoolController:
     ###############################################################################################################################################################################
 
     async def refreshFiltration(self):
-        """Rafraichi l'état de la filtration"""
+        """Rafraichi l'Ã©tat de la filtration"""
 
         filtrationState = self.hass.states.get(self.filtration)
 
@@ -1252,7 +1252,7 @@ class PoolController:
         return
 
     async def filtrationStop(self, repeat=False):
-        """Arrête la filtration"""
+        """ArrÃªte la filtration"""
 
         filtrationState = self.hass.states.get(self.filtration)
 
@@ -1263,21 +1263,21 @@ class PoolController:
         if not repeat and filtrationState.state == "off":
             return
 
-        # Arrête la filtration
+        # ArrÃªte la filtration
         await self.hass.services.async_call(
             "input_boolean",  # switch / input_boolean
             "turn_off",
             {"entity_id": self.filtration},
         )
 
-        self.hass.states.async_set("input_text.filtrationStatus", "Arrêté")
+        self.hass.states.async_set("input_text.filtrationStatus", "ArrÃªtÃ©")
 
         return
 
     ###############################################################################################################################################################################
 
     async def refreshSurpresseur(self):
-        """Rafraichi l'état du surpresseur"""
+        """Rafraichi l'Ã©tat du surpresseur"""
 
         surpresseurState = self.hass.states.get(self.surpresseur)
 
@@ -1294,7 +1294,7 @@ class PoolController:
         return
 
     def getStateSurpresseur(self) -> bool:
-        """Obtient l'état du surpresseur"""
+        """Obtient l'Ã©tat du surpresseur"""
 
         surpresseurState = self.hass.states.get(self.surpresseur)
 
@@ -1331,7 +1331,7 @@ class PoolController:
         return
 
     async def surpresseurStop(self, repeat=False):
-        """Arrête le surpresseur"""
+        """ArrÃªte le surpresseur"""
 
         surpresseurState = self.hass.states.get(self.surpresseur)
 
@@ -1342,21 +1342,21 @@ class PoolController:
         if not repeat and surpresseurState.state == "off":
             return
 
-        # Arrête le surpresseur
+        # ArrÃªte le surpresseur
         await self.hass.services.async_call(
             "input_boolean",  # switch / input_boolean
             "turn_off",
             {"entity_id": self.surpresseur},
         )
 
-        # self.hass.states.async_set("input_text.surpresseurStatus", "Arrêté")
+        # self.hass.states.async_set("input_text.surpresseurStatus", "ArrÃªtÃ©")
 
         return
 
     ###############################################################################################################################################################################
 
     async def refreshTraitement(self):
-        """Rafraichi l'état du traitement"""
+        """Rafraichi l'Ã©tat du traitement"""
 
         traitementState = self.hass.states.get(self.traitement)
 
@@ -1373,7 +1373,7 @@ class PoolController:
         return
 
     def getStateTraitement(self) -> bool:
-        """Obtient l'état du traitement"""
+        """Obtient l'Ã©tat du traitement"""
 
         traitementState = self.hass.states.get(self.traitement)
 
@@ -1410,7 +1410,7 @@ class PoolController:
         return
 
     async def traitementStop(self, repeat=False):
-        """Arrête le traitement"""
+        """ArrÃªte le traitement"""
 
         traitementState = self.hass.states.get(self.traitement)
 
@@ -1421,14 +1421,14 @@ class PoolController:
         if not repeat and traitementState.state == "off":
             return
 
-        # Arrête le traitement
+        # ArrÃªte le traitement
         await self.hass.services.async_call(
             "input_boolean",  # switch / input_boolean
             "turn_off",
             {"entity_id": self.traitement},
         )
 
-        # self.hass.states.async_set("input_text.traitementStatus", "Arrêté")
+        # self.hass.states.async_set("input_text.traitementStatus", "ArrÃªtÃ©")
 
         return
 
