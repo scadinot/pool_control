@@ -85,4 +85,134 @@ Tous les paramètres sont obligatoires sauf ceux après le commentaire # optionn
 
 Vous devrez définir des boutons (input_button) pour l'utiliser. 
 
+Voici un exemple de configuration a créer sur votre tableau de bord
 
+```yaml
+
+type: vertical-stack
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity: sensor.shelly_temperature_2_temperature_2
+        icon: ' '
+        name: Température Eau
+      - type: entity
+        entity: input_number.temperature_air
+        icon: ' '
+        name: Température Air
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity: input_number.temperaturedisplay
+        icon: ' '
+        name: Température Calcul
+      - type: entity
+        entity: input_text.filtrationtime
+        icon: ' '
+        name: Temps filtration
+  - type: entity
+    entity: input_text.filtrationschedule
+    name: ' '
+    icon: ' '
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_button.reset
+    name: Reset
+    icon_height: 20px
+  - type: entity
+    entity: input_text.asservissementstatus
+    icon: ' '
+    name: ' '
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: input_button.asservissement_actif
+        name: Actif
+        icon: ''
+        icon_height: 20px
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: input_button.asservissement_auto
+        name: Auto
+        icon: ''
+        icon_height: 20px
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: input_button.asservissement_inactif
+        name: Inactif
+        icon: ''
+        icon_height: 20px
+        show_state: false
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: input_button.mode_saison
+        name: Saison
+        icon: ''
+        icon_height: 20px
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: input_button.mode_hivernage
+        name: Hivernage
+        icon: ''
+        icon_height: 20px
+  - type: entity
+    entity: input_text.surpresseurstatus
+    icon: ' '
+    name: ' '
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_button.surpresseur
+    name: Surpresseur
+    show_state: false
+    icon_height: 20px
+    icon: mdi:button-pointer
+  - type: entity
+    entity: input_text.filtresablelavagestatus
+    icon: ' '
+    name: ' '
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_button.lavage_filtre_sable
+    name: Lavage
+    icon: mdi:button-pointer
+    icon_height: 20px
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_button.stop
+    name: Stop
+    icon: mdi:button-pointer
+    icon_height: 20px
+
+
+```
