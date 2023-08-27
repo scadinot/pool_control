@@ -1,6 +1,6 @@
 # Pool Control
 
-_Plugin permettant de gérer la filtration d'une piscine en fonction de la température._
+_Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
 ## Fonctionnalitées
 
@@ -30,7 +30,7 @@ _Plugin permettant de gérer la filtration d'une piscine en fonction de la temp�
 
 ## Configuration
 
-Ajoutez au fichier configuration.yaml les elements suivants :
+Ajoutez au fichier configuration.yaml les éléments suivants :
 
 ```yaml
 
@@ -94,16 +94,16 @@ Sur cette carte sont indiqués :
 - `Température Eau` _mesurée par la sonde de température_
 - `Température Air` _mesurée par une sonde exterieure, en l'absence de sonde vous pouvez reprendre une donnée météo_
 - `Température Calcul` _suivant l'option 'sondeLocalTechnique' cette valeur sera mise à jour uniquement en cas de filtration_
-- `Temps de filtration` _temps de filtration calculé par l'intégration_
+- `Temps de filtration` _temps de filtration calculé par le composant_
 - `L'horaire de filtration et la température utilisée pour le calcul`
 - `Bouton [Reset]` _permettant de recalculer le temps de filtration_
 - `L'état de l'intégration` 'Auto / Saison' .
-- `Une série de boutons [Actif], [Auto], [Inactif]` _permettant de changer l'état de l'intégration_
-- `Une série de boutons [Saison], [Hivernage]` _permettant de passer du mode Saison au mode Hivernage_
-- `Un affichage de l'état du surpresseur`
+- `Une série de boutons [Actif], [Auto], [Inactif]` _permettant de changer l'état du composant
+- `Une série de boutons [Saison], [Hivernage]` _permettant de basculer du mode Saison au mode Hivernage_
+- `Un affichage de l'état du surpresseur` _indiquant le temps restant pendant le fonctionnement du surpresseur_
 - `Un bouton [Surpresseur]` de lancement du surpresseur.
-- `Un affichage de l'état du lavage du filtre à sable`
-- `Un bouton [Lavage]` de lancement du nettoyage du filtre à sable.
+- `Un affichage de l'état du lavage du filtre à sable` _indiquant les opérations à effectuer avec la vanne 6 voies pendant les opérations de lavage / contre lavage_
+- `Un bouton [Lavage]` _de lancement du nettoyage du filtre à sable_
 - `Un bouton [Stop]` _permettant d'arrêter le surpresseur ou le lavage du filtre à sable_
 
 ```yaml
