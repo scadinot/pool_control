@@ -96,11 +96,11 @@ cards:
   - type: horizontal-stack
     cards:
       - type: entity
-        entity: sensor.shelly_temperature_2_temperature_2
+        entity: input_number.temperaturewater
         icon: ' '
         name: Température Eau
       - type: entity
-        entity: input_number.temperature_air
+        entity: input_number.temperatureoudoor
         icon: ' '
         name: Température Air
   - type: horizontal-stack
