@@ -30,7 +30,7 @@ _Plugin permettant de g√©rer la filtration d'une piscine en fonction de la temp√
 
 ## Configuration
 
-Le contenu minimal de votre fichier configuration.yaml est :
+Ajoutez au fichier configuration.yaml les elements suivants :
 
 ```yaml
 
