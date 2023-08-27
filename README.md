@@ -235,3 +235,59 @@ cards:
     icon_height: 20px
 
 ```
+
+## Surpresseur
+
+Pour activer le surpresseur, cliquez sur le bouton [Surpresseur], le surpresseur est alors lancé pour une durée spécifiée dans la configuration.
+Si la filtration n'est pas active, elle sera lancée automatiquement, puis ensuite le surpresseur après une temporisation de quelques secondes.
+Cette temporisation permet d'éviter d'endommager le surpresseur en mettant en mouvement l'eau dans le circuit de filration.
+
+Une fois le surpresseur lancé, le composant affiche le temps restant sous forme de compte à rebours.
+
+A la fin de la temporisation, le surpresseur s'arrête ainsi que la filtration si elle n'était pas active auparavant.
+Le bouton [Stop] permet d'arrêter le cycle avant la fin de la temporisation si nécessaire.
+
+## Nettoyage du filtre à sable
+
+Cette fonctionnalité est un assistant pour vous guider dans les opérations de lavage de votre filtre à sable.
+
+Pour lancer le lavage, cliquez sur [Lavage], la filtration est alors stoppée et le composant affiche :
+
+[Arrêt, position lavage]
+
+Comme demandé sur le composant, positionnez votre vanne sur la position [lavage], puis cliquez à nouveau sur [Lavage].
+
+![Position Lavage](https://github.com/scadinot/pool_control/blob/main/img//position-lavage.png)
+
+La filtration démarre, le plugin affiche alors le temps restant pour l'opération de lavage :
+
+[Lavage]
+
+![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
+
+A la fin du lavage, le plugin affiche le message suivant:
+
+[Arrêt, position rinçage]
+
+Comme demandé sur le Widget, positionnez votre vanne sur la position [Rinçage], puis cliquez à nouveau sur [Lavage].
+
+![Postion Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
+
+La filtration démarre, le plugin affiche alors le temps restant pour l'opération de rinçage :
+
+[Rinçage]
+
+![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
+
+A la fin du rinçage, le plugin affiche le message suivant :
+
+![Filtration](../images/fonctionnement_7.png)
+
+Comme demandé sur le Widget, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
+
+![Position Filtration](https://github.com/scadinot/pool_control/blob/main/img/position-filtration.png)
+
+Si la filtration était active avant l’opération de lavage, elle redémarre automatiquement.
+
+![Schema Filtration](https://github.com/scadinot/pool_control/blob/main/img/schema-filtration.gif)
+
