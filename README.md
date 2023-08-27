@@ -93,7 +93,7 @@ Sur cette carte sont indiqués :
 
 - `Température Eau` _mesurée par la sonde de température_
 - `Température Air` _mesurée par une sonde exterieure, en l'absence de sonde vous pouvez reprendre une donnée météo_
-- `Température Calcul` _suivant l'option 'sondeLocalTechnique' cette valeur sera mise à jour uniquement en cas de filtration_
+- `Température Calcul` _suivant l'option `sondeLocalTechnique` cette valeur sera mise à jour uniquement en cas de filtration_
 - `Temps de filtration` _temps de filtration calculé par le composant_
 - `L'horaire de filtration et la température utilisée pour le calcul`
 - `Bouton [Reset]` _permettant de recalculer le temps de filtration_
@@ -238,52 +238,52 @@ cards:
 
 ## Surpresseur
 
-Pour activer le surpresseur, cliquez sur le bouton [Surpresseur], le surpresseur est alors lancé pour une durée spécifiée dans la configuration.
+Pour activer le surpresseur, cliquez sur le bouton `[Surpresseur]`, le surpresseur est alors lancé pour une durée spécifiée dans la configuration.
 Si la filtration n'est pas active, elle sera lancée automatiquement, puis ensuite le surpresseur après une temporisation de quelques secondes.
 Cette temporisation permet d'éviter d'endommager le surpresseur en mettant en mouvement l'eau dans le circuit de filration.
 
 Une fois le surpresseur lancé, le composant affiche le temps restant sous forme de compte à rebours.
 
 A la fin de la temporisation, le surpresseur s'arrête ainsi que la filtration si elle n'était pas active auparavant.
-Le bouton [Stop] permet d'arrêter le cycle avant la fin de la temporisation si nécessaire.
+Le bouton `[Stop]` permet d'arrêter le cycle avant la fin de la temporisation si nécessaire.
 
 ## Nettoyage du filtre à sable
 
 Cette fonctionnalité est un assistant pour vous guider dans les opérations de lavage de votre filtre à sable.
 
-Pour lancer le lavage, cliquez sur [Lavage], la filtration est alors stoppée et le composant affiche :
+Pour lancer le lavage, cliquez sur `[Lavage]`, la filtration est alors stoppée et le composant affiche :
 
-**[Arrêt, position lavage]**
+`[Arrêt, position lavage]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position [lavage], puis cliquez à nouveau sur [Lavage].
+Comme demandé sur le composant, positionnez votre vanne sur la position `[lavage]`, puis cliquez à nouveau sur [Lavage].
 
 ![Position Lavage](https://github.com/scadinot/pool_control/blob/main/img//position-lavage.png)
 
 La filtration démarre, le composant affiche alors le temps restant pour l'opération de lavage :
 
-**[Lavage : xx]**
+`[Lavage : xx]`
 
 ![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
 
 A la fin du lavage, le composant affiche le message suivant:
 
-**[Arrêt, position rinçage]**
+`[Arrêt, position rinçage]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position [Rinçage], puis cliquez à nouveau sur [Lavage].
+Comme demandé sur le composant, positionnez votre vanne sur la position `[Rinçage]`, puis cliquez à nouveau sur [Lavage].
 
-![Postion Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
+![Position Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
 
 La filtration démarre, le composant affiche alors le temps restant pour l'opération de rinçage :
 
-**[Rinçage : xx]**
+`[Rinçage : xx]`
 
 ![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
 
 A la fin du rinçage, le composant affiche le message suivant :
 
-**[Filtration]**
+`[Filtration]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
+Comme demandé sur le composant, positionnez votre vanne sur la position `[Filtration]`, puis cliquez à nouveau sur `[Lavage]`.
 
 ![Position Filtration](https://github.com/scadinot/pool_control/blob/main/img/position-filtration.png)
 
