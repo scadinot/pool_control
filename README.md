@@ -85,7 +85,7 @@ Tous les paramètres sont obligatoires sauf ceux après le commentaire # optionn
 
 Vous devrez définir des boutons (input_button) pour l'utiliser. 
 
-Voici un exemple de configuration a créer sur votre tableau de bord
+Voici un exemple de configuration à créer sur votre tableau de bord
 
 ```yaml
 
@@ -115,13 +115,14 @@ cards:
     entity: input_text.filtrationschedule
     name: ' '
     icon: ' '
-  - show_name: true
+  - type: button
+    show_name: true
     show_icon: true
-    type: button
     tap_action:
       action: toggle
     entity: input_button.reset
     name: Reset
+    icon: mdi:button-pointer
     icon_height: 20px
   - type: entity
     entity: input_text.asservissementstatus
@@ -129,27 +130,27 @@ cards:
     name: ' '
   - type: horizontal-stack
     cards:
-      - show_name: true
+      - type: button
+        show_name: true
         show_icon: true
-        type: button
         tap_action:
           action: toggle
         entity: input_button.asservissement_actif
         name: Actif
         icon: ''
         icon_height: 20px
-      - show_name: true
+      - type: button
+        show_name: true
         show_icon: true
-        type: button
         tap_action:
           action: toggle
         entity: input_button.asservissement_auto
         name: Auto
         icon: ''
         icon_height: 20px
-      - show_name: true
+      - type: button
+        show_name: true
         show_icon: true
-        type: button
         tap_action:
           action: toggle
         entity: input_button.asservissement_inactif
@@ -159,18 +160,18 @@ cards:
         show_state: false
   - type: horizontal-stack
     cards:
-      - show_name: true
+      - type: button
+        show_name: true
         show_icon: true
-        type: button
         tap_action:
           action: toggle
         entity: input_button.mode_saison
         name: Saison
         icon: ''
         icon_height: 20px
-      - show_name: true
+      - type: button
+        show_name: true
         show_icon: true
-        type: button
         tap_action:
           action: toggle
         entity: input_button.mode_hivernage
@@ -181,9 +182,9 @@ cards:
     entity: input_text.surpresseurstatus
     icon: ' '
     name: ' '
-  - show_name: true
+  - type: button
+    show_name: true
     show_icon: true
-    type: button
     tap_action:
       action: toggle
     entity: input_button.surpresseur
@@ -195,24 +196,23 @@ cards:
     entity: input_text.filtresablelavagestatus
     icon: ' '
     name: ' '
-  - show_name: true
+  - type: button
+    show_name: true
     show_icon: true
-    type: button
     tap_action:
       action: toggle
     entity: input_button.lavage_filtre_sable
     name: Lavage
     icon: mdi:button-pointer
     icon_height: 20px
-  - show_name: true
+  - type: button
+    show_name: true
     show_icon: true
-    type: button
     tap_action:
       action: toggle
     entity: input_button.stop
     name: Stop
     icon: mdi:button-pointer
     icon_height: 20px
-
 
 ```
