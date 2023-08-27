@@ -1,6 +1,6 @@
 # Pool Control
 
-_Plugin permettant de gérer la filtration d'une piscine en fonction de la température._
+_Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
 ## Fonctionnalitées
 
@@ -16,7 +16,7 @@ _Plugin permettant de gérer la filtration d'une piscine en fonction de la temp�
 
 ## Configuration
 
-Ajoutez au fichier configuration.yaml les elements suivants :
+Ajoutez au fichier configuration.yaml les éléments suivants :
 
 ```yaml
 
