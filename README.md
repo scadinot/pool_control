@@ -89,6 +89,23 @@ Voici un exemple de configuration à créer sur votre tableau de bord
 
 ![DashBoard](https://github.com/scadinot/pool_control/blob/main/img/dashboard.png)
 
+Sur cette carte sont indiqués :
+
+- Température Eau. _mesurée par la sonde de température_
+- Température Air. _mesurée par une sonde exterieure, en l'absence de sonde vous pouvez reprendre une donnée météo_
+- Température Calcul. _suivant l'option 'sondeLocalTechnique' cette valeur sera mise à jour uniquement en cas de filtration_
+- Temps de filtration. _temps de filtration calculé par l'intégration_
+- L'horaire de filtration et la température utilisée pour le calcul.
+- Bouton [Reset] _permettant de recalculer le temps de filtration_
+- L'état de l'intégration 'Auto / Saison' .
+- Une série de boutons [Actif], [Auto], [Inactif]. _permettant de changer l'état de l'intégration_
+- Une série de boutons [Saison], [Hivernage]. _permettant de passer du mode Saison au mode Hivernage_
+- Un affichage de l'état du surpresseur.
+- Un bouton [Surpresseur] de lancement du surpresseur.
+- Un affichage de l'état du lavage du filtre à sable.
+- Un bouton [Lavage] de lancement du nettoyage du filtre à sable.
+- Un bouton [Stop] _permettant d'arrêter le surpresseur ou le lavage du filtre à sable_
+
 ```yaml
 
 type: vertical-stack
