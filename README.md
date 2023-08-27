@@ -253,7 +253,7 @@ Cette fonctionnalité est un assistant pour vous guider dans les opérations de 
 
 Pour lancer le lavage, cliquez sur [Lavage], la filtration est alors stoppée et le composant affiche :
 
-**Arrêt, position lavage**
+**[Arrêt, position lavage]**
 
 Comme demandé sur le composant, positionnez votre vanne sur la position [lavage], puis cliquez à nouveau sur [Lavage].
 
@@ -261,13 +261,13 @@ Comme demandé sur le composant, positionnez votre vanne sur la position [lavage
 
 La filtration démarre, le composant affiche alors le temps restant pour l'opération de lavage :
 
-`[Lavage : xx]`
+**[Lavage : xx]**
 
 ![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
 
 A la fin du lavage, le composant affiche le message suivant:
 
-`[Arrêt, position rinçage]`
+**[Arrêt, position rinçage]**
 
 Comme demandé sur le composant, positionnez votre vanne sur la position [Rinçage], puis cliquez à nouveau sur [Lavage].
 
@@ -275,13 +275,13 @@ Comme demandé sur le composant, positionnez votre vanne sur la position [Rinça
 
 La filtration démarre, le composant affiche alors le temps restant pour l'opération de rinçage :
 
-`[Rinçage : xx]`
+**[Rinçage : xx]**
 
 ![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
 
 A la fin du rinçage, le composant affiche le message suivant :
 
-`[Filtration]`
+**[Filtration]**
 
 Comme demandé sur le composant, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
 
