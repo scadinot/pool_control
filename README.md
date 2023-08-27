@@ -36,9 +36,9 @@ Le contenu minimal de votre fichier configuration.yaml est :
 
 pool_control:
 
-  temperatureWater: input_number.temperaturewater     	# Capteur de température de l'eau
-  temperatureOutdoor: input_number.temperatureoudoor  	# Capteur de température de l'air
-  leverSoleil: sensor.sun_next_rising                 	# Sensor de l'heure de lever du soleil
+  temperatureWater: input_number.temperaturewater       # Capteur de température de l'eau
+  temperatureOutdoor: input_number.temperatureoudoor    # Capteur de température de l'air
+  leverSoleil: sensor.sun_next_rising                   # Sensor de l'heure de lever du soleil
 
   buttonReset: input_button.reset
   buttonSurpresseur: input_button.surpresseur
@@ -52,8 +52,8 @@ pool_control:
   buttonSaison: input_button.mode_saison
   buttonHivernage: input_button.mode_hivernage
 
-  filtration: input_boolean.filtration                	# Relais de filtration
-  traitement: input_boolean.traitement                	# Relais de traitement
+  filtration: input_boolean.filtration                  # Relais de filtration
+  traitement: input_boolean.traitement                  # Relais de traitement
   surpresseur: input_boolean.surpresseur              	# Relais de surpresseur
 
   # optional:
@@ -61,16 +61,16 @@ pool_control:
   surpresseurDuree: 5
 
   disableMarcheForcee: False
-  methodeCalcul: 1 										# 1:Curve | 2:TemperatureReducedByHalf
+  methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
   datePivot: "13:00"
   pausePivot: 0
-  distributionDatePivot: 2 								# 1:(1/2 <> 1/2) | 2:(1/3 <> 2/3)
-  coefficientAjustement: 1.0 							# 0.3 <> 1.7
-  sondeLocalTechnique: True 							# True | False
+  distributionDatePivot: 2                              # 1:(1/2 <> 1/2) | 2:(1/3 <> 2/3)
+  coefficientAjustement: 1.0                            # 0.3 <> 1.7
+  sondeLocalTechnique: True                             # True | False
   sondeLocalTechniquePause: 5
-  traitementHivernage: True 							# True | False
+  traitementHivernage: True                             # True | False
   tempsDeFiltrationMinimum: 3
-  choixHeureFiltrationHivernage: 1 						# 1:(lever_soleil) | 2:(datePivotHivernage)
+  choixHeureFiltrationHivernage: 1                      # 1:(lever_soleil) | 2:(datePivotHivernage)
   datePivotHivernage: "06:00"
   temperatureSecurite: 0
   temperatureHysteresis: 0.5
