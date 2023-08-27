@@ -43,8 +43,6 @@ pool_control:
   surpresseur: input_boolean.surpresseur                # Relais de surpresseur
 
   # optionnel:
-  
-  surpresseurDuree: 5
 
   disableMarcheForcee: False
   methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
@@ -61,6 +59,8 @@ pool_control:
   temperatureSecurite: 0
   temperatureHysteresis: 0.5
   filtration5mn3h: True
+  
+  surpresseurDuree: 5
 
   lavageDuree: 2
   rincageDuree: 2
