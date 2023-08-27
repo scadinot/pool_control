@@ -87,6 +87,8 @@ Vous devrez définir des boutons (input_button) pour l'utiliser.
 
 Voici un exemple de configuration à créer sur votre tableau de bord
 
+![DashBoard](https://github.com/scadinot/pool_control/blob/main/img/dashboard.png)
+
 ```yaml
 
 type: vertical-stack
