@@ -281,7 +281,7 @@ La filtration démarre, le plugin affiche alors le temps restant pour l'opérati
 
 A la fin du rinçage, le plugin affiche le message suivant :
 
-![Filtration](../images/fonctionnement_7.png)
+[Filtration]
 
 Comme demandé sur le Widget, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
 
