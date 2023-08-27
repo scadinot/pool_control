@@ -253,7 +253,7 @@ Cette fonctionnalité est un assistant pour vous guider dans les opérations de 
 
 Pour lancer le lavage, cliquez sur [Lavage], la filtration est alors stoppée et le composant affiche :
 
-`[Arrêt, position lavage]`
+*Arrêt, position lavage*
 
 Comme demandé sur le composant, positionnez votre vanne sur la position [lavage], puis cliquez à nouveau sur [Lavage].
 
