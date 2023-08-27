@@ -259,31 +259,31 @@ Comme demandé sur le composant, positionnez votre vanne sur la position [lavage
 
 ![Position Lavage](https://github.com/scadinot/pool_control/blob/main/img//position-lavage.png)
 
-La filtration démarre, le plugin affiche alors le temps restant pour l'opération de lavage :
+La filtration démarre, le composant affiche alors le temps restant pour l'opération de lavage :
 
 `[Lavage : xx]`
 
 ![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
 
-A la fin du lavage, le plugin affiche le message suivant:
+A la fin du lavage, le composant affiche le message suivant:
 
 `[Arrêt, position rinçage]`
 
-Comme demandé sur le Widget, positionnez votre vanne sur la position [Rinçage], puis cliquez à nouveau sur [Lavage].
+Comme demandé sur le composant, positionnez votre vanne sur la position [Rinçage], puis cliquez à nouveau sur [Lavage].
 
 ![Postion Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
 
-La filtration démarre, le plugin affiche alors le temps restant pour l'opération de rinçage :
+La filtration démarre, le composant affiche alors le temps restant pour l'opération de rinçage :
 
 `[Rinçage : xx]`
 
 ![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
 
-A la fin du rinçage, le plugin affiche le message suivant :
+A la fin du rinçage, le composant affiche le message suivant :
 
 `[Filtration]`
 
-Comme demandé sur le Widget, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
+Comme demandé sur le composant, positionnez votre vanne sur la position [Filtration], puis cliquez à nouveau sur [Lavage].
 
 ![Position Filtration](https://github.com/scadinot/pool_control/blob/main/img/position-filtration.png)
 
