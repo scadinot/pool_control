@@ -56,7 +56,7 @@ pool_control:
   traitement: input_boolean.traitement                  # Relais de traitement
   surpresseur: input_boolean.surpresseur                # Relais de surpresseur
 
-  # optional:
+  # optionnel:
   
   surpresseurDuree: 5
 
