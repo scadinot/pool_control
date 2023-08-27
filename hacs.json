@@ -1,6 +1,6 @@
 {
     "name": "Pool Control",
     "content_in_root": false,
-    "render_readme": true,
+    "render_readme": false,
     "homeassistant": "2023.0.0",
 }
