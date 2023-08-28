@@ -92,22 +92,19 @@ pool_control:
 ```yaml
   temperatureWater: input_number.temperaturewater
 ```
-
-	Cette entrée vous permet d'indiquer la sonde de température d'eau de votre piscine.
-	Les options `sondeLocalTechnique` et `sondeLocalTechniquePause` permettront de spécifier les caractéristiques de votre sonde de température.
+Cette entrée vous permet d'indiquer la sonde de température d'eau de votre piscine.
+Les options `sondeLocalTechnique` et `sondeLocalTechniquePause` permettront de spécifier les caractéristiques de votre sonde de température.
 
 ```yaml
   temperatureOutdoor: input_number.temperatureoudoor
 ```
-
-	Cette entrée vous permet d'indiquer la sonde de température de l'air, cette information est utilisée en mode `Hivernage`. 
-	Si vous ne disposez pas d'une sonde de température exterieure vous pouvez utiliser une donnée météo.
+Cette entrée vous permet d'indiquer la sonde de température de l'air, cette information est utilisée en mode `Hivernage`. 
+Si vous ne disposez pas d'une sonde de température exterieure vous pouvez utiliser une donnée météo.
 
 ```yaml
   leverSoleil: sensor.sun_next_rising
 ```
-
-	Cette entrée vous permet d'indiquer l'heure de lever du soleil, cette information est utilisée en mode `Hivernage`. 
+Cette entrée vous permet d'indiquer l'heure de lever du soleil, cette information est utilisée en mode `Hivernage`. 
 	
 ```yaml
   buttonReset: input_button.reset
@@ -122,61 +119,53 @@ pool_control:
   buttonLavage: input_button.lavage_filtre_sable
   buttonStop: input_button.stop
 ```
-
-	vous dévez definir dans Home Assistant des input_button (9) qui vous permettront de piloter le composant Pool Control
+vous dévez definir dans Home Assistant des input_button (9) qui vous permettront de piloter le composant Pool Control
 
 ```yaml
   filtration: input_boolean.filtration
   traitement: input_boolean.traitement
   surpresseur: input_boolean.surpresseur
 ```
-
-	Ces entrées vous permettent d'indiquer les actionneurs qui commanderons vos équipements `filtration`, `traitement`, `surpresseur`
+Ces entrées vous permettent d'indiquer les actionneurs qui commanderons vos équipements `filtration`, `traitement`, `surpresseur`
 
 ```yaml
   disableMarcheForcee: True
 ```
-
-	Désactiver marche forcée au début du cycle de filtration pour revenir au mode auto au début du cycle de filtration, afin d'éviter de laisser indéfiniment la marche forcée
+Désactiver marche forcée au début du cycle de filtration pour revenir au mode auto au début du cycle de filtration, afin d'éviter de laisser indéfiniment la marche forcée
 	
 ```yaml
   methodeCalcul: 1
 ```
-
-	Choix méthode de calcul : vous permet de choisir entre (1) un calcul de temps de filtration basé sur une courbe ou (2) la classique formule température / 2
+Choix méthode de calcul : vous permet de choisir entre (1) un calcul de temps de filtration basé sur une courbe ou (2) la classique formule température / 2
 	
 ```yaml
   datePivot: "13:00"
 ```
-
-	Horaire pivot de filtration (au format "hh:mm") : vous permet de définir l'heure de la filtration.
+Horaire pivot de filtration (au format "hh:mm") : vous permet de définir l'heure de la filtration.
 	
 ```yaml
   pausePivot: 0
 ```
-
-	Temps de coupure (segmentation de la filtration en minutes) : vous permet de faire une pause pendant la filtration, cette pause est située à l'heure pivot choisie. Les heures de début et de fin de filtration sont décalées proportionnellement. Utilisez le bouton `[Reset]` pour visualiser et déterminer les horaires souhaités.
+Temps de coupure (segmentation de la filtration en minutes) : vous permet de faire une pause pendant la filtration, cette pause est située à l'heure pivot choisie. Les heures de début et de fin de filtration sont décalées proportionnellement. 
+Utilisez le bouton `[Reset]` pour visualiser et déterminer les horaires souhaités.
 	
 ```yaml
   distributionDatePivot: 2
 ```
-
-	Répartition du temps de filtration autour de l'horaire pivot (1 ou 2) : vous permet de choisir la répartition de la plage de filtration autour de l'heure pivot, au choix (1) 1/2 <> 1/2 ou (2) 1/3 <> 2/3.
+Répartition du temps de filtration autour de l'horaire pivot (1 ou 2) : vous permet de choisir la répartition de la plage de filtration autour de l'heure pivot, au choix (1) 1/2 <> 1/2 ou (2) 1/3 <> 2/3.
 	
 ```yaml
   coefficientAjustement: 1.0
 ```
-
-	Ajustement du temps de filtration : vous permet d'ajuster le temps de filtration avec un coefficient variable entre 0.5 et 1.5 ce coefficient agit sur le mode courbe ou température / 2.
+Ajustement du temps de filtration : vous permet d'ajuster le temps de filtration avec un coefficient variable entre 0.5 et 1.5 ce coefficient agit sur le mode courbe ou température / 2.
 	
 ```yaml
   sondeLocalTechnique: True
   sondeLocalTechniquePause: 5
 ```
-
-	Sonde de température dans local technique pour ne tenir compte de la valeur renvoyée par la sonde que pendant la filtration.
-	Pause avant relevé de température (en minutes) temporisation pour attendre que la température de la sonde soit au niveau de la température du bassin. 
-	Ce délai depend de la puissance de votre pompe et de la longueur du circuit de filtration entre la piscine et la sonde.
+Sonde de température dans local technique pour ne tenir compte de la valeur renvoyée par la sonde que pendant la filtration.
+Pause avant relevé de température (en minutes) temporisation pour attendre que la température de la sonde soit au niveau de la température du bassin. 
+Ce délai depend de la puissance de votre pompe et de la longueur du circuit de filtration entre la piscine et la sonde.
 	
 ```yaml
   traitementHivernage: True
@@ -187,38 +176,35 @@ pool_control:
   temperatureHysteresis: 0.5
   filtration5mn3h: True
 ```
+Ces différentes options sont utilisées pendant l'hivernage actif.
+traitementHivernage : cette option permet d'activer le traitement pendant l'hivernage.
+tempsDeFiltrationMinimum : (en heure) par défaut la filtration en mode hivernage est calculée en divisant la température de l'eau par 3 avec un temps minimum configurable.
+choixHeureFiltrationHivernage : (1 ou 2) choisissez si vous souhaitez lancer la filtration (1) à l'heure de lever du soleil ou (2) à l'heure prédéfinie.
+datePivotHivernage : si vous avez selectionné (2) au choix precedent, choisissez l'heure à laquelle vous souhaitez lancer la filtration en mode hivernage au format "hh:mm".
+	Attention : Si vous choisissez un horaire différent de l'heure de lever du soleil la fonction hors gel de la filtration sera sans effet. 
+	Cette fonction peut être utile suivant votre abonnement EDF (possibilité de faire fonctionner la filtration pendant les heures creuses.
+temperatureSecurite : cette option permet de lancer la filtration en marche forcée si la température extérieure descend en dessous d'un seuil défini.
+temperatureHysteresis : cette valeur permet d'éviter les marches / arrêts intempestifs lorsque le seuil de temperatureSecurite est atteint.
+filtration5mn3h : si vous le souhaitez vous pouvez activer cette option qui lancera la filration pendant 5mn toutes les 3 heures.
 
-	Ces différentes options sont utilisées pendant l'hivernage actif.
-	traitementHivernage : cette option permet d'activer le traitement pendant l'hivernage.
-	tempsDeFiltrationMinimum : (en heure) par défaut la filtration en mode hivernage est calculée en divisant la température de l'eau par 3 avec un temps minimum configurable.
-	choixHeureFiltrationHivernage : (1 ou 2) choisissez si vous souhaitez lancer la filtration (1) à l'heure de lever du soleil ou (2) à l'heure prédéfinie.
-	datePivotHivernage : si vous avez selectionné (2) au choix precedent, choisissez l'heure à laquelle vous souhaitez lancer la filtration en mode hivernage au format "hh:mm".
-		Attention : Si vous choisissez un horaire différent de l'heure de lever du soleil la fonction hors gel de la filtration sera sans effet. 
-		Cette fonction peut être utile suivant votre abonnement EDF (possibilité de faire fonctionner la filtration pendant les heures creuses.
-	temperatureSecurite : cette option permet de lancer la filtration en marche forcée si la température extérieure descend en dessous d'un seuil défini.
-	temperatureHysteresis : cette valeur permet d'éviter les marches / arrêts intempestifs lorsque le seuil de temperatureSecurite est atteint.
-	filtration5mn3h : si vous le souhaitez vous pouvez activer cette option qui lancera la filration pendant 5mn toutes les 3 heures.
-	
-	Principe et fonctionnement de l'hivernage :
+Principe et fonctionnement de l'hivernage :
 
-		La filtration est lancée tous les jours au minimum pendant 3 heures, la filtration démarrera 2 heures avant le lever du soleil et s'arrêtera 1 heure après le lever du soleil. 
-		Si la température de l'eau est supérieure à 9°C, le temps de filtration sera calculé en divisant la température par 3 (soit par exemple 3h20 pour 10°C). 
-		Le démarrage de la filtration étant dans tous les cas 2 heures avant le lever du soleil. 
-		Si vous avez activé l'option Filtration 5mn toutes les 3 heures la filtration sera lancée indépendamment de toute programmation de 02h00 à 02h05, de 05h00 à 05h05, de 08h00 à 08h05, de 11h00 à 11h05, de 14h00 à 14h05, de 17h00 à 17h05, de 20h00 à 20h05, de 23h00 à 23h05. 
-		L'option Filtration permanente si température extérieure inférieure à est une sécurité supplémentaire dite hors gel qui permet éventuellement de filtrer en continu dans le cas de températures très basse
+	La filtration est lancée tous les jours au minimum pendant 3 heures, la filtration démarrera 2 heures avant le lever du soleil et s'arrêtera 1 heure après le lever du soleil. 
+	Si la température de l'eau est supérieure à 9°C, le temps de filtration sera calculé en divisant la température par 3 (soit par exemple 3h20 pour 10°C). 
+	Le démarrage de la filtration étant dans tous les cas 2 heures avant le lever du soleil. 
+	Si vous avez activé l'option Filtration 5mn toutes les 3 heures la filtration sera lancée indépendamment de toute programmation de 02h00 à 02h05, de 05h00 à 05h05, de 08h00 à 08h05, de 11h00 à 11h05, de 14h00 à 14h05, de 17h00 à 17h05, de 20h00 à 20h05, de 23h00 à 23h05. 
+	L'option Filtration permanente si température extérieure inférieure à est une sécurité supplémentaire dite hors gel qui permet éventuellement de filtrer en continu dans le cas de températures très basse
 	
 ```yaml
   surpresseurDuree: 5
 ```
-
-	Permet de définir le Temps de fonctionnement du surpresseur.
+Permet de définir le Temps de fonctionnement du surpresseur.
 	
 ```yaml
   lavageDuree: 2
   rincageDuree: 2
 ```
-
-	Permet de définir définir le Temps de lavage du filtre à sable et Temps de rinçage du filtre à sable.
+Permet de définir définir le Temps de lavage du filtre à sable et Temps de rinçage du filtre à sable.
 
 
 ### Voici un exemple de configuration à créer sur votre tableau de bord Home Assistant
