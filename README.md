@@ -36,9 +36,13 @@ Ajoutez au fichier configuration.yaml les éléments suivants :
 
 pool_control:
 
+  # Capteurs
+
   temperatureWater: input_number.temperaturewater       # Capteur de température de l'eau
   temperatureOutdoor: input_number.temperatureoudoor    # Capteur de température de l'air
   leverSoleil: sensor.sun_next_rising                   # Sensor de l'heure de lever du soleil
+
+  # Boutons
 
   buttonReset: input_button.reset
   buttonSurpresseur: input_button.surpresseur
@@ -52,11 +56,13 @@ pool_control:
   buttonSaison: input_button.mode_saison
   buttonHivernage: input_button.mode_hivernage
 
+  # Actionneurs
+
   filtration: input_boolean.filtration                  # Relais de filtration
   traitement: input_boolean.traitement                  # Relais de traitement
   surpresseur: input_boolean.surpresseur                # Relais de surpresseur
 
-  # optionnel:
+  # Options
 
   disableMarcheForcee: False
   methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
@@ -81,7 +87,7 @@ pool_control:
   
 ```
 
-Tous les paramètres sont obligatoires sauf ceux après le commentaire # optionnel.
+Tous les paramètres sont obligatoires sauf ceux après le commentaire # Options
 
 Vous devrez définir des boutons (input_button) pour l'utiliser. 
 
@@ -96,15 +102,15 @@ Sur cette carte sont indiqués :
 - `Température Calcul` _suivant l'option `sondeLocalTechnique` cette valeur sera mise à jour uniquement en cas de filtration_
 - `Temps de filtration` _temps de filtration calculé par le composant_
 - `L'horaire de filtration et la température utilisée pour le calcul`
-- `Bouton [Reset]` _permettant de recalculer le temps de filtration_
+- Bouton `[Reset]` _permettant de recalculer le temps de filtration_
 - `L'état de l'intégration` 'Auto / Saison' .
-- `Une série de boutons [Actif], [Auto], [Inactif]` _permettant de changer l'état du composant
-- `Une série de boutons [Saison], [Hivernage]` _permettant de basculer du mode Saison au mode Hivernage_
-- `Un affichage de l'état du surpresseur` _indiquant le temps restant pendant le fonctionnement du surpresseur_
-- `Un bouton [Surpresseur]` de lancement du surpresseur.
-- `Un affichage de l'état du lavage du filtre à sable` _indiquant les opérations à effectuer avec la vanne 6 voies pendant les opérations de lavage / contre lavage_
-- `Un bouton [Lavage]` _de lancement du nettoyage du filtre à sable_
-- `Un bouton [Stop]` _permettant d'arrêter le surpresseur ou le lavage du filtre à sable_
+- Boutons `[Actif]`, `[Auto]`, `[Inactif]` _permettant de changer l'état du composant `Pool Control`_
+- Boutons `[Saison]`, `[Hivernage]` _permettant de basculer du mode Saison au mode Hivernage_
+- `L'état du surpresseur` _indiquant le temps restant pendant le fonctionnement du surpresseur_
+- Bouton `[Surpresseur]` de lancement du surpresseur.
+- `L'état du lavage du filtre à sable` _indiquant les opérations à effectuer avec la vanne 6 voies pendant les opérations de lavage / contre lavage_
+- Bouton `[Lavage]` _de lancement du nettoyage du filtre à sable_
+- Bouton `[Stop]` _permettant d'arrêter le surpresseur ou le lavage du filtre à sable_
 
 ```yaml
 
