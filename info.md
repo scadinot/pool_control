@@ -22,9 +22,13 @@ Ajoutez au fichier configuration.yaml les éléments suivants :
 
 pool_control:
 
+  # Capteurs
+
   temperatureWater: input_number.temperaturewater       # Capteur de température de l'eau
   temperatureOutdoor: input_number.temperatureoudoor    # Capteur de température de l'air
   leverSoleil: sensor.sun_next_rising                   # Sensor de l'heure de lever du soleil
+
+  # Boutons
 
   buttonReset: input_button.reset
   buttonSurpresseur: input_button.surpresseur
@@ -38,11 +42,13 @@ pool_control:
   buttonSaison: input_button.mode_saison
   buttonHivernage: input_button.mode_hivernage
 
+  # Actionneurs
+
   filtration: input_boolean.filtration                  # Relais de filtration
   traitement: input_boolean.traitement                  # Relais de traitement
   surpresseur: input_boolean.surpresseur                # Relais de surpresseur
 
-  # optionnel:
+  # Options
 
   disableMarcheForcee: False
   methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
@@ -67,7 +73,7 @@ pool_control:
   
 ```
 
-Tous les paramètres sont obligatoires sauf ceux après le commentaire # optionnel.
+Tous les paramètres sont obligatoires sauf ceux après le commentaire # Options
 
 Vous devrez définir des boutons (input_button) pour l'utiliser. 
 
