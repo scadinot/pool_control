@@ -92,18 +92,21 @@ pool_control:
 ```yaml
   temperatureWater: input_number.temperaturewater
 ```
+
 	Cette entrée vous permet d'indiquer la sonde de température d'eau de votre piscine.
 	Les options `sondeLocalTechnique` et `sondeLocalTechniquePause` permettront de spécifier les caractéristiques de votre sonde de température.
 
 ```yaml
   temperatureOutdoor: input_number.temperatureoudoor
 ```
+
 	Cette entrée vous permet d'indiquer la sonde de température de l'air, cette information est utilisée en mode `Hivernage`. 
 	Si vous ne disposez pas d'une sonde de température exterieure vous pouvez utiliser une donnée météo.
 
 ```yaml
   leverSoleil: sensor.sun_next_rising
 ```
+
 	Cette entrée vous permet d'indiquer l'heure de lever du soleil, cette information est utilisée en mode `Hivernage`. 
 	
 ```yaml
@@ -119,6 +122,7 @@ pool_control:
   buttonLavage: input_button.lavage_filtre_sable
   buttonStop: input_button.stop
 ```
+
 	vous dévez definir dans Home Assistant des input_button (9) qui vous permettront de piloter le composant Pool Control
 
 ```yaml
@@ -126,42 +130,50 @@ pool_control:
   traitement: input_boolean.traitement
   surpresseur: input_boolean.surpresseur
 ```
+
 	Ces entrées vous permettent d'indiquer les actionneurs qui commanderons vos équipements `filtration`, `traitement`, `surpresseur`
 
 ```yaml
   disableMarcheForcee: True
 ```
+
 	Désactiver marche forcée au début du cycle de filtration pour revenir au mode auto au début du cycle de filtration, afin d'éviter de laisser indéfiniment la marche forcée
 	
 ```yaml
   methodeCalcul: 1
 ```
+
 	Choix méthode de calcul : vous permet de choisir entre (1) un calcul de temps de filtration basé sur une courbe ou (2) la classique formule température / 2
 	
 ```yaml
   datePivot: "13:00"
 ```
+
 	Horaire pivot de filtration (au format "hh:mm") : vous permet de définir l'heure de la filtration.
 	
 ```yaml
   pausePivot: 0
 ```
+
 	Temps de coupure (segmentation de la filtration en minutes) : vous permet de faire une pause pendant la filtration, cette pause est située à l'heure pivot choisie. Les heures de début et de fin de filtration sont décalées proportionnellement. Utilisez le bouton `[Reset]` pour visualiser et déterminer les horaires souhaités.
 	
 ```yaml
   distributionDatePivot: 2
 ```
+
 	Répartition du temps de filtration autour de l'horaire pivot (1 ou 2) : vous permet de choisir la répartition de la plage de filtration autour de l'heure pivot, au choix (1) 1/2 <> 1/2 ou (2) 1/3 <> 2/3.
 	
 ```yaml
   coefficientAjustement: 1.0
 ```
+
 	Ajustement du temps de filtration : vous permet d'ajuster le temps de filtration avec un coefficient variable entre 0.5 et 1.5 ce coefficient agit sur le mode courbe ou température / 2.
 	
 ```yaml
   sondeLocalTechnique: True
   sondeLocalTechniquePause: 5
 ```
+
 	Sonde de température dans local technique pour ne tenir compte de la valeur renvoyée par la sonde que pendant la filtration.
 	Pause avant relevé de température (en minutes) temporisation pour attendre que la température de la sonde soit au niveau de la température du bassin. 
 	Ce délai depend de la puissance de votre pompe et de la longueur du circuit de filtration entre la piscine et la sonde.
@@ -175,6 +187,7 @@ pool_control:
   temperatureHysteresis: 0.5
   filtration5mn3h: True
 ```
+
 	Ces différentes options sont utilisées pendant l'hivernage actif.
 	traitementHivernage : cette option permet d'activer le traitement pendant l'hivernage.
 	tempsDeFiltrationMinimum : (en heure) par défaut la filtration en mode hivernage est calculée en divisant la température de l'eau par 3 avec un temps minimum configurable.
@@ -197,12 +210,14 @@ pool_control:
 ```yaml
   surpresseurDuree: 5
 ```
+
 	Permet de définir le Temps de fonctionnement du surpresseur.
 	
 ```yaml
   lavageDuree: 2
   rincageDuree: 2
 ```
+
 	Permet de définir définir le Temps de lavage du filtre à sable et Temps de rinçage du filtre à sable.
 
 
