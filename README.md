@@ -179,20 +179,30 @@ Ce délai depend de la puissance de votre pompe et de la longueur du circuit de 
 Ces différentes options sont utilisées pendant l'hivernage actif.
 
 traitementHivernage : cette option permet d'activer le traitement pendant l'hivernage.
+
 tempsDeFiltrationMinimum : (en heure) par défaut la filtration en mode hivernage est calculée en divisant la température de l'eau par 3 avec un temps minimum configurable.
+
 choixHeureFiltrationHivernage : (1 ou 2) choisissez si vous souhaitez lancer la filtration (1) à l'heure de lever du soleil ou (2) à l'heure prédéfinie.
+
 datePivotHivernage : si vous avez selectionné (2) au choix precedent, choisissez l'heure à laquelle vous souhaitez lancer la filtration en mode hivernage au format "hh:mm".
-	Attention : Si vous choisissez un horaire différent de l'heure de lever du soleil la fonction hors gel de la filtration sera sans effet. 
-	Cette fonction peut être utile suivant votre abonnement EDF (possibilité de faire fonctionner la filtration pendant les heures creuses.
+
+Attention : Si vous choisissez un horaire différent de l'heure de lever du soleil la fonction hors gel de la filtration sera sans effet. 
+Cette fonction peut être utile suivant votre abonnement EDF (possibilité de faire fonctionner la filtration pendant les heures creuses.
+
 temperatureSecurite : cette option permet de lancer la filtration en marche forcée si la température extérieure descend en dessous d'un seuil défini.
+
 temperatureHysteresis : cette valeur permet d'éviter les marches / arrêts intempestifs lorsque le seuil de temperatureSecurite est atteint.
+
 filtration5mn3h : si vous le souhaitez vous pouvez activer cette option qui lancera la filration pendant 5mn toutes les 3 heures.
 
 Principe et fonctionnement de l'hivernage :
 
 La filtration est lancée tous les jours au minimum pendant 3 heures, la filtration démarrera 2 heures avant le lever du soleil et s'arrêtera 1 heure après le lever du soleil. 
+
 Si la température de l'eau est supérieure à 9°C, le temps de filtration sera calculé en divisant la température par 3 (soit par exemple 3h20 pour 10°C). 
+
 Le démarrage de la filtration étant dans tous les cas 2 heures avant le lever du soleil. 
+
 Si vous avez activé l'option Filtration 5mn toutes les 3 heures la filtration sera lancée indépendamment de toute programmation de 02h00 à 02h05, de 05h00 à 05h05, de 08h00 à 08h05, de 11h00 à 11h05, de 14h00 à 14h05, de 17h00 à 17h05, de 20h00 à 20h05, de 23h00 à 23h05. 
 L'option Filtration permanente si température extérieure inférieure à est une sécurité supplémentaire dite hors gel qui permet éventuellement de filtrer en continu dans le cas de températures très basse
 	
