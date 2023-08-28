@@ -30,7 +30,7 @@ _Composant Home Assistant permettant de gérer la filtration d'une piscine en fo
 
 ## Configuration
 
-Ajoutez au fichier configuration.yaml les éléments suivants :
+### Ajoutez au fichier configuration.yaml les éléments suivants :
 
 ```yaml
 
@@ -87,9 +87,15 @@ pool_control:
   
 ```
 
-Tous les paramètres sont obligatoires sauf ceux après le commentaire # Options
+### Voici le détail des differentes options de configuration
 
-Vous devrez définir des boutons (input_button) pour l'utiliser. 
+```yaml
+  temperatureWater: input_number.temperaturewater
+```
+
+Cette entrée vous permet d'indiquer la sonde de température d'eau de votre piscine.
+Les options sondeLocalTechnique et sondeLocalTechniquePause permettront de spécifier les caractéristique de votre sonde de température.
+
 
 Voici un exemple de configuration à créer sur votre tableau de bord
 
@@ -297,3 +303,4 @@ Si la filtration était active avant l’opération de lavage, elle redémarre a
 
 ![Schema Filtration](https://github.com/scadinot/pool_control/blob/main/img/schema-filtration.gif)
 
+Pendant les différentes opérations de nettoyage du filtre à sable le bouton `[Stop]` permet d'arrêter l'opération en cours.
