@@ -16,7 +16,7 @@ _Composant Home Assistant permettant de gérer la filtration d'une piscine en fo
 
 ## Configuration
 
-Ajoutez au fichier configuration.yaml les éléments suivants :
+### Ajoutez au fichier configuration.yaml les éléments suivants :
 
 ```yaml
 
@@ -31,9 +31,6 @@ pool_control:
   # Boutons
 
   buttonReset: input_button.reset
-  buttonSurpresseur: input_button.surpresseur
-  buttonLavage: input_button.lavage_filtre_sable
-  buttonStop: input_button.stop
 
   buttonActif: input_button.asservissement_actif
   buttonAuto: input_button.asservissement_auto
@@ -41,6 +38,9 @@ pool_control:
 
   buttonSaison: input_button.mode_saison
   buttonHivernage: input_button.mode_hivernage
+  buttonSurpresseur: input_button.surpresseur
+  buttonLavage: input_button.lavage_filtre_sable
+  buttonStop: input_button.stop
 
   # Actionneurs
 
@@ -50,7 +50,7 @@ pool_control:
 
   # Options
 
-  disableMarcheForcee: False
+  disableMarcheForcee: True
   methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
   datePivot: "13:00"
   pausePivot: 0
