@@ -61,8 +61,9 @@ class PoolController:
         self.buttonHivernageFirstCall = True
 
         self.filtration = config["filtration"]
-        self.traitement = config["traitement"]
-        self.surpresseur = config["surpresseur"]
+        self.traitement = config.get("traitement", None)
+        self.traitement_2 = config.get("traitement_2", None)
+        self.surpresseur = config.get("surpresseur", None)
 
         self.surpresseurDuree = config.get("surpresseurDuree", 10)
 
@@ -209,7 +210,10 @@ class PoolController:
 
             await self.refreshFiltration()
             await self.refreshSurpresseur()
-            await self.refreshTraitement()
+            if self.traitement != None:
+                await self.refreshTraitement()
+            if self.traitement_2 != None:
+                await self.refreshTraitement_2()
             # await self.refreshChauffage()
 
             self.filtrationRefreshCounter = 0
@@ -283,8 +287,12 @@ class PoolController:
                         int(self.get_data("filtrationHivernage", 0)) == 1
                         and self.traitementHivernage == True
                     ):
-                        await asyncio.sleep(2)
-                        await self.traitementOn()
+                        if self.traitement != None or self.traitement_2 != None:
+                            await asyncio.sleep(2)
+                        if self.traitement != None:
+                            await self.traitementOn()
+                        if self.traitement_2 != None:
+                            await self.traitement_2_On()
 
                     if int(self.get_data("filtrationSurpresseur", 0)) == 1:
                         await asyncio.sleep(2)
@@ -292,8 +300,13 @@ class PoolController:
                     else:
                         await self.surpresseurStop()
                 else:
-                    if self.getStateTraitement() == True:
-                        await self.traitementStop()
+                    if self.traitement != None or self.traitement_2 != None:
+                        if self.traitement != None:
+                            if self.getStateTraitement() == True:
+                                await self.traitementStop()
+                        if self.traitement_2 != None:
+                            if self.getStateTraitement_2() == True:
+                                await self.traitement_2_Stop()
                         await asyncio.sleep(2)
 
                     if self.getStateSurpresseur() == True:
@@ -303,17 +316,26 @@ class PoolController:
                     await self.filtrationStop()
 
             if int(self.get_data("filtrationLavage", 0)) == 1:
-                await self.traitementStop()
+                if self.traitement != None:
+                    await self.traitementStop()
+                if self.traitement_2 != None:
+                    await self.traitement_2_Stop()
                 await self.surpresseurStop()
                 await self.filtrationStop()
 
             if int(self.get_data("filtrationLavage", 0)) == 2:
-                await self.traitementStop()
+                if self.traitement != None:
+                    await self.traitementStop()
+                if self.traitement_2 != None:
+                    await self.traitement_2_Stop()
                 await self.surpresseurStop()
                 await self.filtrationOn()
 
         else:
-            await self.traitementStop()
+            if self.traitement != None:
+                await self.traitementStop()
+            if self.traitement_2 != None:
+                await self.traitement_2_Stop()
             await self.surpresseurStop()
             await self.filtrationStop()
 
@@ -1426,6 +1448,85 @@ class PoolController:
             "input_boolean",  # switch / input_boolean
             "turn_off",
             {"entity_id": self.traitement},
+        )
+
+        # self.hass.states.async_set("input_text.traitementStatus", "Arrêté")
+
+        return
+
+    ## Traitement 2
+
+    async def refreshTraitement_2(self):
+        """Rafraichi l'état du traitement_2"""
+
+        traitementState = self.hass.states.get(self.traitement_2)
+
+        if traitementState is None:
+            _LOGGER.error(f"Traitement {self.traitement_2} not found")
+            return
+
+        if traitementState.state == "on":
+            await self.traitement_2_On(True)
+
+        elif traitementState.state == "off":
+            await self.traitement_2_Stop(True)
+
+        return
+
+    def getStateTraitement_2(self) -> bool:
+        """Obtient l'état du traitement"""
+
+        traitementState = self.hass.states.get(self.traitement_2)
+
+        if traitementState is None:
+            _LOGGER.error(f"Traitement {self.traitement_2} not found")
+            return False
+
+        if traitementState.state == "on":
+            return True
+        else:
+            return False
+
+    async def traitement_2_On(self, repeat=False):
+        """Active le traitement"""
+
+        traitementState = self.hass.states.get(self.traitement_2)
+
+        if traitementState is None:
+            _LOGGER.error(f"Traitement {self.traitement_2} not found")
+            return
+
+        if not repeat and traitementState.state == "on":
+            return
+
+        # Active le traitement
+        await self.hass.services.async_call(
+            "input_boolean",  # switch / input_boolean
+            "turn_on",
+            {"entity_id": self.traitement_2},
+        )
+
+        # self.hass.states.async_set("input_text.traitementStatus", "Actif")
+
+        return
+
+    async def traitement_2_Stop(self, repeat=False):
+        """Arrête le traitement"""
+
+        traitementState = self.hass.states.get(self.traitement_2)
+
+        if traitementState is None:
+            _LOGGER.error(f"Traitement {self.traitement_2} not found")
+            return
+
+        if not repeat and traitementState.state == "off":
+            return
+
+        # Arrête le traitement
+        await self.hass.services.async_call(
+            "input_boolean",  # switch / input_boolean
+            "turn_off",
+            {"entity_id": self.traitement_2},
         )
 
         # self.hass.states.async_set("input_text.traitementStatus", "Arrêté")
