@@ -65,7 +65,7 @@ class PoolController:
         self.traitement_2 = config.get("traitement_2", None)
         self.surpresseur = config.get("surpresseur", None)
 
-        self.surpresseurDuree = config.get("surpresseurDuree", 10)
+        self.surpresseurDuree = config.get("surpresseurDuree", 20)
 
         self.disableMarcheForcee = config.get("disableMarcheForcee", False)
         self.methodeCalcul = config.get("methodeCalcul", 1)
@@ -73,6 +73,7 @@ class PoolController:
         self.pausePivot = config.get("pausePivot", 0)
         self.distributionDatePivot = config.get("distributionDatePivot", 1)
         self.coefficientAjustement = config.get("coefficientAjustement", 1.0)
+        self.coefficientAjustementHivernage = config.get("coefficientAjustementHivernage", 1.0)
         self.sondeLocalTechnique = config.get("sondeLocalTechnique", False)
         self.sondeLocalTechniquePause = config.get("sondeLocalTechniquePause", 0)
 
@@ -82,7 +83,7 @@ class PoolController:
             "choixHeureFiltrationHivernage", 1
         )
         self.datePivotHivernage = config.get("datePivotHivernage", "06:00")
-        self.temperatureSecurite = config.get("temperatureSecurite", -1)
+        self.temperatureSecurite = config.get("temperatureSecurite", -2)
         self.temperatureHysteresis = config.get("temperatureHysteresis", 0.5)
         self.filtration5mn3h = config.get("filtration5mn3h", False)
 
@@ -697,7 +698,7 @@ class PoolController:
         dureeHeures = temperatureWater / 3.0
 
         # Coefficient d'ajustement (suivant config)
-        dureeHeures *= self.coefficientAjustement
+        dureeHeures *= self.coefficientAjustementHivernage
 
         # Au moins 3 heures
         dureeHeures = max(dureeHeures, self.tempsDeFiltrationMinimum)
