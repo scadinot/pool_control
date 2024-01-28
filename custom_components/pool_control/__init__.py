@@ -468,13 +468,53 @@ class PoolController:
             # 1/3 <> 2/3
             _LOGGER.debug("distributionDatePivot= 1/3 <> 2/3")
 
-            filtrationDebut = filtrationPivotSecondes - (filtrationSecondes / 3.0)
+            filtrationDebut = filtrationPivotSecondes - (
+                (filtrationSecondes / 3.0) * 1.0
+            )
             filtrationFin = filtrationPivotSecondes + ((filtrationSecondes / 3.0) * 2.0)
 
-            filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 3.0)
+            filtrationPauseDebut = filtrationPivotSecondes - (
+                (pausePivotSecondes / 3.0) * 1.0
+            )
             filtrationPauseFin = filtrationPivotSecondes + (
                 (pausePivotSecondes / 3.0) * 2.0
             )
+
+        elif self.distributionDatePivot == 3:
+            # 2/3 <> 1/3
+            _LOGGER.debug("distributionDatePivot= 2/3 <> 1/3")
+
+            filtrationDebut = filtrationPivotSecondes - (
+                (filtrationSecondes / 3.0) * 2.0
+            )
+            filtrationFin = filtrationPivotSecondes + ((filtrationSecondes / 3.0) * 1.0)
+
+            filtrationPauseDebut = filtrationPivotSecondes - (
+                (pausePivotSecondes / 3.0) * 2.0
+            )
+            filtrationPauseFin = filtrationPivotSecondes + (
+                (pausePivotSecondes / 3.0) * 1.0
+            )
+
+        elif self.distributionDatePivot == 4:
+            # 1/1 <>
+            _LOGGER.debug("distributionDatePivot= 1/1 <>")
+
+            filtrationDebut = filtrationPivotSecondes - filtrationSecondes
+            filtrationFin = filtrationPivotSecondes
+
+            filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 2.0)
+            filtrationPauseFin = filtrationPivotSecondes + (pausePivotSecondes / 2.0)
+
+        elif self.distributionDatePivot == 5:
+            # <> 1/1
+            _LOGGER.debug("distributionDatePivot= <> 1/1")
+
+            filtrationDebut = filtrationPivotSecondes
+            filtrationFin = filtrationPivotSecondes + filtrationSecondes
+
+            filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 2.0)
+            filtrationPauseFin = filtrationPivotSecondes + (pausePivotSecondes / 2.0)
 
         # Memorise les resultats du calcul
         self.hass.states.async_set("input_text.filtrationTime", filtrationTime)
@@ -740,10 +780,45 @@ class PoolController:
                 _LOGGER.info(f"+1 day")
                 filtrationPivotSecondes += timedelta(days=1).total_seconds()
 
-        # Repartition de la filtration
+        # Repartition de la filtration suivant Config
+        if self.distributionDatePivotHivernage == 1:
+            # 1/2 <> 1/2
+            _LOGGER.debug("distributionDatePivotHivernage= 1/2 <> 1/2")
+
+            filtrationDebut = filtrationPivotSecondes - (filtrationSecondes / 2.0)
+            filtrationFin = filtrationPivotSecondes + (filtrationSecondes / 2.0)
+
+        elif self.distributionDatePivotHivernage == 2:
+            # 1/3 <> 2/3
+            _LOGGER.debug("distributionDatePivotHivernage= 1/3 <> 2/3")
+
+            filtrationDebut = filtrationPivotSecondes - (
+                (filtrationSecondes / 3.0) * 1.0
+            )
+            filtrationFin = filtrationPivotSecondes + ((filtrationSecondes / 3.0) * 2.0)
+
+        elif self.distributionDatePivotHivernage == 3:
         # 2/3 <> 1/3
-        filtrationDebut = filtrationPivotSecondes - ((filtrationSecondes / 3.0) * 2.0)
-        filtrationFin = filtrationPivotSecondes + (filtrationSecondes / 3.0)
+            _LOGGER.debug("distributionDatePivotHivernage= 2/3 <> 1/3")
+
+            filtrationDebut = filtrationPivotSecondes - (
+                (filtrationSecondes / 3.0) * 2.0
+            )
+            filtrationFin = filtrationPivotSecondes + ((filtrationSecondes / 3.0) * 1.0)
+
+        elif self.distributionDatePivotHivernage == 4:
+            # 1/1 <>
+            _LOGGER.debug("distributionDatePivotHivernage= 1/1 <>")
+
+            filtrationDebut = filtrationPivotSecondes - filtrationSecondes
+            filtrationFin = filtrationPivotSecondes
+
+        elif self.distributionDatePivotHivernage == 5:
+            # <> 1/1
+            _LOGGER.debug("distributionDatePivotHivernage= <> 1/1")
+
+            filtrationDebut = filtrationPivotSecondes
+            filtrationFin = filtrationPivotSecondes + filtrationSecondes
 
         # Memorise les resultats du calcul
         self.hass.states.async_set("input_text.filtrationTime", filtrationTime)
