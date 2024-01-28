@@ -81,6 +81,9 @@ class PoolController:
 
         self.traitementHivernage = config.get("traitementHivernage", False)
         self.tempsDeFiltrationMinimum = config.get("tempsDeFiltrationMinimum", 3)
+        self.distributionDatePivotHivernage = config.get(
+            "distributionDatePivotHivernage", 4
+        )
         self.choixHeureFiltrationHivernage = config.get(
             "choixHeureFiltrationHivernage", 1
         )
