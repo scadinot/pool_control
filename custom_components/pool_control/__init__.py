@@ -463,6 +463,7 @@ class PoolController:
 
             filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 2.0)
             filtrationPauseFin = filtrationPivotSecondes + (pausePivotSecondes / 2.0)
+
         elif self.distributionDatePivot == 2:
             # 1/3 <> 2/3
             _LOGGER.debug("distributionDatePivot= 1/3 <> 2/3")
@@ -1267,7 +1268,7 @@ class PoolController:
 
         # Active la filtration
         await self.hass.services.async_call(
-            self.filtration.split('.')[0],
+            self.filtration.split(".")[0],
             "turn_on",
             {"entity_id": self.filtration},
         )
@@ -1290,7 +1291,7 @@ class PoolController:
 
         # Arrête la filtration
         await self.hass.services.async_call(
-            self.filtration.split('.')[0],
+            self.filtration.split(".")[0],
             "turn_off",
             {"entity_id": self.filtration},
         )
@@ -1346,7 +1347,7 @@ class PoolController:
 
         # Active le surpresseur
         await self.hass.services.async_call(
-            self.surpresseur.split('.')[0],
+            self.surpresseur.split(".")[0],
             "turn_on",
             {"entity_id": self.surpresseur},
         )
@@ -1369,7 +1370,7 @@ class PoolController:
 
         # Arrête le surpresseur
         await self.hass.services.async_call(
-            self.surpresseur.split('.')[0],
+            self.surpresseur.split(".")[0],
             "turn_off",
             {"entity_id": self.surpresseur},
         )
@@ -1425,7 +1426,7 @@ class PoolController:
 
         # Active le traitement
         await self.hass.services.async_call(
-            self.traitement.split('.')[0],
+            self.traitement.split(".")[0],
             "turn_on",
             {"entity_id": self.traitement},
         )
@@ -1448,7 +1449,7 @@ class PoolController:
 
         # Arrête le traitement
         await self.hass.services.async_call(
-            self.traitement.split('.')[0],
+            self.traitement.split(".")[0],
             "turn_off",
             {"entity_id": self.traitement},
         )
@@ -1504,7 +1505,7 @@ class PoolController:
 
         # Active le traitement
         await self.hass.services.async_call(
-            self.traitement_2.split('.')[0],
+            self.traitement_2.split(".")[0],
             "turn_on",
             {"entity_id": self.traitement_2},
         )
@@ -1527,7 +1528,7 @@ class PoolController:
 
         # Arrête le traitement
         await self.hass.services.async_call(
-            self.traitement_2.split('.')[0],
+            self.traitement_2.split(".")[0],
             "turn_off",
             {"entity_id": self.traitement_2},
         )
