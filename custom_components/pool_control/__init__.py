@@ -73,7 +73,9 @@ class PoolController:
         self.pausePivot = config.get("pausePivot", 0)
         self.distributionDatePivot = config.get("distributionDatePivot", 1)
         self.coefficientAjustement = config.get("coefficientAjustement", 1.0)
-        self.coefficientAjustementHivernage = config.get("coefficientAjustementHivernage", 1.0)
+        self.coefficientAjustementHivernage = config.get(
+            "coefficientAjustementHivernage", 1.0
+        )
         self.sondeLocalTechnique = config.get("sondeLocalTechnique", False)
         self.sondeLocalTechniquePause = config.get("sondeLocalTechniquePause", 0)
 
@@ -1265,7 +1267,7 @@ class PoolController:
 
         # Active la filtration
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.filtration.split('.')[0],
             "turn_on",
             {"entity_id": self.filtration},
         )
@@ -1288,7 +1290,7 @@ class PoolController:
 
         # Arrête la filtration
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.filtration.split('.')[0],
             "turn_off",
             {"entity_id": self.filtration},
         )
@@ -1344,7 +1346,7 @@ class PoolController:
 
         # Active le surpresseur
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.surpresseur.split('.')[0],
             "turn_on",
             {"entity_id": self.surpresseur},
         )
@@ -1367,7 +1369,7 @@ class PoolController:
 
         # Arrête le surpresseur
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.surpresseur.split('.')[0],
             "turn_off",
             {"entity_id": self.surpresseur},
         )
@@ -1423,7 +1425,7 @@ class PoolController:
 
         # Active le traitement
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.traitement.split('.')[0],
             "turn_on",
             {"entity_id": self.traitement},
         )
@@ -1446,7 +1448,7 @@ class PoolController:
 
         # Arrête le traitement
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.traitement.split('.')[0],
             "turn_off",
             {"entity_id": self.traitement},
         )
@@ -1502,7 +1504,7 @@ class PoolController:
 
         # Active le traitement
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.traitement_2.split('.')[0],
             "turn_on",
             {"entity_id": self.traitement_2},
         )
@@ -1525,7 +1527,7 @@ class PoolController:
 
         # Arrête le traitement
         await self.hass.services.async_call(
-            "input_boolean",  # switch / input_boolean
+            self.traitement_2.split('.')[0],
             "turn_off",
             {"entity_id": self.traitement_2},
         )
