@@ -16,3 +16,4 @@ jobs:
         with:
           node-version: '20'
       - uses: home-assistant/actions/hassfest@v1
+
