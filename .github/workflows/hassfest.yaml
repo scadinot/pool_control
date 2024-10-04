@@ -15,5 +15,4 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - uses: home-assistant/actions/hassfest@v1
-
+      - uses: home-assistant/actions/hassfest@master
