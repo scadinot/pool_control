@@ -2,8 +2,5 @@
     "name": "Pool Control",
     "content_in_root": false,
     "render_readme": true,
-    "homeassistant": "2023.0.0",
-    "domain": "pool_control",
-    "codeowners": ["@scadinot"],
-    "requirements": []
+    "homeassistant": "2023.0.0"
 }
