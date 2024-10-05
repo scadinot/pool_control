@@ -3,4 +3,7 @@
     "content_in_root": false,
     "render_readme": false,
     "homeassistant": "2023.0.0",
+    "domain": "pool_control",
+    "codeowners": ["@scadinot"],
+    "requirements": []
 }
