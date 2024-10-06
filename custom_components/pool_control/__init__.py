@@ -11,13 +11,16 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.translation import async_get_translations
 import homeassistant.helpers.config_validation as cv
 
+
 _LOGGER = logging.getLogger(__name__)
 CONFIG_SCHEMA = cv.empty_config_schema(__name__)
+
 
 # DEFAULT_NAME = "Pool Control"
 DOMAIN = "pool_control"
 STORAGE_VERSION = 1
 STORAGE_KEY = "pool_control_data"
+
 
 class PoolController:
     ###############################################################################################################################################################################
