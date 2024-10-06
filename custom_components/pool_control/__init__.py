@@ -6,11 +6,10 @@ from datetime import datetime, timedelta
 from homeassistant import config_entries
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import _LOGGER, HomeAssistant
-from homeassistant.helpers.event import (
-    async_track_state_change,
-    async_track_time_interval,
-)
+from homeassistant.helpers.event import async_track_state_change, async_track_time_interval
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.translation import async_get_translations
+import homeassistant.helpers.config_validation as cv
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,6 +18,7 @@ DOMAIN = "pool_control"
 STORAGE_VERSION = 1
 STORAGE_KEY = "pool_control_data"
 
+CONFIG_SCHEMA = cv.empty_config_schema(__name__)
 
 class PoolController:
     ###############################################################################################################################################################################
