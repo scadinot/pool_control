@@ -1,0 +1,97 @@
+{
+  "title": "Pool Control",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration de Pool Control",
+        "description": "Configurez les entités nécessaires.",
+        "data": {
+          "temperatureWater": "Température de l'eau",
+          "temperatureOutdoor": "Température extérieure",
+          "leverSoleil": "Lever du soleil",
+          "filtration": "Filtration",
+          "traitement": "Traitement principal",
+          "traitement_2": "Traitement secondaire (optionnel)",
+          "surpresseur": "Surpresseur"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Menu de configuration",
+        "menu_options": {
+          "user": "Configuration des entités",
+          "filtration": "Options de filtration",
+          "hivernage": "Options d'hivernage",
+          "avance": "Options avancées",
+          "confirm": "Valider et enregistrer"
+        }
+      },
+      "user": {
+        "title": "Configuration des entités",
+        "data": {
+          "temperatureWater": "Température de l'eau",
+          "temperatureOutdoor": "Température extérieure",
+          "leverSoleil": "Lever du soleil",
+          "filtration": "Filtration",
+          "traitement": "Traitement principal",
+          "traitement_2": "Traitement secondaire (optionnel)",
+          "surpresseur": "Surpresseur"
+        }
+      },
+      "filtration": {
+        "title": "Options de filtration",
+        "data": {
+          "methodeCalcul": "Méthode de calcul",
+          "coefficientAjustement": "Coefficient d'ajustement",
+          "datePivot": "Heure pivot",
+          "pausePivot": "Pause en minutes",
+          "distributionDatePivot": "Distribution autour de l'heure pivot",
+          "tempsDeFiltrationMinimum": "Durée minimale (heures)"
+        }
+      },
+      "hivernage": {
+        "title": "Options d'hivernage",
+        "data": {
+          "traitementHivernage": "Activer le traitement en hivernage",
+          "coefficientAjustementHivernage": "Coefficient hivernage",
+          "distributionDatePivotHivernage": "Distribution pivot hivernage",
+          "choixHeureFiltrationHivernage": "Choix de l'heure hivernage",
+          "datePivotHivernage": "Heure pivot hivernage",
+          "temperatureSecurite": "Température de sécurité (°C)",
+          "temperatureHysteresis": "Hystérésis (°C)",
+          "filtration5mn3h": "Activer 5min toutes les 3h"
+        }
+      },
+      "avance": {
+        "title": "Options avancées",
+        "data": {
+          "disableMarcheForcee": "Désactiver la marche forcée",
+          "sondeLocalTechnique": "Utiliser la sonde du local technique",
+          "sondeLocalTechniquePause": "Pause sonde (minutes)",
+          "surpresseurDuree": "Durée du surpresseur (min)",
+          "lavageDuree": "Durée lavage (min)",
+          "rincageDuree": "Durée rinçage (min)"
+        }
+      },
+      "confirm": {
+        "title": "Valider et enregistrer"
+      }
+    }
+  },
+  "entity": {
+    "button": {
+      "reset": "Réinitialiser",
+      "stop": "Arrêter",
+      "surpresseur": "Surpresseur",
+      "lavage": "Lavage",
+      "actif": "Actif",
+      "auto": "Auto",
+      "inactif": "Inactif",
+      "hivernage": "Hivernage",
+      "saison": "Saison"
+    }
+  }
+}
