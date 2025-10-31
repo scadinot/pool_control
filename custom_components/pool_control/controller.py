@@ -66,7 +66,7 @@ class PoolController(
         self.surpresseurDuree = config.get("surpresseurDuree", 5)
 
         self.disableMarcheForcee = config.get("disableMarcheForcee", False)
-        self.methodeCalcul = config.get("methodeCalcul", 1)
+        self.methodeCalcul = int(config.get("methodeCalcul", 1))
         self.datePivot = config.get("datePivot", "13:00")
         self.pausePivot = config.get("pausePivot", 0)
         self.distributionDatePivot = config.get("distributionDatePivot", 1)

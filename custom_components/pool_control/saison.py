@@ -233,9 +233,7 @@ class SaisonMixin:
                 # Premier segment
                 if timeNow >= filtrationDebut and timeNow <= filtrationPauseDebut:
                     if timeNow >= filtrationDebut + (60 * 5):
-                        self.hass.states.async_set(
-                            "input_number.temperatureDisplay", temperatureWater
-                        )
+                        self.updateTemperatureDisplay(temperatureWater)
 
                     # Active la filtration
                     filtrationTemperature = 1
@@ -246,9 +244,7 @@ class SaisonMixin:
                         if timeNow >= filtrationPauseFin + (
                             60 * self.sondeLocalTechniquePause
                         ):
-                            self.hass.states.async_set(
-                                "input_number.temperatureDisplay", temperatureWater
-                            )
+                            self.updateTemperatureDisplay(temperatureWater)
 
                             # Determine la temperature maxi pour le prochain calcul
                             temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
@@ -283,9 +279,7 @@ class SaisonMixin:
                     if timeNow >= filtrationDebut + (
                         60 * self.sondeLocalTechniquePause
                     ):
-                        self.hass.states.async_set(
-                            "input_number.temperatureDisplay", temperatureWater
-                        )
+                        self.updateTemperatureDisplay(temperatureWater)
 
                         # Determine la temperature maxi pour le prochain calcul
                         temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
@@ -302,7 +296,7 @@ class SaisonMixin:
 
                 else:
                     # Determine la temperature maxi pour le prochain calcul
-                    temperatureMaxi = float(self.get_data("temperatureMaxi"))
+                    temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
 
                     if temperatureWater > temperatureMaxi:
                         self.set_data("temperatureMaxi", temperatureWater)
@@ -330,9 +324,7 @@ class SaisonMixin:
             if timeNow > filtrationFin and calculateStatus == 0:
                 # On est apres la plage de filtration, relancer le calcul pour la plage de demain
                 self.calculateTimeFiltration(temperatureWater, True)
-                self.hass.states.async_set(
-                    "input_number.temperatureDisplay", temperatureWater
-                )
+                self.updateTemperatureDisplay(temperatureWater)
 
         if int(self.get_data("filtrationTemperature", 0)) != filtrationTemperature:
             self.set_data("filtrationTemperature", filtrationTemperature)

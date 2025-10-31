@@ -180,9 +180,7 @@ class HivernageMixin:
                     if timeNow >= filtrationDebut + (
                         60 * self.sondeLocalTechniquePause
                     ):
-                        self.hass.states.async_set(
-                            "input_number.temperatureDisplay", temperatureWater
-                        )
+                        self.updateTemperatureDisplay(temperatureWater)
 
                         # Determine la temperature maxi pour le prochain calcul
                         temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
@@ -199,7 +197,7 @@ class HivernageMixin:
 
                 else:
                     # Determine la temperature maxi pour le prochain calcul
-                    temperatureMaxi = float(self.get_data("temperatureMaxi"))
+                    temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
 
                     if temperatureWater > temperatureMaxi:
                         self.set_data("temperatureMaxi", temperatureWater)
@@ -227,9 +225,7 @@ class HivernageMixin:
             if timeNow > filtrationFin and calculateStatus == 0:
                 # On est apres la plage de filtration, relancer le calcul pour la plage de demain
                 self.calculateTimeFiltrationHivernage(temperatureWater, True)
-                self.hass.states.async_set(
-                    "input_number.temperatureDisplay", temperatureWater
-                )
+                self.updateTemperatureDisplay(temperatureWater)
 
         # Recupere l'etat precedent de filtrationHivernageSecurite
         filtrationHivernageSecurite = int(

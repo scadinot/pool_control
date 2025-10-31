@@ -62,3 +62,14 @@ class SensorMixin:
 
         # Convertir l'objet datetime en chaîne de caractères dans le format "06:00"
         return sunriseTime.strftime("%H:%M")
+
+    def updateTemperatureDisplay(self, temperature: float) -> None:
+        """Met à jour l'affichage de température si l'entité existe."""
+
+        entity_id = "input_number.temperatureDisplay"
+        if self.hass.states.get(entity_id) is not None:
+            self.hass.states.async_set(entity_id, temperature)
+        else:
+            _LOGGER.debug(
+                "Temperature display entity %s not found, skipping update", entity_id
+            )
