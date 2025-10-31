@@ -8,6 +8,6 @@
   "requirements": [],
   "codeowners": ["@scadinot"],
   "icon": "mdi:pool",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "platforms": ["sensor", "button"]
 }
