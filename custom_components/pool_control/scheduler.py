@@ -58,7 +58,7 @@ class SchedulerMixin:
                 if self.surpresseurStatus:
                     self.surpresseurStatus.set_status(display)
             else:
-                await self.executePoolStop()
+                await self.executeButtonStop()
 
         if int(self.get_data("filtrationLavageEtat", 0)) in [2, 4]:
             label = (
@@ -83,7 +83,7 @@ class SchedulerMixin:
 
         async_track_time_interval(self.hass, self.cron, timedelta(minutes=1))
 
-        _LOGGER.info("Second cron job started")
+        _LOGGER.info("First cron job started")
 
     async def cron(self, now=None):
         """Routine toutes les minutes : suivi de la filtration, hivernage, traitements..."""

@@ -11,6 +11,10 @@ class TraitementMixin:
     async def refreshTraitement(self):
         """Rafraichi l'état du traitement."""
 
+        if not self.traitement:
+            _LOGGER.error("Traitement entity ID is not configured.")
+            return
+
         traitementState = self.hass.states.get(self.traitement)
 
         if traitementState is None:
@@ -28,6 +32,10 @@ class TraitementMixin:
     def getStateTraitement(self) -> bool:
         """Obtient l'état du traitement."""
 
+        if not self.traitement:
+            _LOGGER.error("Traitement entity ID is not configured.")
+            return False
+
         traitementState = self.hass.states.get(self.traitement)
 
         if traitementState is None:
@@ -40,6 +48,10 @@ class TraitementMixin:
 
     async def traitementOn(self, repeat=False):
         """Active le traitement."""
+
+        if not self.traitement:
+            _LOGGER.error("Traitement entity ID is not configured.")
+            return
 
         traitementState = self.hass.states.get(self.traitement)
 
@@ -61,6 +73,10 @@ class TraitementMixin:
 
     async def traitementStop(self, repeat=False):
         """Arrête le traitement."""
+
+        if not self.traitement:
+            _LOGGER.error("Traitement entity ID is not configured.")
+            return
 
         traitementState = self.hass.states.get(self.traitement)
 
@@ -85,6 +101,10 @@ class TraitementMixin:
     async def refreshTraitement_2(self):
         """Rafraichi l'état du traitement_2."""
 
+        if not self.traitement_2:
+            _LOGGER.error("Traitement_2 entity ID is not configured.")
+            return
+
         traitementState = self.hass.states.get(self.traitement_2)
 
         if traitementState is None:
@@ -102,6 +122,10 @@ class TraitementMixin:
     def getStateTraitement_2(self) -> bool:
         """Obtient l'état du traitement."""
 
+        if not self.traitement_2:
+            _LOGGER.error("Traitement_2 entity ID is not configured.")
+            return False
+
         traitementState = self.hass.states.get(self.traitement_2)
 
         if traitementState is None:
@@ -114,6 +138,10 @@ class TraitementMixin:
 
     async def traitement_2_On(self, repeat=False):
         """Active le traitement."""
+
+        if not self.traitement_2:
+            _LOGGER.error("Traitement_2 entity ID is not configured.")
+            return
 
         traitementState = self.hass.states.get(self.traitement_2)
 
@@ -135,6 +163,10 @@ class TraitementMixin:
 
     async def traitement_2_Stop(self, repeat=False):
         """Arrête le traitement."""
+
+        if not self.traitement_2:
+            _LOGGER.error("Traitement_2 entity ID is not configured.")
+            return
 
         traitementState = self.hass.states.get(self.traitement_2)
 
