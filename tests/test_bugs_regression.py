@@ -16,6 +16,9 @@ import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock, patch
 import logging
 
+# Skip all tests if Home Assistant is not installed
+pytest.importorskip("homeassistant")
+
 
 @pytest.mark.bugs
 class TestBug1_ExecuteButtonStop:
