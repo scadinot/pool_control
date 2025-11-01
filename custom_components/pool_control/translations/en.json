@@ -83,15 +83,33 @@
   },
   "entity": {
     "button": {
-      "reset": "Reset",
-      "stop": "Stop",
-      "surpresseur": "Booster pump",
-      "lavage": "Backwash",
-      "actif": "Active",
-      "auto": "Auto",
-      "inactif": "Inactive",
-      "hivernage": "Winter mode",
-      "saison": "Season mode"
+      "reset": {
+        "name": "Reset"
+      },
+      "stop": {
+        "name": "Stop"
+      },
+      "surpresseur": {
+        "name": "Booster pump"
+      },
+      "lavage": {
+        "name": "Backwash"
+      },
+      "actif": {
+        "name": "Active"
+      },
+      "auto": {
+        "name": "Auto"
+      },
+      "inactif": {
+        "name": "Inactive"
+      },
+      "hivernage": {
+        "name": "Winter mode"
+      },
+      "saison": {
+        "name": "Season mode"
+      }
     }
   }
 }

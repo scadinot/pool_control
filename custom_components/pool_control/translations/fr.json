@@ -83,15 +83,33 @@
   },
   "entity": {
     "button": {
-      "reset": "Réinitialiser",
-      "stop": "Arrêter",
-      "surpresseur": "Surpresseur",
-      "lavage": "Lavage",
-      "actif": "Actif",
-      "auto": "Auto",
-      "inactif": "Inactif",
-      "hivernage": "Hivernage",
-      "saison": "Saison"
+      "reset": {
+        "name": "Réinitialiser"
+      },
+      "stop": {
+        "name": "Arrêter"
+      },
+      "surpresseur": {
+        "name": "Surpresseur"
+      },
+      "lavage": {
+        "name": "Lavage"
+      },
+      "actif": {
+        "name": "Actif"
+      },
+      "auto": {
+        "name": "Auto"
+      },
+      "inactif": {
+        "name": "Inactif"
+      },
+      "hivernage": {
+        "name": "Hivernage"
+      },
+      "saison": {
+        "name": "Saison"
+      }
     }
   }
 }
