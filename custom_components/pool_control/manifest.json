@@ -8,7 +8,6 @@
   "requirements": [],
   "codeowners": ["@scadinot"],
   "iot_class": "calculated",
-  "icon": "mdi:pool",
   "version": "0.0.12",
   "platforms": ["sensor", "button"]
 }
