@@ -1,0 +1,97 @@
+{
+  "title": "Pool Control",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pool Control Setup",
+        "description": "Configure the required entities.",
+        "data": {
+          "temperatureWater": "Water temperature",
+          "temperatureOutdoor": "Outdoor temperature",
+          "leverSoleil": "Sunrise sensor",
+          "filtration": "Filtration",
+          "traitement": "Main treatment",
+          "traitement_2": "Secondary treatment (optional)",
+          "surpresseur": "Booster pump"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configuration Menu",
+        "menu_options": {
+          "user": "Entity Configuration",
+          "filtration": "Filtration Options",
+          "hivernage": "Winter Mode Options",
+          "avance": "Advanced Options",
+          "confirm": "Save and exit"
+        }
+      },
+      "user": {
+        "title": "Entity Configuration",
+        "data": {
+          "temperatureWater": "Water temperature",
+          "temperatureOutdoor": "Outdoor temperature",
+          "leverSoleil": "Sunrise sensor",
+          "filtration": "Filtration",
+          "traitement": "Main treatment",
+          "traitement_2": "Secondary treatment (optional)",
+          "surpresseur": "Booster pump"
+        }
+      },
+      "filtration": {
+        "title": "Filtration Options",
+        "data": {
+          "methodeCalcul": "Calculation method",
+          "coefficientAjustement": "Adjustment coefficient",
+          "datePivot": "Pivot time",
+          "pausePivot": "Pause duration (minutes)",
+          "distributionDatePivot": "Distribution around pivot",
+          "tempsDeFiltrationMinimum": "Minimum filtration time (hours)"
+        }
+      },
+      "hivernage": {
+        "title": "Winter Mode Options",
+        "data": {
+          "traitementHivernage": "Enable treatment in winter mode",
+          "coefficientAjustementHivernage": "Winter adjustment coefficient",
+          "distributionDatePivotHivernage": "Winter pivot distribution",
+          "choixHeureFiltrationHivernage": "Winter filtration time choice",
+          "datePivotHivernage": "Winter pivot time",
+          "temperatureSecurite": "Safety temperature (°C)",
+          "temperatureHysteresis": "Hysteresis (°C)",
+          "filtration5mn3h": "5 minutes every 3 hours"
+        }
+      },
+      "avance": {
+        "title": "Advanced Options",
+        "data": {
+          "disableMarcheForcee": "Disable forced mode",
+          "sondeLocalTechnique": "Use technical room sensor",
+          "sondeLocalTechniquePause": "Sensor delay (minutes)",
+          "surpresseurDuree": "Booster duration (min)",
+          "lavageDuree": "Backwash duration (min)",
+          "rincageDuree": "Rinse duration (min)"
+        }
+      },
+      "confirm": {
+        "title": "Save and exit"
+      }
+    }
+  },
+  "entity": {
+    "button": {
+      "reset": "Reset",
+      "stop": "Stop",
+      "surpresseur": "Booster pump",
+      "lavage": "Backwash",
+      "actif": "Active",
+      "auto": "Auto",
+      "inactif": "Inactive",
+      "hivernage": "Winter mode",
+      "saison": "Season mode"
+    }
+  }
+}
