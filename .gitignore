@@ -4,3 +4,13 @@
 
 # Visual Studio cache/options directory
 .vs
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+htmlcov/
+.coverage
+*.egg-info/

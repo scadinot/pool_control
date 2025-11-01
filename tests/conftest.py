@@ -3,8 +3,16 @@ import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock
 from datetime import datetime, time
 
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
+# Import Home Assistant seulement si disponible
+try:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.config_entries import ConfigEntry
+    HAS_HOMEASSISTANT = True
+except ImportError:
+    # Pour les tests de base sans HA installé
+    HomeAssistant = object
+    ConfigEntry = dict
+    HAS_HOMEASSISTANT = False
 
 from tests.const import MOCK_CONFIG_FULL, MOCK_CONFIG_MINIMAL
 
@@ -41,15 +49,27 @@ def mock_config_entry():
 
     Crée un ConfigEntry mock pour les tests.
     """
-    return ConfigEntry(
-        version=1,
-        domain="pool_control",
-        title="Pool Control",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
+    if HAS_HOMEASSISTANT:
+        return ConfigEntry(
+            version=1,
+            domain="pool_control",
+            title="Pool Control",
+            data={},
+            source="user",
+            entry_id="test_entry_id",
+            unique_id="test_unique_id",
+        )
+    else:
+        # Mock simple si HA n'est pas installé
+        mock = MagicMock()
+        mock.version = 1
+        mock.domain = "pool_control"
+        mock.title = "Pool Control"
+        mock.data = {}
+        mock.source = "user"
+        mock.entry_id = "test_entry_id"
+        mock.unique_id = "test_unique_id"
+        return mock
 
 
 @pytest.fixture
@@ -132,10 +152,11 @@ def setup_hass_states(mock_hass, mock_state_factory):
     return _setup
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
-    """Enable custom integration loading for all tests.
-
-    Cette fixture est fournie par pytest-homeassistant-custom-component.
-    """
-    yield
+# @pytest.fixture(autouse=True)
+# def auto_enable_custom_integrations(enable_custom_integrations):
+#     """Enable custom integration loading for all tests.
+#
+#     Cette fixture est fournie par pytest-homeassistant-custom-component.
+#     TODO: Décommenter quand pytest-homeassistant-custom-component sera installé
+#     """
+#     yield
