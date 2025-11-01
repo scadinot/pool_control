@@ -1,12 +1,12 @@
 {
   "domain": "pool_control",
   "name": "Pool Control",
-  "config_flow": true,
-  "documentation": "https://github.com/scadinot/pool/blob/master/README.md",
-  "issue_tracker": "https://github.com/scadinot/pool_control/issues",
-  "dependencies": [],
-  "requirements": [],
   "codeowners": ["@scadinot"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/scadinot/pool/blob/master/README.md",
   "iot_class": "calculated",
+  "issue_tracker": "https://github.com/scadinot/pool_control/issues",
+  "requirements": [],
   "version": "0.0.12"
 }
