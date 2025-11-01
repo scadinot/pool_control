@@ -1,5 +1,9 @@
 # Pool Control
 
+[![Tests](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml)
+[![HACS](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml)
+[![Hassfest](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml)
+
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
 ## Fonctionnalitées
