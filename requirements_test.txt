@@ -1,0 +1,16 @@
+# Requirements pour les tests unitaires Pool Control
+
+# Framework de test
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.1.0
+
+# Home Assistant testing
+pytest-homeassistant-custom-component>=0.13.0
+
+# Mocking
+pytest-mock>=3.11.0
+
+# Home Assistant (version compatible)
+homeassistant>=2024.1.0
