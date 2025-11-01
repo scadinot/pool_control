@@ -8,5 +8,5 @@
   "requirements": [],
   "codeowners": ["@scadinot"],
   "iot_class": "calculated",
-  "version": "0.0.12",
+  "version": "0.0.12"
 }
