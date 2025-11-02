@@ -512,7 +512,7 @@ class TestCalculateStatusFiltrationHivernage:
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
 
         # Time is 02:02 (in 5-minute window)
-        with patch('datetime.datetime') as mock_dt:
+        with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
             mock_dt.now.return_value.strftime.return_value = "0202"
             with patch('time.time', return_value=datetime(2025, 12, 15, 2, 2).timestamp()):
                 await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
@@ -535,7 +535,7 @@ class TestCalculateStatusFiltrationHivernage:
         time_slots = ["0202", "0502", "0802", "1102", "1402", "1702", "2002", "2302"]
 
         for time_slot in time_slots:
-            with patch('datetime.datetime') as mock_dt:
+            with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
                 mock_dt.now.return_value.strftime.return_value = time_slot
                 with patch('time.time', return_value=datetime(2025, 12, 15, 2, 2).timestamp()):
                     await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
@@ -556,7 +556,7 @@ class TestCalculateStatusFiltrationHivernage:
         mock_hivernage_controller.data["calculateStatus"] = 0
 
         # Time is 02:10 (outside 5-minute window)
-        with patch('datetime.datetime') as mock_dt:
+        with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
             mock_dt.now.return_value.strftime.return_value = "0210"
             with patch('time.time', return_value=datetime(2025, 12, 15, 12, 0).timestamp()):
                 with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):
