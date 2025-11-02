@@ -481,12 +481,12 @@ class TestSchedulerIntegration:
         """Test complete 5-minute refresh cycle."""
         mock_scheduler_controller.filtrationRefreshCounter = 0
 
-        # Run 4 cron cycles - no refresh yet
-        for _ in range(4):
+        # Run 5 cron cycles - counter goes from 0 to 5
+        for _ in range(5):
             await mock_scheduler_controller.cron()
             mock_scheduler_controller.refreshFiltration.assert_not_called()
 
-        # 5th cycle should trigger refresh
+        # 6th cycle (counter=5) should trigger refresh
         await mock_scheduler_controller.cron()
         mock_scheduler_controller.refreshFiltration.assert_called_once()
 

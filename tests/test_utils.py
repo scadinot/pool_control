@@ -95,8 +95,8 @@ class TestProcessingTime:
 
     def test_formatting_pads_single_digits(self, mock_utils_controller):
         """Test processingTime pads single digits with zeros."""
-        # 3 hours 5 minutes
-        seconds, formatted = mock_utils_controller.processingTime(3.0833)
+        # 3 hours 5 minutes (185 minutes / 60 = 3.08333...)
+        seconds, formatted = mock_utils_controller.processingTime(185/60)
 
         assert formatted == "03:05"
 
@@ -416,7 +416,8 @@ class TestUtilsIntegration:
         )
 
         # Results should be different with different coefficients
-        assert result_curve_2 == result_curve_1 * 1.5
+        # Use tolerance for floating point comparison
+        assert abs(result_curve_2 - result_curve_1 * 1.5) < 0.0001
         assert result_half_2 == result_half_1 * 1.5
 
     def test_processing_time_handles_all_method_outputs(self, mock_utils_controller):
