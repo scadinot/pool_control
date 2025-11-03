@@ -29,14 +29,14 @@
 |----------|--------|
 | **Version actuelle** | 0.0.14 |
 | **Lignes de code** | 2362 |
-| **Lignes de tests** | 6107 ✅ (+3578) 🔥 |
+| **Lignes de tests** | 5432 ✅ (+2903) 🔥 |
 | **Fichiers Python** | 19 |
-| **Fichiers de tests** | 14 (+8) 🔥 |
+| **Fichiers de tests** | 12 (+6) 🔥 |
 | **Mixins** | 11 |
 | **Fonctions async** | 54 |
 | **Type hints** | 15 (~28% des fonctions) |
-| **Tests unitaires** | 382 tests ✅ (+219) 🔥 |
-| **Couverture tests** | ~68% (+68%) ✅ 🔥 |
+| **Tests unitaires** | 351 tests ✅ (+188) 🔥 |
+| **Couverture tests** | ~65% (+65%) ✅ 🔥 |
 | **Pull Requests mergées** | 13 (+7) |
 | **Tags releases** | 3 (v0.0.10, v0.0.11, v0.0.14) |
 | **Workflows CI/CD** | 3 (Tests, HACS, Hassfest) ✅ |
@@ -168,7 +168,7 @@ tests/
 ├── conftest.py                    (162 lignes) - Fixtures communes
 ├── const.py                       (63 lignes) - Constantes de test
 ├── README.md                      (163 lignes) - Documentation
-├── test_environment.py            (109 lignes, 12 tests) - Tests de validation ✅
+├── test_environment.py            (109 lignes, 13 tests) - Tests de validation ✅
 ├── test_bugs_regression.py        (368 lignes, 17 tests) - Tests non-régression ✅
 ├── test_activation.py             (631 lignes, 47 tests) - Tests activation.py ✅
 ├── test_saison.py                 (687 lignes, 40 tests) - Tests saison.py ✅
@@ -179,11 +179,9 @@ tests/
 ├── test_surpresseur.py            (463 lignes, 31 tests) - Tests surpresseur.py ✅
 ├── test_scheduler.py              (537 lignes, 29 tests) - Tests scheduler.py ✅
 ├── test_utils.py                  (468 lignes, 37 tests) - Tests utils.py ✅
-├── test_entities.py               (450 lignes, 19 tests) - Tests entities.py ✅ NEW
-├── test_sensors.py                (225 lignes, 13 tests) - Tests sensors.py ✅ NEW
 └── test_diagnostic.py             (40 lignes, 4 tests) - Tests diagnostic ✅
 
-Total: 6107 lignes, 382 tests, 100% réussite (382/382) ✅ 🔥
+Total: 5432 lignes, 351 tests, 100% réussite (351/351) ✅ 🔥
 ```
 
 ### Tests de Non-Régression
