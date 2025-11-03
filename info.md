@@ -2,79 +2,65 @@
 
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
-## Fonctionnalitées
+## ✨ Nouveautés v0.0.14
 
-- Hivernage actif.
-- Filtre à sable.
-- Surpresseur pour robot nettoyeur.
+- **Installation moderne via Config Flow** - Configuration 100% via l'interface utilisateur
+- **Création automatique des entités** - 6 capteurs et 9 boutons créés automatiquement
+- **100% de tests réussis** - Les 350 tests passent avec succès ✅
+
+## Fonctionnalités
+
+- Calcul automatique du temps de filtration selon la température
+- Gestion des modes : Actif, Auto, Inactif
+- Modes saisonniers : Saison et Hivernage actif
+- Support filtre à sable avec lavage automatique
+- Surpresseur pour robot nettoyeur
+- Interface de configuration avancée avec 4 menus d'options
 
 ## Installation
 
-1. Cliquez sur `TÉLÉCHARGER`.
-2. Modifiez votre `configuration.yaml` comme expliqué ci-dessous.
-3. Redémarrez Home Assistant.
+1. Cliquez sur **TÉLÉCHARGER** dans HACS
+2. Redémarrez Home Assistant
+3. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration**
+4. Recherchez **Pool Control**
+5. Sélectionnez vos entités existantes (température eau, température extérieure, lever du soleil, relais filtration, etc.)
 
-## Configuration
+**C'est tout !** L'intégration crée automatiquement tous les capteurs d'état et boutons de contrôle.
 
-### Ajoutez au fichier configuration.yaml les éléments suivants :
+## Entités créées automatiquement
 
-```yaml
+### 6 Capteurs
+- `sensor.status_asservissement` - État du mode d'asservissement
+- `sensor.temps_de_filtration` - Temps de filtration calculé
+- `sensor.planning_de_filtration` - Planning des périodes de filtration
+- `sensor.status_filtration` - État de la pompe de filtration
+- `sensor.status_surpresseur` - État du surpresseur
+- `sensor.status_lavage_filtre` - État du lavage du filtre
 
-pool_control:
+### 9 Boutons
+- `button.pool_control_reset` - Réinitialisation
+- `button.pool_control_actif` - Mode Actif
+- `button.pool_control_auto` - Mode Auto
+- `button.pool_control_inactif` - Mode Inactif
+- `button.pool_control_saison` - Mode Saison
+- `button.pool_control_hivernage` - Mode Hivernage
+- `button.pool_control_surpresseur` - Activation surpresseur
+- `button.pool_control_lavage` - Lavage filtre à sable
+- `button.pool_control_stop` - Arrêt d'urgence
 
-  # Capteurs
+## Configuration des options
 
-  temperatureWater: input_number.temperaturewater       # Capteur de température de l'eau
-  temperatureOutdoor: input_number.temperatureoudoor    # Capteur de température de l'air
-  leverSoleil: sensor.sun_next_rising                   # Sensor de l'heure de lever du soleil
+Après installation, configurez les options avancées via **Appareils et services** → **Pool Control** → **Configurer** :
 
-  # Boutons
+1. **Calcul de filtration** - Méthode de calcul, heure pivot, coefficient d'ajustement
+2. **Sonde local technique** - Activation et pause
+3. **Hivernage** - Traitement, heure de filtration, température de sécurité
+4. **Équipements** - Durées pour surpresseur, lavage et rinçage
 
-  buttonReset: input_button.reset
+## Migration depuis l'ancienne version
 
-  buttonActif: input_button.asservissement_actif
-  buttonAuto: input_button.asservissement_auto
-  buttonInactif: input_button.asservissement_inactif
+Si vous utilisez une version antérieure avec `configuration.yaml`, consultez le [README.md](https://github.com/scadinot/pool_control/blob/main/README.md) pour les instructions de migration.
 
-  buttonSaison: input_button.mode_saison
-  buttonHivernage: input_button.mode_hivernage
-  buttonSurpresseur: input_button.surpresseur
-  buttonLavage: input_button.lavage_filtre_sable
-  buttonStop: input_button.stop
-
-  # Actionneurs
-
-  filtration: input_boolean.filtration                  # Relais de filtration
-  traitement: input_boolean.traitement                  # Relais de traitement
-  surpresseur: input_boolean.surpresseur                # Relais de surpresseur
-
-  # Options
-
-  disableMarcheForcee: True
-  methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
-  datePivot: "13:00"
-  pausePivot: 0
-  distributionDatePivot: 2                              # 1:(1/2 <> 1/2) | 2:(1/3 <> 2/3)
-  coefficientAjustement: 1.0                            # 0.3 <> 1.7
-  sondeLocalTechnique: True                             # True | False
-  sondeLocalTechniquePause: 5
-  traitementHivernage: True                             # True | False
-  tempsDeFiltrationMinimum: 3
-  choixHeureFiltrationHivernage: 1                      # 1:(lever_soleil) | 2:(datePivotHivernage)
-  datePivotHivernage: "06:00"
-  temperatureSecurite: 0
-  temperatureHysteresis: 0.5
-  filtration5mn3h: True
-  
-  surpresseurDuree: 5
-
-  lavageDuree: 2
-  rincageDuree: 2
-  
-```
-
-Tous les paramètres sont obligatoires sauf ceux après le commentaire # Options
-
-Vous devrez définir des boutons (input_button) pour l'utiliser. 
+## Documentation complète
 
 Veuillez lire le fichier [README.md](https://github.com/scadinot/pool_control/blob/main/README.md) pour plus de détails.
