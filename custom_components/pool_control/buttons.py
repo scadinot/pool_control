@@ -3,6 +3,7 @@
 from datetime import datetime
 import logging
 import time
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 class ButtonMixin:
     """Mixin class providing button handler methods for pool control."""
 
-    async def executeButtonStop(self):
+    async def executeButtonStop(self) -> None:
         """Arrête le surpresseur / lavage filtre."""
 
         await self.stopSecondCron()
@@ -28,7 +29,7 @@ class ButtonMixin:
                 self.filtreSableLavageStatus.set_status("Arrêté")
             await self.activatingDevices()
 
-    async def executeButtonReset(self):
+    async def executeButtonReset(self) -> None:
         """Reinitialise le calcul."""
 
         if self.getHivernage() is True:
@@ -87,35 +88,35 @@ class ButtonMixin:
 
         await self.activatingDevices()
 
-    async def executeButtonActif(self):
+    async def executeButtonActif(self) -> None:
         """Lance le surpresseur / lavage filtre."""
 
         self.set_data("marcheForcee", 1)
         self.set_data("arretTotal", 0)
         await self.activatingDevices()
 
-    async def executeButtonAuto(self):
+    async def executeButtonAuto(self) -> None:
         """Lance le surpresseur / lavage filtre."""
 
         self.set_data("marcheForcee", 0)
         self.set_data("arretTotal", 0)
         await self.activatingDevices()
 
-    async def executeButtonInactif(self):
+    async def executeButtonInactif(self) -> None:
         """Arrête le surpresseur / lavage filtre."""
 
         self.set_data("marcheForcee", 0)
         self.set_data("arretTotal", 1)
         await self.activatingDevices()
 
-    async def executeButtonSaison(self):
+    async def executeButtonSaison(self) -> None:
         """Lance le surpresseur / lavage filtre."""
 
         self.set_data("hivernageWidgetStatus", 0)
         await self.activatingDevices()
         await self.executeButtonReset()
 
-    async def executeButtonHivernage(self):
+    async def executeButtonHivernage(self) -> None:
         """Arrête le surpresseur / lavage filtre."""
 
         self.set_data("hivernageWidgetStatus", 1)
