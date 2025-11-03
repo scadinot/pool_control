@@ -29,14 +29,14 @@
 |----------|--------|
 | **Version actuelle** | 0.0.14 |
 | **Lignes de code** | 2362 |
-| **Lignes de tests** | 6305 ✅ (+3776) 🔥 |
+| **Lignes de tests** | 6107 ✅ (+3578) 🔥 |
 | **Fichiers Python** | 19 |
 | **Fichiers de tests** | 14 (+8) 🔥 |
 | **Mixins** | 11 |
 | **Fonctions async** | 54 |
 | **Type hints** | 15 (~28% des fonctions) |
-| **Tests unitaires** | 404 tests ✅ (+241) 🔥 |
-| **Couverture tests** | ~70% (+70%) ✅ 🔥 |
+| **Tests unitaires** | 382 tests ✅ (+219) 🔥 |
+| **Couverture tests** | ~68% (+68%) ✅ 🔥 |
 | **Pull Requests mergées** | 13 (+7) |
 | **Tags releases** | 3 (v0.0.10, v0.0.11, v0.0.14) |
 | **Workflows CI/CD** | 3 (Tests, HACS, Hassfest) ✅ |
@@ -179,11 +179,11 @@ tests/
 ├── test_surpresseur.py            (463 lignes, 31 tests) - Tests surpresseur.py ✅
 ├── test_scheduler.py              (537 lignes, 29 tests) - Tests scheduler.py ✅
 ├── test_utils.py                  (468 lignes, 37 tests) - Tests utils.py ✅
-├── test_entities.py               (397 lignes, 19 tests) - Tests entities.py ✅ NEW
-├── test_sensors.py                (476 lignes, 35 tests) - Tests sensors.py ✅ NEW
+├── test_entities.py               (450 lignes, 19 tests) - Tests entities.py ✅ NEW
+├── test_sensors.py                (225 lignes, 13 tests) - Tests sensors.py ✅ NEW
 └── test_diagnostic.py             (40 lignes, 4 tests) - Tests diagnostic ✅
 
-Total: 6305 lignes, 404 tests, 100% réussite (404/404) ✅ 🔥
+Total: 6107 lignes, 382 tests, 100% réussite (382/382) ✅ 🔥
 ```
 
 ### Tests de Non-Régression
