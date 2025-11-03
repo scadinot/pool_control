@@ -1,216 +1,216 @@
-# Changelog
+# Historique des versions
 
-All notable changes to Pool Control will be documented in this file.
+Tous les changements notables de Pool Control sont documentés dans ce fichier.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
+et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [0.0.14] - 2025-11-03
 
-### 🎉 Highlights
-- **Modern Config Flow installation** - No more manual YAML configuration!
-- **100% test success rate** - All 350 tests passing ✅
-- **Complete documentation update** - Reflects new installation method
-- **Production-ready release** - Quality score 9.8/10 ⭐⭐⭐⭐⭐
+### 🎉 Points forts
+- **Installation moderne via Config Flow** - Fini la configuration YAML manuelle !
+- **100% de tests réussis** - Les 350 tests passent ✅
+- **Documentation complète mise à jour** - Reflète la nouvelle méthode d'installation
+- **Version prête pour la production** - Score de qualité 9.8/10 ⭐⭐⭐⭐⭐
 
-### Added
-- Automatic entity creation (6 sensors + 9 buttons)
-- Complete CHANGELOG.md file for version history
-- Migration guide in README.md for existing users
+### Ajouts
+- Création automatique des entités (6 capteurs + 9 boutons)
+- Fichier CHANGELOG.md complet pour l'historique des versions
+- Guide de migration dans README.md pour les utilisateurs existants
 
-### Changed
-- **BREAKING**: Installation now via UI Config Flow instead of configuration.yaml
-- README.md completely rewritten for modern installation method
-- ANALYSIS.md updated to v6.2 reflecting v0.0.14 status
-- Dashboard example updated with new entity IDs
+### Modifications
+- **RUPTURE** : Installation maintenant via Config Flow UI au lieu de configuration.yaml
+- README.md complètement réécrit pour la méthode d'installation moderne
+- ANALYSIS.md mis à jour en v6.2 reflétant le statut v0.0.14
+- Exemple de tableau de bord mis à jour avec les nouveaux IDs d'entités
 
-### Removed
-- Manual input_button/input_text/input_number requirement removed
-- configuration.yaml setup instructions removed (replaced by UI flow)
+### Suppressions
+- Suppression de l'obligation de créer manuellement input_button/input_text/input_number
+- Suppression des instructions de configuration via configuration.yaml (remplacées par l'interface UI)
 
-### Fixed
-- All 3 previously failing tests now pass (350/350 = 100%)
-- Corrected test metrics in documentation
-- Updated release count to 3 tags
+### Corrections
+- Les 3 tests précédemment échouants passent maintenant (350/350 = 100%)
+- Correction des métriques de test dans la documentation
+- Mise à jour du nombre de releases à 3 tags
 
 ### Documentation
-- New section: "Entités créées automatiquement"
-- New section: "Configuration des options" with UI menu details
-- New section: "Migration depuis l'ancienne version"
-- Updated dashboard YAML example with correct entity IDs
+- Nouvelle section : "Entités créées automatiquement"
+- Nouvelle section : "Configuration des options" avec détails des menus UI
+- Nouvelle section : "Migration depuis l'ancienne version"
+- Exemple de tableau de bord YAML mis à jour avec les bons IDs d'entités
 
-### Statistics
-- **Tests**: 350 tests (100% passing) ✅
-- **Test coverage**: ~65%
-- **Test code**: 5432 lines
-- **Source code**: 2362 lines
-- **Test/Code ratio**: 2.3:1
-- **Quality score**: 9.8/10 ⭐⭐⭐⭐⭐
+### Statistiques
+- **Tests** : 350 tests (100% réussis) ✅
+- **Couverture de tests** : ~65%
+- **Code de test** : 5432 lignes
+- **Code source** : 2362 lignes
+- **Ratio Test/Code** : 2.3:1
+- **Score de qualité** : 9.8/10 ⭐⭐⭐⭐⭐
 
 ---
 
 ## [0.0.13] - 2025-11-02
 
-### 🚀 Major Release - Comprehensive Testing
+### 🚀 Version majeure - Tests complets
 
-### Added
-- **+320 new tests** across 6 new test files:
-  - `test_filtration.py` - 26 tests (398 lines)
-  - `test_lavage.py` - 22 tests (460 lines)
-  - `test_traitement.py` - 43 tests (577 lines)
-  - `test_surpresseur.py` - 31 tests (463 lines)
-  - `test_scheduler.py` - 29 tests (537 lines)
-  - `test_utils.py` - 37 tests (468 lines)
-- Comprehensive test coverage for all critical modules
-- Test fixtures for all pool control components
+### Ajouts
+- **+320 nouveaux tests** répartis sur 6 nouveaux fichiers de tests :
+  - `test_filtration.py` - 26 tests (398 lignes)
+  - `test_lavage.py` - 22 tests (460 lignes)
+  - `test_traitement.py` - 43 tests (577 lignes)
+  - `test_surpresseur.py` - 31 tests (463 lignes)
+  - `test_scheduler.py` - 29 tests (537 lignes)
+  - `test_utils.py` - 37 tests (468 lignes)
+- Couverture de tests complète pour tous les modules critiques
+- Fixtures de test pour tous les composants de contrôle de piscine
 
-### Changed
-- Test coverage increased from 15% to 65% (+50%)
-- Quality score improved from 8.5/10 to 9.8/10
-- All 350 tests now passing (100% success rate)
+### Modifications
+- Couverture de tests augmentée de 15% à 65% (+50%)
+- Score de qualité amélioré de 8.5/10 à 9.8/10
+- Les 350 tests passent maintenant (100% de réussite)
 
-### Fixed
-- Fixed `test_cron_full_5minute_cycle` - Counter logic corrected
-- Fixed `test_formatting_pads_single_digits` - Rounding precision improved
-- Fixed `test_coefficient_affects_all_methods` - Float comparison tolerance added
+### Corrections
+- Correction de `test_cron_full_5minute_cycle` - Logique du compteur corrigée
+- Correction de `test_formatting_pads_single_digits` - Précision de l'arrondi améliorée
+- Correction de `test_coefficient_affects_all_methods` - Tolérance de comparaison flottante ajoutée
 
-### Statistics
-- **Tests**: 30 → 350 tests (+320)
-- **Test files**: 2 → 12 (+10)
-- **Test lines**: 226 → 5432 (+5206)
-- **Coverage**: 15% → 65% (+50%)
-- **Quality**: 8.5/10 → 9.8/10
+### Statistiques
+- **Tests** : 30 → 350 tests (+320)
+- **Fichiers de test** : 2 → 12 (+10)
+- **Lignes de test** : 226 → 5432 (+5206)
+- **Couverture** : 15% → 65% (+50%)
+- **Qualité** : 8.5/10 → 9.8/10
 
 ---
 
 ## [0.0.12] - 2025-11-01
 
-### Added
-- Initial test suite with 30 tests
-- GitHub Actions CI/CD workflows:
-  - `tests.yaml` - Automated test execution
-  - `Validate HACS.yaml` - HACS validation
-  - `Validate Hassfest.yaml` - Home Assistant validation
-- Test infrastructure:
-  - `conftest.py` with 9 reusable fixtures
-  - `const.py` for test constants
-  - `README.md` in tests directory
-- Non-regression tests for 6 critical bugs (17 tests)
-- Environment validation tests (12 tests)
+### Ajouts
+- Suite de tests initiale avec 30 tests
+- Workflows CI/CD GitHub Actions :
+  - `tests.yaml` - Exécution automatisée des tests
+  - `Validate HACS.yaml` - Validation HACS
+  - `Validate Hassfest.yaml` - Validation Home Assistant
+- Infrastructure de test :
+  - `conftest.py` avec 9 fixtures réutilisables
+  - `const.py` pour les constantes de test
+  - `README.md` dans le répertoire tests
+- Tests de non-régression pour 6 bugs critiques (17 tests)
+- Tests de validation d'environnement (12 tests)
 
-### Changed
-- Test coverage increased from 0% to 15%
-- Quality score improved from 8/10 to 8.5/10
+### Modifications
+- Couverture de tests augmentée de 0% à 15%
+- Score de qualité amélioré de 8/10 à 8.5/10
 
 ### Documentation
-- Added test documentation in `tests/README.md`
-- Updated ANALYSIS.md with test metrics
+- Ajout de documentation des tests dans `tests/README.md`
+- Mise à jour de ANALYSIS.md avec les métriques de test
 
-### Statistics
-- **Tests**: 30 tests
-- **Test coverage**: ~15%
-- **CI/CD**: 3 workflows
-- **Quality**: 8.5/10
+### Statistiques
+- **Tests** : 30 tests
+- **Couverture de tests** : ~15%
+- **CI/CD** : 3 workflows
+- **Qualité** : 8.5/10
 
 ---
 
 ## [0.0.11] - 2025-10-31
 
-### Added
-- Comprehensive `ANALYSIS.md` documentation (v3.0)
-- Post-refactoring metrics and quality assessment
+### Ajouts
+- Documentation complète `ANALYSIS.md` (v3.0)
+- Évaluation des métriques et de la qualité post-refactoring
 
-### Changed
-- Updated documentation to reflect refactored architecture
-- Version comparison table added
+### Modifications
+- Documentation mise à jour pour refléter l'architecture refactorisée
+- Tableau de comparaison des versions ajouté
 
 ### Documentation
-- Complete project analysis report
-- Refactoring benefits documented
-- Quality metrics tracked
+- Rapport d'analyse complet du projet
+- Bénéfices du refactoring documentés
+- Métriques de qualité suivies
 
 ---
 
 ## [0.0.10] - 2025-10-30
 
-### 🔧 Major Refactoring Release
+### 🔧 Version majeure de refactoring
 
-### Added
-- Modular architecture with 11 mixins:
-  - `ActivationMixin` - Device activation control
-  - `ButtonMixin` - UI button handlers
-  - `FiltrationMixin` - Filtration control
-  - `HivernageMixin` - Winter mode
-  - `LavageMixin` - Sand filter cleaning assistant
-  - `SaisonMixin` - Season mode
-  - `SchedulerMixin` - Cron scheduling
-  - `SensorsMixin` - Sensor reading
-  - `SurpresseurMixin` - Booster pump control
-  - `TraitementMixin` - Water treatment management
-  - `UtilsMixin` - Utility functions
-- Config Flow for modern UI-based configuration
-- Options Flow with navigation menu
-- i18n translations (English & French)
-- Type hints added (15 functions)
+### Ajouts
+- Architecture modulaire avec 11 mixins :
+  - `ActivationMixin` - Contrôle d'activation des dispositifs
+  - `ButtonMixin` - Gestionnaires de boutons UI
+  - `FiltrationMixin` - Contrôle de filtration
+  - `HivernageMixin` - Mode hivernage
+  - `LavageMixin` - Assistant de lavage du filtre à sable
+  - `SaisonMixin` - Mode saison
+  - `SchedulerMixin` - Ordonnancement cron
+  - `SensorsMixin` - Lecture des capteurs
+  - `SurpresseurMixin` - Contrôle du surpresseur
+  - `TraitementMixin` - Gestion du traitement de l'eau
+  - `UtilsMixin` - Fonctions utilitaires
+- Config Flow pour configuration moderne basée sur l'UI
+- Options Flow avec menu de navigation
+- Traductions i18n (Anglais & Français)
+- Type hints ajoutés (15 fonctions)
 
-### Changed
-- **BREAKING**: `activation.py` completely refactored
-  - 1 monolithic function → 13 modular functions
-  - Complexity reduced from >10 to <5
-  - Removed `# noqa: C901` linter suppression
-- Architecture changed from monolithic to modular
-- Code lines: 2278 → 2362 (+84)
+### Modifications
+- **RUPTURE** : `activation.py` complètement refactorisé
+  - 1 fonction monolithique → 13 fonctions modulaires
+  - Complexité réduite de >10 à <5
+  - Suppression de `# noqa: C901` (suppression linter)
+- Architecture changée de monolithique à modulaire
+- Lignes de code : 2278 → 2362 (+84)
 
-### Fixed
-- **Bug #1**: Missing `executePoolStop()` method → Replaced with `executeButtonStop()`
-- **Bug #2**: KeyError on `temperatureMaxi` → Added default value `0` (8 occurrences)
-- **Bug #3**: Incorrect log message → Fixed "Second cron" to "First cron"
-- **Bug #4**: Inconsistent `methodeCalcul` type → Added forced `int()` conversion
-- **Bug #5**: Crash if `traitement` not configured → Added None checks (8 locations)
-- **Bug #6**: Optional `temperatureDisplay` entity → Created helper method `updateTemperatureDisplay()`
+### Corrections
+- **Bug #1** : Méthode `executePoolStop()` manquante → Remplacée par `executeButtonStop()`
+- **Bug #2** : KeyError sur `temperatureMaxi` → Ajout valeur par défaut `0` (8 occurrences)
+- **Bug #3** : Message de log incorrect → Correction "Second cron" en "First cron"
+- **Bug #4** : Type `methodeCalcul` incohérent → Ajout conversion forcée `int()`
+- **Bug #5** : Crash si `traitement` non configuré → Ajout vérifications None (8 emplacements)
+- **Bug #6** : Entité `temperatureDisplay` optionnelle → Création méthode helper `updateTemperatureDisplay()`
 
-### Statistics
-- **Bugs fixed**: 6 critical bugs → 0
-- **Complexity**: >10 → <5
-- **Functions**: 1 monolithic → 13 modular
-- **Quality**: 4/10 → 8/10
-
----
-
-## [0.0.9] - Baseline
-
-### Initial Release
-- Monolithic architecture (~1800 lines in `__init__.py`)
-- Manual YAML configuration
-- 6 critical bugs identified
-- Basic pool filtration control
-- Winter mode support
-- Sand filter cleaning
-- Booster pump control
-
-### Known Issues
-- High code complexity (>10)
-- No test coverage
-- No type hints
-- 6 critical bugs present
+### Statistiques
+- **Bugs corrigés** : 6 bugs critiques → 0
+- **Complexité** : >10 → <5
+- **Fonctions** : 1 monolithique → 13 modulaires
+- **Qualité** : 4/10 → 8/10
 
 ---
 
-## Release Statistics Summary
+## [0.0.9] - Version de référence
 
-| Version | Date | Tests | Coverage | Quality | Bugs | Status |
-|---------|------|-------|----------|---------|------|--------|
+### Version initiale
+- Architecture monolithique (~1800 lignes dans `__init__.py`)
+- Configuration YAML manuelle
+- 6 bugs critiques identifiés
+- Contrôle basique de filtration de piscine
+- Support du mode hivernage
+- Lavage du filtre à sable
+- Contrôle du surpresseur
+
+### Problèmes connus
+- Complexité élevée du code (>10)
+- Aucune couverture de tests
+- Pas de type hints
+- 6 bugs critiques présents
+
+---
+
+## Résumé des statistiques des versions
+
+| Version | Date | Tests | Couverture | Qualité | Bugs | Statut |
+|---------|------|-------|------------|---------|------|--------|
 | 0.0.14 | 2025-11-03 | 350 | 65% | 9.8/10 | 0 | ✅ Production |
 | 0.0.13 | 2025-11-02 | 350 | 65% | 9.8/10 | 0 | ✅ Stable |
 | 0.0.12 | 2025-11-01 | 30 | 15% | 8.5/10 | 0 | ✅ Stable |
-| 0.0.11 | 2025-10-31 | 0 | 0% | 8.0/10 | 0 | ✅ Documented |
-| 0.0.10 | 2025-10-30 | 0 | 0% | 8.0/10 | 0 | ✅ Refactored |
-| 0.0.9 | - | 0 | 0% | 4.0/10 | 6 | ⚠️ Baseline |
+| 0.0.11 | 2025-10-31 | 0 | 0% | 8.0/10 | 0 | ✅ Documenté |
+| 0.0.10 | 2025-10-30 | 0 | 0% | 8.0/10 | 0 | ✅ Refactorisé |
+| 0.0.9 | - | 0 | 0% | 4.0/10 | 6 | ⚠️ Référence |
 
 ---
 
-## Links
+## Liens
 
-- **Repository**: https://github.com/scadinot/pool_control
-- **Issues**: https://github.com/scadinot/pool_control/issues
-- **HACS**: Available as custom repository
+- **Dépôt** : https://github.com/scadinot/pool_control
+- **Issues** : https://github.com/scadinot/pool_control/issues
+- **HACS** : Disponible en tant que dépôt personnalisé
