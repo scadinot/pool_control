@@ -6,21 +6,23 @@
 
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
-## Fonctionnalitées
+## Fonctionnalités
 
 - Hivernage actif.
 - Filtre à sable.
 - Surpresseur pour robot nettoyeur.
+- Configuration via l'interface utilisateur (Config Flow).
+- Création automatique des capteurs et boutons.
 
 ## Installation
 
-### Installation HACS
+### Installation HACS (Recommandé)
 
-1. Installez [HACS] (https://hacs.xyz/). Vous recevrez ainsi les mises à jour automatiquement.
+1. Installez [HACS](https://hacs.xyz/). Vous recevrez ainsi les mises à jour automatiquement.
 2. Ajoutez ce dépôt Github comme dépôt personnalisé dans les paramètres de HACS.
-3. recherchez et installez "Pool Control" dans HACS et cliquez sur `TÉLÉCHARGER`.
-4. Modifiez votre `configuration.yaml` comme expliqué ci-dessous.
-5. Redémarrez Home Assistant.
+3. Recherchez et installez "Pool Control" dans HACS et cliquez sur `TÉLÉCHARGER`.
+4. Redémarrez Home Assistant.
+5. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez "Pool Control".
 
 ### Installation manuelle
 
@@ -29,404 +31,311 @@ _Composant Home Assistant permettant de gérer la filtration d'une piscine en fo
 3. Dans le répertoire (dossier) `custom_components`, créez un nouveau dossier appelé `pool_control`.
 4. Téléchargez _tous_ les fichiers du répertoire (dossier) `custom_components/pool_control/` de ce dépôt Github.
 5. Placez les fichiers que vous avez téléchargés dans le nouveau répertoire (dossier) que vous avez créé.
-6. Modifiez votre `configuration.yaml` comme expliqué ci-dessous
-7. Redémarrez Home Assistant
+6. Redémarrez Home Assistant.
+7. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez "Pool Control".
 
 ## Configuration
 
-### Ajoutez au fichier configuration.yaml les éléments suivants :
+### Configuration initiale via l'interface utilisateur
 
-```yaml
+Lors de l'ajout de l'intégration via **Paramètres** → **Appareils et services** → **Ajouter une intégration**, vous devrez fournir les informations suivantes :
 
-pool_control:
+#### Capteurs requis
 
-  # Capteurs
+- **Température de l'eau** : Sélectionnez le capteur de température de votre piscine (sensor ou input_number)
+- **Température extérieure** : Sélectionnez le capteur de température de l'air (sensor ou input_number)
+  - Si vous ne disposez pas d'une sonde de température extérieure, vous pouvez utiliser une donnée météo
+- **Lever du soleil** : Sélectionnez le capteur indiquant l'heure de lever du soleil (généralement `sensor.sun_next_rising`)
 
-  temperatureWater: input_number.temperaturewater       # Capteur de température de l'eau
-  temperatureOutdoor: input_number.temperatureoudoor    # Capteur de température de l'air
-  leverSoleil: sensor.sun_next_rising                   # Sensor de l'heure de lever du soleil
+#### Actionneurs requis
 
-  # Boutons
+- **Filtration** : Sélectionnez le relais contrôlant la pompe de filtration (switch ou input_boolean)
+- **Traitement** : Sélectionnez le relais contrôlant le système de traitement (switch ou input_boolean)
+- **Traitement 2** (optionnel) : Sélectionnez un second relais de traitement si nécessaire (switch ou input_boolean)
+- **Surpresseur** : Sélectionnez le relais contrôlant le surpresseur (switch ou input_boolean)
 
-  buttonReset: input_button.reset
+> **Note** : L'intégration crée automatiquement tous les capteurs d'état et boutons de contrôle. Vous n'avez **plus besoin** de créer manuellement des input_button, input_text ou input_number dans votre configuration.yaml !
 
-  buttonActif: input_button.asservissement_actif
-  buttonAuto: input_button.asservissement_auto
-  buttonInactif: input_button.asservissement_inactif
+### Entités créées automatiquement
 
-  buttonSaison: input_button.mode_saison
-  buttonHivernage: input_button.mode_hivernage
-  buttonSurpresseur: input_button.surpresseur
-  buttonLavage: input_button.lavage_filtre_sable
-  buttonStop: input_button.stop
+L'intégration Pool Control crée automatiquement les entités suivantes :
 
-  # Actionneurs
+#### Capteurs (Sensors)
 
-  filtration: input_boolean.filtration                  # Relais de filtration
-  traitement: input_boolean.traitement                  # Relais de traitement
-  surpresseur: input_boolean.surpresseur                # Relais de surpresseur
+- **Status Asservissement** : Affiche l'état actuel du mode de contrôle (Actif/Auto/Inactif + Saison/Hivernage)
+- **Temps de filtration** : Affiche le temps de filtration calculé
+- **Planning de Filtration** : Affiche les horaires de filtration et la température de calcul
+- **Status Filtration** : Affiche l'état de la filtration
+- **Status Surpresseur** : Affiche l'état et le temps restant du surpresseur
+- **Status Lavage Filtre** : Affiche les instructions pour le lavage du filtre à sable
 
-  # Options
+#### Boutons (Buttons)
 
-  disableMarcheForcee: True
-  methodeCalcul: 1                                      # 1:Curve | 2:TemperatureReducedByHalf
-  datePivot: "13:00"
-  pausePivot: 0
-  distributionDatePivot: 2                              # 1:(1/2 <> 1/2) | 2:(1/3 <> 2/3)
-  coefficientAjustement: 1.0                            # 0.3 <> 1.7
-  sondeLocalTechnique: True                             # True | False
-  sondeLocalTechniquePause: 5
-  traitementHivernage: True                             # True | False
-  tempsDeFiltrationMinimum: 3
-  choixHeureFiltrationHivernage: 1                      # 1:(lever_soleil) | 2:(datePivotHivernage)
-  datePivotHivernage: "06:00"
-  temperatureSecurite: 0
-  temperatureHysteresis: 0.5
-  filtration5mn3h: True
-  
-  surpresseurDuree: 5
+- **Reset** : Recalcule le temps de filtration
+- **Actif** : Active le mode manuel (marche forcée)
+- **Auto** : Active le mode automatique
+- **Inactif** : Désactive le contrôle automatique
+- **Saison** : Active le mode saison (température > 10°C)
+- **Hivernage** : Active le mode hivernage (température < 10°C)
+- **Surpresseur** : Lance le surpresseur pour la durée configurée
+- **Lavage** : Lance l'assistant de lavage du filtre à sable
+- **Stop** : Arrête le surpresseur ou le lavage en cours
 
-  lavageDuree: 2
-  rincageDuree: 2
-  
-```
+### Configuration des options
 
-### Voici le détail des differentes options de configuration
+Une fois l'intégration ajoutée, vous pouvez configurer toutes les options avancées via l'interface utilisateur :
 
-```yaml
-  temperatureWater: input_number.temperaturewater
-```
-Cette entrée vous permet d'indiquer la sonde de température d'eau de votre piscine.
-Les options `sondeLocalTechnique` et `sondeLocalTechniquePause` permettront de spécifier les caractéristiques de votre sonde de température.
+1. Allez dans **Paramètres** → **Appareils et services**
+2. Cliquez sur "Pool Control"
+3. Cliquez sur **CONFIGURER**
+4. Un menu de navigation vous permet d'accéder aux différentes sections de configuration :
 
-```yaml
-  temperatureOutdoor: input_number.temperatureoudoor
-```
-Cette entrée vous permet d'indiquer la sonde de température de l'air, cette information est utilisée en mode `Hivernage`. 
-Si vous ne disposez pas d'une sonde de température exterieure vous pouvez utiliser une donnée météo.
+#### Menu Utilisateur
+Modification des capteurs et actionneurs configurés initialement.
 
-```yaml
-  leverSoleil: sensor.sun_next_rising
-```
-Cette entrée vous permet d'indiquer l'heure de lever du soleil, cette information est utilisée en mode `Hivernage`. 
-	
-```yaml
-  buttonReset: input_button.reset
+#### Menu Filtration
 
-  buttonActif: input_button.asservissement_actif
-  buttonAuto: input_button.asservissement_auto
-  buttonInactif: input_button.asservissement_inactif
+- **Méthode de calcul** :
+  - (1) Courbe de température (recommandé)
+  - (2) Température / 2 (méthode classique)
+- **Coefficient d'ajustement** (0.3 à 1.7) : Ajuste le temps de filtration calculé
+- **Horaire pivot** (format "HH:MM") : Heure centrale de la filtration (défaut : 13:00)
+- **Pause pivot** (en minutes) : Temps de coupure pendant la filtration
+- **Répartition autour du pivot** :
+  - (1/2 <> 1/2) : Répartition symétrique
+  - (1/3 <> 2/3) : Plus de filtration l'après-midi
+  - (2/3 <> 1/3) : Plus de filtration le matin
+  - (1/1 <>) : Tout avant le pivot
+  - (<> 1/1) : Tout après le pivot
+- **Temps de filtration minimum** (en heures) : Durée minimale quotidienne
 
-  buttonSaison: input_button.mode_saison
-  buttonHivernage: input_button.mode_hivernage
-  buttonSurpresseur: input_button.surpresseur
-  buttonLavage: input_button.lavage_filtre_sable
-  buttonStop: input_button.stop
-```
-vous dévez definir dans Home Assistant des input_button (9) qui vous permettront de piloter le composant Pool Control
+#### Menu Hivernage
 
-```yaml
-  filtration: input_boolean.filtration
-  traitement: input_boolean.traitement
-  surpresseur: input_boolean.surpresseur
-```
-Ces entrées vous permettent d'indiquer les actionneurs qui commanderons vos équipements `filtration`, `traitement`, `surpresseur`
+- **Traitement pendant l'hivernage** : Active le traitement chimique en mode hivernage
+- **Coefficient d'ajustement hivernage** (0.3 à 1.7) : Ajuste le temps de filtration en hivernage
+- **Répartition horaire hivernage** : Même options que pour le mode saison
+- **Choix heure filtration** :
+  - (1) Lever du soleil (recommandé pour fonction hors-gel)
+  - (2) Heure fixe définie
+- **Horaire pivot hivernage** (format "HH:MM") : Si choix (2) sélectionné (défaut : 06:00)
+- **Température de sécurité** (°C) : Seuil de déclenchement de la marche forcée hors-gel (défaut : -2°C)
+- **Hystérésis température** (°C) : Évite les démarrages/arrêts intempestifs (défaut : 0.5°C)
+- **Filtration 5mn/3h** : Lance la filtration 5 minutes toutes les 3 heures
 
-```yaml
-  disableMarcheForcee: True
-```
-`disableMarcheForcee` : Désactiver marche forcée au début du cycle de filtration pour revenir au mode auto au début du cycle de filtration, afin d'éviter de laisser indéfiniment la marche forcée
-	
-```yaml
-  methodeCalcul: 1
-```
-`methodeCalcul` : Choix méthode de calcul : vous permet de choisir entre (1) un calcul de temps de filtration basé sur une courbe ou (2) la classique formule température / 2
-	
-```yaml
-  datePivot: "13:00"
-```
-`datePivot` : Horaire pivot de filtration (au format "hh:mm") : vous permet de définir l'heure de la filtration.
-	
-```yaml
-  pausePivot: 0
-```
-`pausePivot` : Temps de coupure (segmentation de la filtration en minutes) : vous permet de faire une pause pendant la filtration, cette pause est située à l'heure pivot choisie. Les heures de début et de fin de filtration sont décalées proportionnellement. 
-Utilisez le bouton `[Reset]` pour visualiser et déterminer les horaires souhaités.
-	
-```yaml
-  distributionDatePivot: 2
-```
-`distributionDatePivot` : Répartition du temps de filtration autour de l'horaire pivot (1 ou 2) : vous permet de choisir la répartition de la plage de filtration autour de l'heure pivot, au choix (1) 1/2 <> 1/2 ou (2) 1/3 <> 2/3.
-	
-```yaml
-  coefficientAjustement: 1.0
-```
-`coefficientAjustement` : Ajustement du temps de filtration : vous permet d'ajuster le temps de filtration avec un coefficient variable entre 0.5 et 1.5 ce coefficient agit sur le mode courbe ou température / 2.
-	
-```yaml
-  sondeLocalTechnique: True
-  sondeLocalTechniquePause: 5
-```
-`sondeLocalTechnique` : Sonde de température dans local technique pour ne tenir compte de la valeur renvoyée par la sonde que pendant la filtration.
-`sondeLocalTechniquePause` : Pause avant relevé de température (en minutes) temporisation pour attendre que la température de la sonde soit au niveau de la température du bassin. 
-Ce délai depend de la puissance de votre pompe et de la longueur du circuit de filtration entre la piscine et la sonde.
-	
-```yaml
-  traitementHivernage: True
-  tempsDeFiltrationMinimum: 3
-  choixHeureFiltrationHivernage: 1
-  datePivotHivernage: "06:00"
-  temperatureSecurite: 0
-  temperatureHysteresis: 0.5
-  filtration5mn3h: True
-```
-Ces différentes options sont utilisées pendant l'hivernage actif.
+#### Menu Avancé
 
-`traitementHivernage` : cette option permet d'activer le traitement pendant l'hivernage.
+- **Désactiver marche forcée** : Revient automatiquement en mode auto au début du cycle de filtration
+- **Sonde dans local technique** : Active le mode sonde déportée
+- **Pause avant relevé température** (en minutes) : Temporisation pour stabilisation de la température
+- **Durée surpresseur** (en minutes) : Temps de fonctionnement du surpresseur (défaut : 5)
+- **Durée lavage** (en minutes) : Temps de lavage du filtre (défaut : 2)
+- **Durée rinçage** (en minutes) : Temps de rinçage du filtre (défaut : 2)
 
-`tempsDeFiltrationMinimum` : (en heure) par défaut la filtration en mode hivernage est calculée en divisant la température de l'eau par 3 avec un temps minimum configurable.
+### Principe de fonctionnement
 
-`choixHeureFiltrationHivernage` : (1 ou 2) choisissez si vous souhaitez lancer la filtration (1) à l'heure de lever du soleil ou (2) à l'heure prédéfinie.
+#### Mode Saison
 
-`datePivotHivernage` : si vous avez selectionné (2) au choix precedent, choisissez l'heure à laquelle vous souhaitez lancer la filtration en mode hivernage au format "hh:mm".
+La filtration est calculée en fonction de la température de l'eau :
+- **Méthode courbe** : Utilise une courbe optimisée pour un temps de filtration adapté
+- **Méthode température/2** : Divise la température par 2 (ex : 24°C → 12h de filtration)
 
-**Attention** : Si vous choisissez un horaire différent de l'heure de lever du soleil la fonction hors gel de la filtration sera sans effet. 
-Cette fonction peut être utile suivant votre abonnement EDF (possibilité de faire fonctionner la filtration pendant les heures creuses.
+Le temps de filtration est réparti autour de l'horaire pivot configuré selon la distribution choisie.
 
-`temperatureSecurite` : cette option permet de lancer la filtration en marche forcée si la température extérieure descend en dessous d'un seuil défini.
+#### Mode Hivernage
 
-`temperatureHysteresis` : cette valeur permet d'éviter les marches / arrêts intempestifs lorsque le seuil de temperatureSecurite est atteint.
+La filtration démarre 2 heures avant le lever du soleil (ou à l'heure configurée) pour un minimum de 3 heures.
+- Si température eau > 9°C : temps calculé = température / 3
+- Si température air < seuil sécurité : filtration en continu (hors-gel)
+- Option filtration 5mn/3h disponible pour circulation régulière
 
-`filtration5mn3h` : si vous le souhaitez vous pouvez activer cette option qui lancera la filration pendant 5mn toutes les 3 heures.
+#### Sonde dans local technique
 
-#### Principe et fonctionnement de l'hivernage :
+Si votre sonde de température est située dans le local technique :
+- La température n'est prise en compte que pendant la filtration
+- Une pause configurable permet d'attendre que l'eau circule et que la sonde reflète la température du bassin
 
-La filtration est lancée tous les jours au minimum pendant 3 heures, la filtration démarrera 2 heures avant le lever du soleil et s'arrêtera 1 heure après le lever du soleil. 
-
-Si la température de l'eau est supérieure à 9°C, le temps de filtration sera calculé en divisant la température par 3 (soit par exemple 3h20 pour 10°C). 
-
-Le démarrage de la filtration étant dans tous les cas 2 heures avant le lever du soleil. 
-
-Si vous avez activé l'option Filtration 5mn toutes les 3 heures la filtration sera lancée indépendamment de toute programmation de 02h00 à 02h05, de 05h00 à 05h05, de 08h00 à 08h05, de 11h00 à 11h05, de 14h00 à 14h05, de 17h00 à 17h05, de 20h00 à 20h05, de 23h00 à 23h05. 
-L'option Filtration permanente si température extérieure inférieure à est une sécurité supplémentaire dite hors gel qui permet éventuellement de filtrer en continu dans le cas de températures très basse
-	
-```yaml
-  surpresseurDuree: 5
-```
-`surpresseurDuree` : Permet de définir le Temps de fonctionnement du surpresseur.
-	
-```yaml
-  lavageDuree: 2
-  rincageDuree: 2
-```
-`lavageDuree` : Permet de définir définir le Temps de lavage du filtre à sable.
-`rincageDuree` : Permet de définir définir le Temps de rinçage du filtre à sable.
-
-
-### Voici un exemple de configuration à créer sur votre tableau de bord Home Assistant
+### Exemple de carte pour le tableau de bord
 
 ![DashBoard](https://github.com/scadinot/pool_control/blob/main/img/dashboard.png)
 
-Sur cette carte sont indiqués :
-
-- `Température Eau` _mesurée par la sonde de température_
-- `Température Air` _mesurée par une sonde exterieure ou la météo_
-- `Température Calcul` _suivant l'option `sondeLocalTechnique` cette valeur sera mise à jour uniquement en cas de filtration_
-- `Temps de filtration` _temps de filtration calculé par le composant_
-- `L'horaire de filtration et la température utilisée pour le calcul`
-- Bouton `[Reset]` _permettant de recalculer le temps de filtration_
-- `L'état de l'intégration` 'Auto / Saison' .
-- Boutons `[Actif]`, `[Auto]`, `[Inactif]` _permettant de changer l'état du composant `Pool Control`_
-- Boutons `[Saison]`, `[Hivernage]` _permettant de basculer du mode Saison au mode Hivernage_
-- `L'état du surpresseur` _indiquant le temps restant pendant le fonctionnement du surpresseur_
-- Bouton `[Surpresseur]` de lancement du surpresseur.
-- `L'état du lavage du filtre à sable` _indiquant les opérations à effectuer avec la vanne 6 voies pendant les opérations de lavage / contre lavage_
-- Bouton `[Lavage]` _de lancement du nettoyage du filtre à sable_
-- Bouton `[Stop]` _permettant d'arrêter le surpresseur ou le lavage du filtre à sable_
+Voici un exemple de carte utilisant les nouvelles entités créées automatiquement :
 
 ```yaml
-
 type: vertical-stack
 cards:
   - type: horizontal-stack
     cards:
       - type: entity
-        entity: input_number.temperaturewater
-        icon: ' '
+        entity: sensor.votre_temperature_eau
         name: Température Eau
       - type: entity
-        entity: input_number.temperatureoudoor
-        icon: ' '
+        entity: sensor.votre_temperature_air
         name: Température Air
-  - type: horizontal-stack
-    cards:
-      - type: entity
-        entity: input_number.temperaturedisplay
-        icon: ' '
-        name: Température Calcul
-      - type: entity
-        entity: input_text.filtrationtime
-        icon: ' '
-        name: Temps filtration
   - type: entity
-    entity: input_text.filtrationschedule
-    name: ' '
-    icon: ' '
+    entity: sensor.pool_control_filtration_time
+    name: Temps filtration
+  - type: entity
+    entity: sensor.pool_control_filtration_schedule
+    name: Planning
   - type: button
     show_name: true
     show_icon: true
     tap_action:
-      action: toggle
-    entity: input_button.reset
+      action: call-service
+      service: button.press
+      target:
+        entity_id: button.pool_control_reset
     name: Reset
-    icon: mdi:button-pointer
-    icon_height: 20px
+    icon: mdi:restart
   - type: entity
-    entity: input_text.asservissementstatus
-    icon: ' '
-    name: ' '
+    entity: sensor.pool_control_asservissement_status
+    name: État
   - type: horizontal-stack
     cards:
       - type: button
-        show_name: true
-        show_icon: true
         tap_action:
-          action: toggle
-        entity: input_button.asservissement_actif
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.pool_control_actif
         name: Actif
-        icon: ''
-        icon_height: 20px
+        icon: mdi:play-circle
       - type: button
-        show_name: true
-        show_icon: true
         tap_action:
-          action: toggle
-        entity: input_button.asservissement_auto
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.pool_control_auto
         name: Auto
-        icon: ''
-        icon_height: 20px
+        icon: mdi:auto-fix
       - type: button
-        show_name: true
-        show_icon: true
         tap_action:
-          action: toggle
-        entity: input_button.asservissement_inactif
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.pool_control_inactif
         name: Inactif
-        icon: ''
-        icon_height: 20px
-        show_state: false
+        icon: mdi:stop-circle
   - type: horizontal-stack
     cards:
       - type: button
-        show_name: true
-        show_icon: true
         tap_action:
-          action: toggle
-        entity: input_button.mode_saison
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.pool_control_saison
         name: Saison
-        icon: ''
-        icon_height: 20px
+        icon: mdi:weather-sunny
       - type: button
-        show_name: true
-        show_icon: true
         tap_action:
-          action: toggle
-        entity: input_button.mode_hivernage
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.pool_control_hivernage
         name: Hivernage
-        icon: ''
-        icon_height: 20px
+        icon: mdi:snowflake
   - type: entity
-    entity: input_text.surpresseurstatus
-    icon: ' '
-    name: ' '
-  - type: button
-    show_name: true
-    show_icon: true
-    tap_action:
-      action: toggle
-    entity: input_button.surpresseur
+    entity: sensor.pool_control_surpresseur_status
     name: Surpresseur
-    show_state: false
-    icon_height: 20px
-    icon: mdi:button-pointer
+  - type: button
+    tap_action:
+      action: call-service
+      service: button.press
+      target:
+        entity_id: button.pool_control_surpresseur
+    name: Surpresseur
+    icon: mdi:pump
   - type: entity
-    entity: input_text.filtresablelavagestatus
-    icon: ' '
-    name: ' '
-  - type: button
-    show_name: true
-    show_icon: true
-    tap_action:
-      action: toggle
-    entity: input_button.lavage_filtre_sable
+    entity: sensor.pool_control_filtre_sable_lavage_status
     name: Lavage
-    icon: mdi:button-pointer
-    icon_height: 20px
   - type: button
-    show_name: true
-    show_icon: true
     tap_action:
-      action: toggle
-    entity: input_button.stop
+      action: call-service
+      service: button.press
+      target:
+        entity_id: button.pool_control_lavage
+    name: Lavage
+    icon: mdi:air-filter
+  - type: button
+    tap_action:
+      action: call-service
+      service: button.press
+      target:
+        entity_id: button.pool_control_stop
     name: Stop
-    icon: mdi:button-pointer
-    icon_height: 20px
-
+    icon: mdi:stop
 ```
 
 ## Surpresseur
 
-Pour activer le surpresseur, cliquez sur le bouton `[Surpresseur]`, le surpresseur est alors lancé pour une durée spécifiée dans la configuration.
-Si la filtration n'est pas active, elle sera lancée automatiquement, puis ensuite le surpresseur après une temporisation de quelques secondes.
-Cette temporisation permet d'éviter d'endommager le surpresseur en mettant en mouvement l'eau dans le circuit de filration.
+Pour activer le surpresseur, appuyez sur le bouton **Surpresseur**. Le surpresseur est alors lancé pour la durée configurée.
 
-Une fois le surpresseur lancé, le composant affiche le temps restant sous forme de compte à rebours.
+Si la filtration n'est pas active, elle sera lancée automatiquement, puis le surpresseur après une temporisation de quelques secondes. Cette temporisation permet d'éviter d'endommager le surpresseur en mettant en mouvement l'eau dans le circuit de filtration.
 
-A la fin de la temporisation, le surpresseur s'arrête ainsi que la filtration si elle n'était pas active auparavant.
-Le bouton `[Stop]` permet d'arrêter le cycle avant la fin de la temporisation si nécessaire.
+Le capteur **Status Surpresseur** affiche le temps restant sous forme de compte à rebours.
+
+À la fin, le surpresseur s'arrête ainsi que la filtration si elle n'était pas active auparavant.
+Le bouton **Stop** permet d'arrêter le cycle avant la fin si nécessaire.
 
 ## Nettoyage du filtre à sable
 
 Cette fonctionnalité est un assistant pour vous guider dans les opérations de lavage de votre filtre à sable.
 
-Pour lancer le lavage, cliquez sur `[Lavage]`, la filtration est alors stoppée et le composant affiche :
+Pour lancer le lavage, appuyez sur **Lavage**. La filtration est alors stoppée et le capteur **Status Lavage Filtre** affiche :
 
 `[Arrêt, position lavage]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position `[lavage]`, puis cliquez à nouveau sur [Lavage].
+Comme demandé, positionnez votre vanne sur la position **Lavage**, puis appuyez à nouveau sur **Lavage**.
 
 ![Position Lavage](https://github.com/scadinot/pool_control/blob/main/img//position-lavage.png)
 
-La filtration démarre, le composant affiche alors le temps restant pour l'opération de lavage :
+La filtration démarre, le capteur affiche alors le temps restant pour l'opération de lavage :
 
 `[Lavage : xx]`
 
 ![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
 
-A la fin du lavage, le composant affiche le message suivant:
+À la fin du lavage, le capteur affiche le message suivant:
 
 `[Arrêt, position rinçage]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position `[Rinçage]`, puis cliquez à nouveau sur [Lavage].
+Comme demandé, positionnez votre vanne sur la position **Rinçage**, puis appuyez à nouveau sur **Lavage**.
 
 ![Position Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
 
-La filtration démarre, le composant affiche alors le temps restant pour l'opération de rinçage :
+La filtration démarre, le capteur affiche alors le temps restant pour l'opération de rinçage :
 
 `[Rinçage : xx]`
 
 ![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
 
-A la fin du rinçage, le composant affiche le message suivant :
+À la fin du rinçage, le capteur affiche le message suivant :
 
 `[Filtration]`
 
-Comme demandé sur le composant, positionnez votre vanne sur la position `[Filtration]`, puis cliquez à nouveau sur `[Lavage]`.
+Comme demandé, positionnez votre vanne sur la position **Filtration**, puis appuyez à nouveau sur **Lavage**.
 
 ![Position Filtration](https://github.com/scadinot/pool_control/blob/main/img/position-filtration.png)
 
-Si la filtration était active avant l’opération de lavage, elle redémarre automatiquement.
+Si la filtration était active avant l'opération de lavage, elle redémarre automatiquement.
 
 ![Schema Filtration](https://github.com/scadinot/pool_control/blob/main/img/schema-filtration.gif)
 
-Pendant les différentes opérations de nettoyage du filtre à sable le bouton `[Stop]` permet d'arrêter l'opération en cours.
+Pendant les différentes opérations de nettoyage du filtre à sable, le bouton **Stop** permet d'arrêter l'opération en cours.
+
+## Migration depuis l'ancienne version
+
+Si vous utilisez actuellement Pool Control avec configuration via `configuration.yaml`, vous pouvez migrer vers la nouvelle version avec Config Flow :
+
+1. **Sauvegardez** votre configuration actuelle
+2. **Supprimez** la section `pool_control:` de votre `configuration.yaml`
+3. **Redémarrez** Home Assistant
+4. **Ajoutez** l'intégration via l'interface utilisateur comme décrit ci-dessus
+5. **Supprimez** les anciennes entités `input_button`, `input_text` et `input_number` que vous aviez créées manuellement (elles ne sont plus nécessaires)
+6. **Mettez à jour** votre tableau de bord pour utiliser les nouvelles entités automatiques
+
+> **Astuce** : Notez vos paramètres de configuration avant la migration pour pouvoir les ressaisir facilement via l'interface UI.
+
+## Support
+
+Pour signaler un bug ou demander une fonctionnalité, ouvrez une issue sur [GitHub](https://github.com/scadinot/pool_control/issues).
