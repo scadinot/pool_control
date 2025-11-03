@@ -29,14 +29,14 @@
 |----------|--------|
 | **Version actuelle** | 0.0.14 |
 | **Lignes de code** | 2362 |
-| **Lignes de tests** | 5432 ✅ (+2903) 🔥 |
+| **Lignes de tests** | 6305 ✅ (+3776) 🔥 |
 | **Fichiers Python** | 19 |
-| **Fichiers de tests** | 12 (+6) 🔥 |
+| **Fichiers de tests** | 14 (+8) 🔥 |
 | **Mixins** | 11 |
 | **Fonctions async** | 54 |
 | **Type hints** | 15 (~28% des fonctions) |
-| **Tests unitaires** | 350 tests ✅ (+187) 🔥 |
-| **Couverture tests** | ~65% (+65%) ✅ 🔥 |
+| **Tests unitaires** | 404 tests ✅ (+241) 🔥 |
+| **Couverture tests** | ~70% (+70%) ✅ 🔥 |
 | **Pull Requests mergées** | 13 (+7) |
 | **Tags releases** | 3 (v0.0.10, v0.0.11, v0.0.14) |
 | **Workflows CI/CD** | 3 (Tests, HACS, Hassfest) ✅ |
@@ -173,15 +173,17 @@ tests/
 ├── test_activation.py             (631 lignes, 47 tests) - Tests activation.py ✅
 ├── test_saison.py                 (687 lignes, 40 tests) - Tests saison.py ✅
 ├── test_hivernage.py              (694 lignes, 42 tests) - Tests hivernage.py ✅
-├── test_filtration.py             (398 lignes, 26 tests) - Tests filtration.py ✅ NEW
-├── test_lavage.py                 (460 lignes, 22 tests) - Tests lavage.py ✅ NEW
-├── test_traitement.py             (577 lignes, 43 tests) - Tests traitement.py ✅ NEW
-├── test_surpresseur.py            (463 lignes, 31 tests) - Tests surpresseur.py ✅ NEW
-├── test_scheduler.py              (537 lignes, 29 tests) - Tests scheduler.py ✅ NEW
-├── test_utils.py                  (468 lignes, 37 tests) - Tests utils.py ✅ NEW
+├── test_filtration.py             (398 lignes, 26 tests) - Tests filtration.py ✅
+├── test_lavage.py                 (460 lignes, 22 tests) - Tests lavage.py ✅
+├── test_traitement.py             (577 lignes, 43 tests) - Tests traitement.py ✅
+├── test_surpresseur.py            (463 lignes, 31 tests) - Tests surpresseur.py ✅
+├── test_scheduler.py              (537 lignes, 29 tests) - Tests scheduler.py ✅
+├── test_utils.py                  (468 lignes, 37 tests) - Tests utils.py ✅
+├── test_entities.py               (397 lignes, 19 tests) - Tests entities.py ✅ NEW
+├── test_sensors.py                (476 lignes, 35 tests) - Tests sensors.py ✅ NEW
 └── test_diagnostic.py             (40 lignes, 4 tests) - Tests diagnostic ✅
 
-Total: 5432 lignes, 350 tests, 100% réussite (350/350) ✅ 🔥
+Total: 6305 lignes, 404 tests, 100% réussite (404/404) ✅ 🔥
 ```
 
 ### Tests de Non-Régression
