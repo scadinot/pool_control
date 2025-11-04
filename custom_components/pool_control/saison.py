@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 import time
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 class SaisonMixin:
     """Mixin providing seasonal filtration logic for pool control."""
 
-    def calculateTimeFiltration(self, temperatureWater, flgTomorrow):
+    def calculateTimeFiltration(self, temperatureWater: float, flgTomorrow: bool) -> None:
         """Calculate the filtration time."""
 
         temperatureCalcul = float(self.get_data("temperatureMaxi", 0))
@@ -191,7 +192,7 @@ class SaisonMixin:
             datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
         )
 
-    async def calculateStatusFiltration(self, temperatureWater):
+    async def calculateStatusFiltration(self, temperatureWater: float) -> None:
         """Calculate the filtration state in Saison mode."""
 
         filtrationTemperature = 0

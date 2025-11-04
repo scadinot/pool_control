@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 import time
+from typing import Any, Optional
 
 from homeassistant.helpers.event import async_track_time_interval
 
@@ -12,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 class SchedulerMixin:
     """Scheduler mixin for pool control integration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the SchedulerMixin with default values."""
 
         self.secondCronCancel = None
@@ -20,7 +21,7 @@ class SchedulerMixin:
         # Propriétés de l'objet
         self.filtrationRefreshCounter = 0
 
-    async def startSecondCron(self):
+    async def startSecondCron(self) -> None:
         """Lance le cron '5 secondes'."""
 
         if self.secondCronCancel is not None:
@@ -33,7 +34,7 @@ class SchedulerMixin:
 
         _LOGGER.info("Second cron job started")
 
-    async def stopSecondCron(self):
+    async def stopSecondCron(self) -> None:
         """Arrete le cron '5 secondes'."""
 
         if self.secondCronCancel is not None:
@@ -42,7 +43,7 @@ class SchedulerMixin:
 
             _LOGGER.info("Second cron job stopped")
 
-    async def pull(self, now=None):
+    async def pull(self, now: Optional[Any] = None) -> None:
         """Routine toutes les 5 secondes pour suivi du lavage et surpresseur."""
 
         _LOGGER.debug("pull() begin")
@@ -78,14 +79,14 @@ class SchedulerMixin:
 
         _LOGGER.debug("pull() end")
 
-    async def startFirstCron(self):
+    async def startFirstCron(self) -> None:
         """Lance le cron '1 minute'."""
 
         async_track_time_interval(self.hass, self.cron, timedelta(minutes=1))
 
         _LOGGER.info("First cron job started")
 
-    async def cron(self, now=None):
+    async def cron(self, now: Optional[Any] = None) -> None:
         """Routine toutes les minutes : suivi de la filtration, hivernage, traitements..."""
 
         _LOGGER.debug("cron() begin")

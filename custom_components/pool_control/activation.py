@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ DEVICE_ACTIVATION_DELAY = 2  # seconds
 class ActivationMixin:
     """Mixin for activation logic of pool control devices."""
 
-    async def activatingDevices(self):
+    async def activatingDevices(self) -> None:
         """Active les appareils de filtration et de traitement."""
 
         _LOGGER.debug("activatingDevices() begin")
@@ -28,7 +29,7 @@ class ActivationMixin:
 
         _LOGGER.debug("activatingDevices() end")
 
-    def _update_status_display(self):
+    def _update_status_display(self) -> None:
         """Update the status display based on current state."""
 
         if int(self.get_data("arretTotal", 0)) == 0:
@@ -43,7 +44,7 @@ class ActivationMixin:
         if self.asservissementStatus:
             self.asservissementStatus.set_status(status)
 
-    async def _handle_active_mode(self):
+    async def _handle_active_mode(self) -> None:
         """Handle device activation when not in total stop mode."""
 
         filtration_lavage = int(self.get_data("filtrationLavage", 0))
@@ -55,7 +56,7 @@ class ActivationMixin:
         elif filtration_lavage == 2:
             await self._handle_lavage_filtration_mode()
 
-    async def _handle_normal_filtration_mode(self):
+    async def _handle_normal_filtration_mode(self) -> None:
         """Handle normal filtration mode (no lavage in progress)."""
 
         if self._should_activate_filtration():
@@ -74,7 +75,7 @@ class ActivationMixin:
             or int(self.get_data("marcheForcee", 0)) == 1
         )
 
-    async def _activate_filtration_system(self):
+    async def _activate_filtration_system(self) -> None:
         """Activate filtration and associated devices."""
 
         await self.filtrationOn()
@@ -98,7 +99,7 @@ class ActivationMixin:
             and self.traitementHivernage is True
         )
 
-    async def _activate_treatment(self):
+    async def _activate_treatment(self) -> None:
         """Activate treatment devices with delay."""
 
         if self.traitement is not None or self.traitement_2 is not None:
@@ -109,7 +110,7 @@ class ActivationMixin:
         if self.traitement_2 is not None:
             await self.traitement_2_On()
 
-    async def _deactivate_filtration_system(self):
+    async def _deactivate_filtration_system(self) -> None:
         """Deactivate filtration and associated devices."""
 
         # Stop treatment first
@@ -123,7 +124,7 @@ class ActivationMixin:
         # Stop filtration last
         await self.filtrationStop()
 
-    async def _deactivate_treatment(self):
+    async def _deactivate_treatment(self) -> None:
         """Deactivate treatment devices with delay."""
 
         if self.traitement is not None or self.traitement_2 is not None:
@@ -135,7 +136,7 @@ class ActivationMixin:
                     await self.traitement_2_Stop()
             await asyncio.sleep(DEVICE_ACTIVATION_DELAY)
 
-    async def _handle_lavage_stop_mode(self):
+    async def _handle_lavage_stop_mode(self) -> None:
         """Handle lavage mode when devices need to be stopped."""
 
         if self.traitement is not None:
@@ -145,7 +146,7 @@ class ActivationMixin:
         await self.surpresseurStop()
         await self.filtrationStop()
 
-    async def _handle_lavage_filtration_mode(self):
+    async def _handle_lavage_filtration_mode(self) -> None:
         """Handle lavage mode when filtration is active."""
 
         if self.traitement is not None:
@@ -155,7 +156,7 @@ class ActivationMixin:
         await self.surpresseurStop()
         await self.filtrationOn()
 
-    async def _handle_stop_all(self):
+    async def _handle_stop_all(self) -> None:
         """Stop all devices (total stop mode)."""
 
         if self.traitement is not None:

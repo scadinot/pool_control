@@ -1,6 +1,7 @@
 """Pool controller integration for Home Assistant."""
 
 import logging
+from typing import Any, Optional
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
@@ -93,7 +94,7 @@ class PoolController(
         self.lavageDuree = config.get("lavageDuree", 2)
         self.rincageDuree = config.get("rincageDuree", 2)
 
-    async def async_initialize(self):
+    async def async_initialize(self) -> None:
         """Initialise PoolController by loading data from store."""
 
         raw_data = await self.store.async_load()
@@ -108,7 +109,7 @@ class PoolController(
 
         self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_save_data)
 
-    async def async_save_data(self, event=None):
+    async def async_save_data(self, event: Optional[Any] = None) -> None:
         """Save the current data to the store."""
 
         if self.initialized:
@@ -116,7 +117,7 @@ class PoolController(
             if event is not None:
                 _LOGGER.info("Saved data to store: %s", self.data)
 
-    def set_data(self, key, value):
+    def set_data(self, key: str, value: Any) -> None:
         """Set data in the store and trigger save if changed."""
 
         oldValue = self.data.get(key)
@@ -125,7 +126,7 @@ class PoolController(
         if oldValue != value:
             self.hass.async_create_task(self.async_save_data())
 
-    def get_data(self, key, default=None):
+    def get_data(self, key: str, default: Optional[Any] = None) -> Any:
         """Get data from the store, returning default if not found."""
 
         return self.data.get(key, default)
