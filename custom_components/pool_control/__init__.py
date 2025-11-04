@@ -47,7 +47,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_get_options_flow(config_entry):
+async def async_get_options_flow(config_entry: ConfigEntry) -> PoolControlOptionsFlowHandler:
     """Retourne le flow d'options."""
 
     return PoolControlOptionsFlowHandler(config_entry)

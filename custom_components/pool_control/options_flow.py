@@ -1,21 +1,24 @@
 """Options flow for Pool Control integration."""
 
+from typing import Any, Optional
+
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry, FlowResult
 from homeassistant.helpers.selector import selector
 
 
 class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
     """Gestion des options de Pool Control avec menu de navigation."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize the options flow."""
 
         self.config_entry = config_entry
         self.options = {**config_entry.data, **config_entry.options}
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Étape initiale de configuration des options."""
 
         if user_input is not None:
@@ -32,7 +35,7 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
             ],
         )
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the user step of the options flow."""
 
         if user_input is not None:
@@ -70,7 +73,7 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
             last_step=False,
         )
 
-    async def async_step_filtration(self, user_input=None):
+    async def async_step_filtration(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the filtration step of the options flow."""
 
         if user_input is not None:
@@ -139,7 +142,7 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="filtration", data_schema=vol.Schema(schema), last_step=False
         )
 
-    async def async_step_hivernage(self, user_input=None):
+    async def async_step_hivernage(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the hivernage step of the options flow."""
 
         if user_input is not None:
@@ -215,7 +218,7 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
             last_step=False,
         )
 
-    async def async_step_avance(self, user_input=None):
+    async def async_step_avance(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the avance step of the options flow."""
 
         if user_input is not None:
@@ -253,7 +256,7 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
             last_step=False,
         )
 
-    async def async_step_confirm(self, user_input=None):
+    async def async_step_confirm(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the confirm step of the options flow."""
 
         return self.async_create_entry(title="Pool Control", data=self.options)
