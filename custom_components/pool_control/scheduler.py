@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 class SchedulerMixin:
     """Scheduler mixin for pool control integration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the SchedulerMixin with default values."""
 
         self.secondCronCancel = None
