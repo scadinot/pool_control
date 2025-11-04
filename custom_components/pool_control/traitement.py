@@ -1,6 +1,7 @@
 """Traitement mixin for pool control integration."""
 
 import logging
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -8,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 class TraitementMixin:
     """Mixin providing treatment control methods for pool automation."""
 
-    async def refreshTraitement(self):
+    async def refreshTraitement(self) -> None:
         """Rafraichi l'état du traitement."""
 
         if not self.traitement:
@@ -46,7 +47,7 @@ class TraitementMixin:
             return True
         return False
 
-    async def traitementOn(self, repeat=False):
+    async def traitementOn(self, repeat: bool = False) -> None:
         """Active le traitement."""
 
         if not self.traitement:
@@ -71,7 +72,7 @@ class TraitementMixin:
 
         return
 
-    async def traitementStop(self, repeat=False):
+    async def traitementStop(self, repeat: bool = False) -> None:
         """Arrête le traitement."""
 
         if not self.traitement:
@@ -98,7 +99,7 @@ class TraitementMixin:
 
     ## Traitement 2
 
-    async def refreshTraitement_2(self):
+    async def refreshTraitement_2(self) -> None:
         """Rafraichi l'état du traitement_2."""
 
         if not self.traitement_2:
@@ -136,7 +137,7 @@ class TraitementMixin:
             return True
         return False
 
-    async def traitement_2_On(self, repeat=False):
+    async def traitement_2_On(self, repeat: bool = False) -> None:
         """Active le traitement."""
 
         if not self.traitement_2:
@@ -161,7 +162,7 @@ class TraitementMixin:
 
         return
 
-    async def traitement_2_Stop(self, repeat=False):
+    async def traitement_2_Stop(self, repeat: bool = False) -> None:
         """Arrête le traitement."""
 
         if not self.traitement_2:

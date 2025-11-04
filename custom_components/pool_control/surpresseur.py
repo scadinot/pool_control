@@ -3,6 +3,7 @@
 from datetime import datetime
 import logging
 import time
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 class SurpresseurMixin:
     """Mixin providing surpresseur control methods for pool automation."""
 
-    async def executeSurpresseurOn(self):
+    async def executeSurpresseurOn(self) -> None:
         """Lance le surpresseur."""
 
         if (
@@ -32,7 +33,7 @@ class SurpresseurMixin:
 
         await self.startSecondCron()
 
-    async def refreshSurpresseur(self):
+    async def refreshSurpresseur(self) -> None:
         """Rafraichi l'état du surpresseur."""
 
         if not self.surpresseur:
@@ -70,7 +71,7 @@ class SurpresseurMixin:
             return True
         return False
 
-    async def surpresseurOn(self, repeat=False):
+    async def surpresseurOn(self, repeat: bool = False) -> None:
         """Active le surpresseur."""
 
         if not self.surpresseur:
@@ -98,7 +99,7 @@ class SurpresseurMixin:
 
         return
 
-    async def surpresseurStop(self, repeat=False):
+    async def surpresseurStop(self, repeat: bool = False) -> None:
         """Arrête le surpresseur."""
 
         if not self.surpresseur:

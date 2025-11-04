@@ -2,12 +2,13 @@
 
 from datetime import datetime
 import time
+from typing import Optional
 
 
 class LavageMixin:
     """Mixin class providing lavage (filter cleaning) logic for pool control."""
 
-    async def executeFiltreSableLavageOn(self):
+    async def executeFiltreSableLavageOn(self) -> None:
         """Lance le lavage du filtre à sable."""
 
         if self.get_data("filtrationSurpresseur", 0) == 0:

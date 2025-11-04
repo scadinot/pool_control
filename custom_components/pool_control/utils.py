@@ -1,10 +1,12 @@
 """Utility mixin for pool filtration time calculations."""
 
+from typing import Tuple
+
 
 class FiltrationUtilsMixin:
     """Mixin providing utility methods for pool filtration time calculations."""
 
-    def processingTime(self, dureeHeures):
+    def processingTime(self, dureeHeures: float) -> Tuple[float, str]:
         """Calculate filtration time in seconds and formatted string from hours."""
 
         # Arrondi en minutes
@@ -24,7 +26,7 @@ class FiltrationUtilsMixin:
 
         return filtrationSecondes, filtrationTime
 
-    def calculateTimeFiltrationWithCurve(self, temperatureWater):
+    def calculateTimeFiltrationWithCurve(self, temperatureWater: float) -> float:
         """Calculate filtration time using a cubic equation based on water temperature."""
 
         # Pour assurer un temps minimum de filtration, la température de calcul est forcée à 10°C
@@ -51,7 +53,7 @@ class FiltrationUtilsMixin:
             + d
         )
 
-    def calculateTimeFiltrationWithTemperatureReducedByHalf(self, temperatureWater):
+    def calculateTimeFiltrationWithTemperatureReducedByHalf(self, temperatureWater: float) -> float:
         """Calculate filtration time using a simplified method based on water temperature."""
 
         # Calcul simplifié
@@ -62,7 +64,7 @@ class FiltrationUtilsMixin:
 
         return dureeHeures
 
-    def calculateTimeFiltrationWithTemperatureHivernage(self, temperatureWater):
+    def calculateTimeFiltrationWithTemperatureHivernage(self, temperatureWater: float) -> float:
         """Calculate filtration time for winter mode based on water temperature."""
 
         # Filtration (temperature / 3)

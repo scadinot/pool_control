@@ -1,6 +1,7 @@
 """Filtration control mixin for pool automation."""
 
 import logging
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -8,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 class FiltrationMixin:
     """Mixin providing filtration control methods for pool automation."""
 
-    async def refreshFiltration(self):
+    async def refreshFiltration(self) -> None:
         """Rafraichi l'état de la filtration."""
 
         if not self.filtration:
@@ -29,7 +30,7 @@ class FiltrationMixin:
 
         return
 
-    async def filtrationOn(self, repeat=False):
+    async def filtrationOn(self, repeat: bool = False) -> None:
         """Active la filtration."""
 
         if not self.filtration:
@@ -57,7 +58,7 @@ class FiltrationMixin:
 
         return
 
-    async def filtrationStop(self, repeat=False):
+    async def filtrationStop(self, repeat: bool = False) -> None:
         """Arrête la filtration."""
 
         if not self.filtration:
