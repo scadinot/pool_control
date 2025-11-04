@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 import time
+from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 class HivernageMixin:
     """Mixin providing hivernage (wintering) logic for pool control integration."""
 
-    def getHivernage(self):
+    def getHivernage(self) -> bool:
         """Determine if the pool is in hivernage mode."""
 
         if int(self.get_data("hivernageWidgetStatus", 0)) == 1:
@@ -20,7 +21,7 @@ class HivernageMixin:
 
         return flgHivernage
 
-    def getStatusHivernage(self, status):
+    def getStatusHivernage(self, status: str) -> str:
         """Determine the status of the hivernage mode."""
 
         if int(self.get_data("hivernageWidgetStatus", 0)) == 1:
@@ -30,7 +31,7 @@ class HivernageMixin:
 
         return status
 
-    def calculateTimeFiltrationHivernage(self, temperatureWater, flgTomorrow):
+    def calculateTimeFiltrationHivernage(self, temperatureWater: float, flgTomorrow: bool) -> None:
         """Calculate the filtration period in hivernage mode."""
 
         temperatureCalcul = float(self.get_data("temperatureMaxi", 0))
@@ -139,8 +140,8 @@ class HivernageMixin:
         )
 
     async def calculateStatusFiltrationHivernage(
-        self, temperatureWater, temperatureOutdoor
-    ):
+        self, temperatureWater: float, temperatureOutdoor: float
+    ) -> None:
         """Calculate the filtration state in hivernage mode."""
 
         filtrationHivernage = 0

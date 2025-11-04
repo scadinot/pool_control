@@ -1,5 +1,7 @@
 """Entities for Pool Control integration."""
 
+from typing import Any, Callable, Optional
+
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.sensor import SensorEntity
 
@@ -9,12 +11,12 @@ class PoolControlStatusSensor(SensorEntity):
 
     def __init__(
         self,
-        controller,
-        name,
-        unique_id,
-        controller_attribute_name,
-        default_state="Arrêté",
-    ):
+        controller: Any,
+        name: str,
+        unique_id: str,
+        controller_attribute_name: str,
+        default_state: str = "Arrêté",
+    ) -> None:
         """Initialize the PoolControlStatusSensor."""
 
         self._controller = controller
@@ -27,18 +29,18 @@ class PoolControlStatusSensor(SensorEntity):
         # Dès la création, on attache l'entité au controller dynamiquement
         setattr(controller, controller_attribute_name, self)
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Call when the entity is added to hass."""
 
         self._ready = True
 
     @property
-    def state(self):
+    def state(self) -> str:
         """Return the state of the sensor."""
 
         return self._state
 
-    def set_status(self, value):
+    def set_status(self, value: str) -> None:
         """Set the status of the sensor."""
 
         self._state = value
@@ -49,7 +51,7 @@ class PoolControlStatusSensor(SensorEntity):
 class PoolControlButton(ButtonEntity):
     """Button générique pour Pool Control."""
 
-    def __init__(self, controller, name, unique_id, callback):
+    def __init__(self, controller: Any, name: str, unique_id: str, callback: Callable) -> None:
         """Initialize the PoolControlButton."""
 
         self._controller = controller
