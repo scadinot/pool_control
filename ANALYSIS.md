@@ -35,7 +35,7 @@
 | **Mixins** | 11 |
 | **Fonctions/Méthodes** | 82 |
 | **Type hints** | 82 (100% des fonctions) ✅ 🔥 |
-| **Tests unitaires** | 364 tests ✅ 🔥 |
+| **Tests unitaires** | 351 tests ✅ 🔥 |
 | **Couverture tests** | ~50% (9/18 modules testés) ✅ |
 | **Type hints couverture** | 100% ✅ 🔥 |
 | **Pull Requests mergées** | 13 (+7) |
@@ -100,21 +100,21 @@ Toutes les corrections de bugs critiques ont été **validées et mergées** dan
 | Aspect | Version 0.0.9 | Version 0.0.11 | Version 0.0.12 | Version 0.0.13 | Version 0.0.15 | Changement |
 |--------|---------------|----------------|----------------|----------------|----------------|------------|
 | **Architecture** | Monolithique | Modulaire (11 mixins) | Modulaire (11 mixins) | Modulaire (11 mixins) | Modulaire (11 mixins) | ➡️ Stable |
-| **Lignes de code** | 2278 | 2362 | 2362 | 2362 | 2362 | ➡️ Stable |
-| **Lignes de tests** | 0 | 0 | 226 | 5432 | 5432 | ➡️ Stable |
+| **Lignes de code** | 2278 | 2362 | 2362 | 2362 | **2382** | 📈 +20 |
+| **Lignes de tests** | 0 | 0 | 226 | 5432 | **5661** | 📈 +229 |
 | **Fichiers** | ~3 | 19 | 19 | 19 | 19 | ➡️ Stable |
-| **Fichiers de tests** | 0 | 0 | 2 | 12 | 12 | ➡️ Stable |
+| **Fichiers de tests** | 0 | 0 | 2 | 12 | **15** | 📈 +3 |
 | **Config Flow** | ❌ Non | ✅ Oui | ✅ Oui | ✅ Oui | ✅ Oui | ➡️ Stable |
 | **Options Flow** | ❌ Non | ✅ Oui | ✅ Oui | ✅ Oui | ✅ Oui | ➡️ Stable |
 | **Traductions** | ❌ Non | ✅ EN, FR | ✅ EN, FR | ✅ EN, FR | ✅ EN, FR | ➡️ Stable |
 | **Tests unitaires** | 0 | 0 | 30 tests | 350 tests | 351 tests | ➡️ Stable |
 | **Tests réussis** | - | - | 30/30 (100%) | 350/350 (100%) ✅ | 351/351 (100%) ✅ | ➡️ Stable |
-| **Couverture tests** | 0% | 0% | ~15% | ~65% | ~65% | ➡️ Stable |
+| **Couverture tests** | 0% | 0% | ~15% | ~65% | **~50% (9/18)** | ➡️ Ajusté |
 | **CI/CD** | ❌ Non | ❌ Non | ✅ 3 workflows | ✅ 3 workflows | ✅ 3 workflows | ➡️ Stable |
 | **Bugs critiques** | 6 | 0 | 0 | 0 | 0 | ➡️ Stable |
 | **Complexité max** | >10 | <5 | <5 | <5 | <5 | ➡️ Stable |
 | **Fonctions modulaires** | 1 monolithique | 13 (activation.py) | 13 (activation.py) | 13 (activation.py) | 13 (activation.py) | ➡️ Stable |
-| **Type hints** | 0 | 15 (~28%) | 15 (~28%) | 15 (~28%) | **69 (100%)** ✅ 🔥 | 📈 **+54 (+72%)** 🔥 |
+| **Type hints** | 0 | 15 (~28%) | 15 (~28%) | 15 (~28%) | **82 (100%)** ✅ 🔥 | 📈 **+67 hints** 🔥 |
 | **Note qualité** | 4/10 | 8/10 | 8.5/10 | 9.8/10 | **10/10** ✅ 🔥 | 📈 **+6 points** 🔥 |
 
 ### Refactorisation Majeure
@@ -710,7 +710,7 @@ dt = datetime.now(ZoneInfo("Europe/Paris"))
 | **Mixins** | 11 | Stable | ✅ |
 | **Fonctions/Méthodes** | 82 | Toutes annotées | ✅ |
 | **Type hints** | 82 (100%) | +67 depuis v0.0.14 | ✅ 🔥 |
-| **Tests unitaires** | 364 | +364 depuis v0.0.11 | ✅ 🔥 |
+| **Tests unitaires** | 351 | +351 depuis v0.0.11 | ✅ 🔥 |
 | **Fixtures de tests** | 9 | +9 depuis v0.0.11 | ✅ |
 | **Workflows CI/CD** | 3 | +3 depuis v0.0.11 | ✅ |
 | **Imports uniques** | 66 | Stable | ✅ |
@@ -743,8 +743,8 @@ dt = datetime.now(ZoneInfo("Europe/Paris"))
 | **Complexité max** | >10 | <5 | <5 | <5 | <5 | 📈 Excellent |
 | **Fonctions/Méthodes** | ~45 | ~54 | ~54 | ~54 | **82** | 📈 Toutes annotées |
 | **Type hints** | 0 | 15 (~28%) | 15 (~28%) | 15 (~28%) | **82 (100%)** ✅ 🔥 | 📈 **+67 hints** 🔥 |
-| **Tests unitaires** | 0 | 0 | 30 | 350 | **364** | 📈 +364 🔥 |
-| **Tests réussis** | - | - | 30/30 (100%) | 350/350 (100%) ✅ | **364/364 (100%)** ✅ | 📈 +14 tests 🔥 |
+| **Tests unitaires** | 0 | 0 | 30 | 350 | **351** | 📈 +351 🔥 |
+| **Tests réussis** | - | - | 30/30 (100%) | 350/350 (100%) ✅ | **351/351 (100%)** ✅ | 📈 +1 test 🔥 |
 | **Couverture tests** | 0% | 0% | ~15% | ~65% | **~50%** (9/18 modules) | ➡️ Consolidée |
 | **Ratio Test/Code** | 0:1 | 0:1 | 0.1:1 | 2.3:1 | **2.38:1** | 📈 Excellent 🔥 |
 | **CI/CD** | 0 | 0 | 3 workflows | 3 workflows | 3 workflows | ➡️ Stable |
@@ -877,7 +877,7 @@ Pool Control v0.0.15 est un **composant Home Assistant mature, parfaitement typ�
 - Complexité réduite (>10 → <5)
 - Code propre sans violations de linter
 - Documentation complète et à jour
-- **Tests unitaires - 364 tests (100% réussite)** ✅ 🔥
+- **Tests unitaires - 351 tests (100% réussite)** ✅ 🔥
 - **50% de modules testés (9/18 modules)** ✅
 - **15 fichiers de tests complets** ✅ 🔥
 - **5661 lignes de code de test** (ratio 2.38:1 tests/code!) 🔥
@@ -899,7 +899,7 @@ Pool Control v0.0.15 est un **composant Home Assistant mature, parfaitement typ�
 | **Architecture** | 10/10 | Excellente séparation des responsabilités |
 | **Robustesse** | 7/10 | Bonnes vérifications mais manque gestion erreurs |
 | **Maintenabilité** | 10/10 | Code très lisible, 100% type hints ✅ 🔥 |
-| **Testabilité** | 10/10 | 50% modules testés, 364 tests, 100% réussite ✅ 🔥 |
+| **Testabilité** | 10/10 | 50% modules testés, 351 tests, 100% réussite ✅ 🔥 |
 | **Documentation** | 10/10 | README + ANALYSIS.md + tests/README.md complets |
 | **Standards** | 10/10 | Conforme PEP 8, 100% type hints ✅ 🔥 |
 | **CI/CD** | 10/10 | 3 workflows GitHub Actions automatisés, tous verts ✅ |
@@ -957,7 +957,7 @@ Pool Control v0.0.15 est un **composant Home Assistant mature, parfaitement typ�
 - ✅ Prévention des bugs par typage
 - ✅ **Statistiques précises** - 2382 lignes code, 5661 lignes tests
 - ✅ **Ratio Test/Code : 2.38:1** - Excellent ! 🔥
-- ✅ **364 tests (100% réussite)** - +14 tests depuis v0.0.14
+- ✅ **351 tests (100% réussite)** - +1 test depuis v0.0.14
 - ✅ **Note de qualité : 10/10** - Score parfait atteint ! ✅ 🔥
 - ✅ 4 releases officielles (v0.0.10, v0.0.11, v0.0.14, v0.0.15)
 - ✅ **Projet production-ready avec qualité professionnelle** 🚀
@@ -986,7 +986,7 @@ Pool Control a réalisé des **progrès exceptionnels** en quelques jours :
 - ✅ 6 bugs critiques corrigés
 - ✅ Refactoring majeur réussi
 - ✅ Documentation exhaustive
-- ✅ **Tests unitaires - 364 tests (100% réussite)** 🔥
+- ✅ **Tests unitaires - 351 tests (100% réussite)** 🔥
 - ✅ **5661 lignes de code de test** (ratio 2.38:1 tests/code!) 🔥
 - ✅ **15 fichiers de tests complets** ✅ 🔥
 - ✅ **50% de modules testés** (9/18 modules critiques) 🔥
@@ -1004,7 +1004,7 @@ Le projet a franchi **six étapes majeures** :
 5. **Release stable v0.0.14** - 100% tests, production-ready ! (v0.0.14) 🔥 🚀
 6. **Type hints à 100%** - 82 fonctions annotées, qualité professionnelle ! (v0.0.15) ✅ 🔥
 
-Avec 50% de modules testés, 364 tests (100% réussite), ratio 2.38:1 et **100% type hints coverage**, le projet est **prêt pour la production et distribution publique** avec un niveau de qualité **professionnelle parfaite (10/10)** ! ✅ 🔥
+Avec 50% de modules testés, 351 tests (100% réussite), ratio 2.38:1 et **100% type hints coverage**, le projet est **prêt pour la production et distribution publique** avec un niveau de qualité **professionnelle parfaite (10/10)** ! ✅ 🔥
 
 **Progrès exceptionnels ! Le projet a dépassé toutes les attentes et est maintenant mature, robuste, parfaitement typé et production-ready avec une qualité parfaite !** 🎉 🚀 ✅ 🔥
 
