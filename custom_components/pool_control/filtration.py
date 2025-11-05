@@ -3,6 +3,12 @@
 import logging
 from typing import Optional
 
+from .errors import (
+    EntityNotConfiguredError,
+    EntityNotFoundError,
+    ServiceCallError,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -12,76 +18,117 @@ class FiltrationMixin:
     async def refreshFiltration(self) -> None:
         """Rafraichi l'état de la filtration."""
 
-        if not self.filtration:
-            _LOGGER.error("Filtration entity ID is not configured.")
-            return
+        try:
+            if not self.filtration:
+                raise EntityNotConfiguredError("filtration")
 
-        filtrationState = self.hass.states.get(self.filtration)
+            filtrationState = self.hass.states.get(self.filtration)
 
-        if filtrationState is None:
-            _LOGGER.error("Filtration %s not found", self.filtration)
-            return
+            if filtrationState is None:
+                raise EntityNotFoundError(self.filtration)
 
-        if filtrationState.state == "on":
-            await self.filtrationOn(True)
+            if filtrationState.state == "on":
+                await self.filtrationOn(True)
+            elif filtrationState.state == "off":
+                await self.filtrationStop(True)
 
-        elif filtrationState.state == "off":
-            await self.filtrationStop(True)
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to refresh filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Impossible de rafraîchir l'état de la filtration: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while refreshing filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Erreur inattendue lors du rafraîchissement de la filtration: {e}",
+            )
 
     async def filtrationOn(self, repeat: bool = False) -> None:
         """Active la filtration."""
 
-        if not self.filtration:
-            _LOGGER.error("Filtration entity ID is not configured.")
-            return
+        try:
+            if not self.filtration:
+                raise EntityNotConfiguredError("filtration")
 
-        filtrationState = self.hass.states.get(self.filtration)
+            # Check current state if not repeat
+            if not repeat:
+                filtrationState = self.hass.states.get(self.filtration)
+                if filtrationState and filtrationState.state == "on":
+                    _LOGGER.debug("Filtration already on, skipping")
+                    return
 
-        if filtrationState is None:
-            _LOGGER.error("Filtration %s not found", self.filtration)
-            return
+            # Call service with error handling and state verification
+            await self._safe_call_service(
+                self.filtration, "turn_on", verify_state="on"
+            )
 
-        if not repeat and filtrationState.state == "on":
-            return
+            # Update status display
+            if self.filtrationStatus:
+                self.filtrationStatus.set_status("Actif")
 
-        # Active la filtration
-        await self.hass.services.async_call(
-            self.filtration.split(".")[0],
-            "turn_on",
-            {"entity_id": self.filtration},
-        )
+            _LOGGER.info("Filtration activated successfully")
 
-        if self.filtrationStatus:
-            self.filtrationStatus.set_status("Actif")
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to activate filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Impossible d'activer la filtration: {e}",
+            )
+        except ServiceCallError as e:
+            _LOGGER.error("Service call failed for filtration activation: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Échec de l'activation de la filtration après plusieurs tentatives: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while activating filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Erreur inattendue lors de l'activation de la filtration: {e}",
+            )
 
     async def filtrationStop(self, repeat: bool = False) -> None:
         """Arrête la filtration."""
 
-        if not self.filtration:
-            _LOGGER.error("Filtration entity ID is not configured.")
-            return
+        try:
+            if not self.filtration:
+                raise EntityNotConfiguredError("filtration")
 
-        filtrationState = self.hass.states.get(self.filtration)
+            # Check current state if not repeat
+            if not repeat:
+                filtrationState = self.hass.states.get(self.filtration)
+                if filtrationState and filtrationState.state == "off":
+                    _LOGGER.debug("Filtration already off, skipping")
+                    return
 
-        if filtrationState is None:
-            _LOGGER.error("Filtration %s not found", self.filtration)
-            return
+            # Call service with error handling and state verification
+            await self._safe_call_service(
+                self.filtration, "turn_off", verify_state="off"
+            )
 
-        if not repeat and filtrationState.state == "off":
-            return
+            # Update status display
+            if self.filtrationStatus:
+                self.filtrationStatus.set_status("Arrêté")
 
-        # Arrête la filtration
-        await self.hass.services.async_call(
-            self.filtration.split(".")[0],
-            "turn_off",
-            {"entity_id": self.filtration},
-        )
+            _LOGGER.info("Filtration stopped successfully")
 
-        if self.filtrationStatus:
-            self.filtrationStatus.set_status("Arrêté")
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to stop filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Impossible d'arrêter la filtration: {e}",
+            )
+        except ServiceCallError as e:
+            _LOGGER.error("Service call failed for filtration stop: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Échec de l'arrêt de la filtration après plusieurs tentatives: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while stopping filtration: %s", e)
+            await self._notify_error(
+                "Pool Control - Filtration Error",
+                f"Erreur inattendue lors de l'arrêt de la filtration: {e}",
+            )

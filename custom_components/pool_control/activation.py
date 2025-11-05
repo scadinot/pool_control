@@ -4,6 +4,8 @@ import asyncio
 import logging
 from typing import Optional
 
+from .errors import PoolControlError
+
 _LOGGER = logging.getLogger(__name__)
 
 # Constants for delays
@@ -18,16 +20,27 @@ class ActivationMixin:
 
         _LOGGER.debug("activatingDevices() begin")
 
-        # Update status display
-        self._update_status_display()
+        try:
+            # Update status display
+            self._update_status_display()
 
-        # Handle device activation based on current mode
-        if int(self.get_data("arretTotal", 0)) == 0:
-            await self._handle_active_mode()
-        else:
-            await self._handle_stop_all()
+            # Handle device activation based on current mode
+            if int(self.get_data("arretTotal", 0)) == 0:
+                await self._handle_active_mode()
+            else:
+                await self._handle_stop_all()
 
-        _LOGGER.debug("activatingDevices() end")
+            _LOGGER.debug("activatingDevices() end")
+
+        except PoolControlError as e:
+            _LOGGER.error("Pool control error during device activation: %s", e)
+            # Error already notified by individual methods
+        except Exception as e:
+            _LOGGER.exception("Unexpected error during device activation: %s", e)
+            await self._notify_error(
+                "Pool Control - Activation Error",
+                f"Erreur inattendue lors de l'activation des dispositifs: {e}",
+            )
 
     def _update_status_display(self) -> None:
         """Update the status display based on current state."""

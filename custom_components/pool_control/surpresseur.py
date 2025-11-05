@@ -5,6 +5,12 @@ import logging
 import time
 from typing import Optional
 
+from .errors import (
+    EntityNotConfiguredError,
+    EntityNotFoundError,
+    ServiceCallError,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -14,115 +20,157 @@ class SurpresseurMixin:
     async def executeSurpresseurOn(self) -> None:
         """Lance le surpresseur."""
 
-        if (
-            int(self.get_data("filtrationSurpresseur", 0)) == 0
-            and int(self.get_data("filtrationLavageEtat", 0)) == 0
-        ):
-            timeFin = time.time() + (self.surpresseurDuree * 60)
-            self.set_data("filtrationTempsRestant", int(timeFin))
+        try:
+            if (
+                int(self.get_data("filtrationSurpresseur", 0)) == 0
+                and int(self.get_data("filtrationLavageEtat", 0)) == 0
+            ):
+                timeFin = time.time() + (self.surpresseurDuree * 60)
+                self.set_data("filtrationTempsRestant", int(timeFin))
 
-            timeRestant = timeFin - time.time()
-            display = "Actif"
-            display += " : "
-            display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
-            if self.surpresseurStatus:
-                self.surpresseurStatus.set_status(display)
+                timeRestant = timeFin - time.time()
+                display = "Actif"
+                display += " : "
+                display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
+                if self.surpresseurStatus:
+                    self.surpresseurStatus.set_status(display)
 
-            self.set_data("filtrationSurpresseur", 1)
-            await self.activatingDevices()
+                self.set_data("filtrationSurpresseur", 1)
+                await self.activatingDevices()
 
-        await self.startSecondCron()
+            await self.startSecondCron()
+
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while executing surpresseur on: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Erreur lors du lancement du surpresseur: {e}",
+            )
 
     async def refreshSurpresseur(self) -> None:
         """Rafraichi l'état du surpresseur."""
 
-        if not self.surpresseur:
-            _LOGGER.error("Surpresseur entity ID is not configured.")
-            return
+        try:
+            if not self.surpresseur:
+                raise EntityNotConfiguredError("surpresseur")
 
-        surpresseurState = self.hass.states.get(self.surpresseur)
+            surpresseurState = self.hass.states.get(self.surpresseur)
 
-        if surpresseurState is None:
-            _LOGGER.error("Surpresseur %s not found", self.surpresseur)
-            return
+            if surpresseurState is None:
+                raise EntityNotFoundError(self.surpresseur)
 
-        if surpresseurState.state == "on":
-            await self.surpresseurOn(True)
+            if surpresseurState.state == "on":
+                await self.surpresseurOn(True)
+            elif surpresseurState.state == "off":
+                await self.surpresseurStop(True)
 
-        elif surpresseurState.state == "off":
-            await self.surpresseurStop(True)
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to refresh surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Impossible de rafraîchir l'état du surpresseur: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while refreshing surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Erreur inattendue lors du rafraîchissement du surpresseur: {e}",
+            )
 
     def getStateSurpresseur(self) -> bool:
         """Obtient l'état du surpresseur."""
 
-        if not self.surpresseur:
-            _LOGGER.error("Surpresseur entity ID is not configured.")
+        try:
+            if not self.surpresseur:
+                raise EntityNotConfiguredError("surpresseur")
+
+            surpresseurState = self.hass.states.get(self.surpresseur)
+
+            if surpresseurState is None:
+                raise EntityNotFoundError(self.surpresseur)
+
+            return surpresseurState.state == "on"
+
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to get surpresseur state: %s", e)
             return False
-
-        surpresseurState = self.hass.states.get(self.surpresseur)
-
-        if surpresseurState is None:
-            _LOGGER.error("Surpresseur %s not found", self.surpresseur)
-            return False
-
-        if surpresseurState.state == "on":
-            return True
-        return False
 
     async def surpresseurOn(self, repeat: bool = False) -> None:
         """Active le surpresseur."""
 
-        if not self.surpresseur:
-            _LOGGER.error("Surpresseur entity ID is not configured.")
-            return
+        try:
+            if not self.surpresseur:
+                raise EntityNotConfiguredError("surpresseur")
 
-        surpresseurState = self.hass.states.get(self.surpresseur)
+            # Check current state if not repeat
+            if not repeat:
+                surpresseurState = self.hass.states.get(self.surpresseur)
+                if surpresseurState and surpresseurState.state == "on":
+                    _LOGGER.debug("Surpresseur already on, skipping")
+                    return
 
-        if surpresseurState is None:
-            _LOGGER.error("Surpresseur %s not found", self.surpresseur)
-            return
+            # Call service with error handling and state verification
+            await self._safe_call_service(
+                self.surpresseur, "turn_on", verify_state="on"
+            )
 
-        if not repeat and surpresseurState.state == "on":
-            return
+            _LOGGER.info("Surpresseur activated successfully")
 
-        # Active le surpresseur
-        await self.hass.services.async_call(
-            self.surpresseur.split(".")[0],
-            "turn_on",
-            {"entity_id": self.surpresseur},
-        )
-
-        # if self.surpresseurStatus:
-        #    self.surpresseurStatus.set_status("Actif")
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to activate surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Impossible d'activer le surpresseur: {e}",
+            )
+        except ServiceCallError as e:
+            _LOGGER.error("Service call failed for surpresseur activation: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Échec de l'activation du surpresseur après plusieurs tentatives: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while activating surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Erreur inattendue lors de l'activation du surpresseur: {e}",
+            )
 
     async def surpresseurStop(self, repeat: bool = False) -> None:
         """Arrête le surpresseur."""
 
-        if not self.surpresseur:
-            _LOGGER.error("Surpresseur entity ID is not configured.")
-            return
+        try:
+            if not self.surpresseur:
+                raise EntityNotConfiguredError("surpresseur")
 
-        surpresseurState = self.hass.states.get(self.surpresseur)
+            # Check current state if not repeat
+            if not repeat:
+                surpresseurState = self.hass.states.get(self.surpresseur)
+                if surpresseurState and surpresseurState.state == "off":
+                    _LOGGER.debug("Surpresseur already off, skipping")
+                    return
 
-        if surpresseurState is None:
-            _LOGGER.error("Surpresseur %s not found", self.surpresseur)
-            return
+            # Call service with error handling and state verification
+            await self._safe_call_service(
+                self.surpresseur, "turn_off", verify_state="off"
+            )
 
-        if not repeat and surpresseurState.state == "off":
-            return
+            _LOGGER.info("Surpresseur stopped successfully")
 
-        # Arrête le surpresseur
-        await self.hass.services.async_call(
-            self.surpresseur.split(".")[0],
-            "turn_off",
-            {"entity_id": self.surpresseur},
-        )
-
-        # if self.surpresseurStatus:
-        #   self.surpresseurStatus.set_status("Arrêté")
-
-        return
+        except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            _LOGGER.error("Failed to stop surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Impossible d'arrêter le surpresseur: {e}",
+            )
+        except ServiceCallError as e:
+            _LOGGER.error("Service call failed for surpresseur stop: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Échec de l'arrêt du surpresseur après plusieurs tentatives: {e}",
+            )
+        except Exception as e:
+            _LOGGER.exception("Unexpected error while stopping surpresseur: %s", e)
+            await self._notify_error(
+                "Pool Control - Surpresseur Error",
+                f"Erreur inattendue lors de l'arrêt du surpresseur: {e}",
+            )
