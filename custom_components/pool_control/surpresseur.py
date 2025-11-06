@@ -65,11 +65,8 @@ class SurpresseurMixin:
                 await self.surpresseurStop(True)
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to refresh surpresseur: %s", e)
-            await self._notify_error(
-                "Pool Control - Surpresseur Error",
-                f"Impossible de rafraîchir l'état du surpresseur: {e}",
-            )
         except Exception as e:
             _LOGGER.exception("Unexpected error while refreshing surpresseur: %s", e)
             await self._notify_error(
@@ -92,6 +89,7 @@ class SurpresseurMixin:
             return surpresseurState.state == "on"
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to get surpresseur state: %s", e)
             return False
 
@@ -117,11 +115,8 @@ class SurpresseurMixin:
             _LOGGER.info("Surpresseur activated successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to activate surpresseur: %s", e)
-            await self._notify_error(
-                "Pool Control - Surpresseur Error",
-                f"Impossible d'activer le surpresseur: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for surpresseur activation: %s", e)
             await self._notify_error(
@@ -157,11 +152,8 @@ class SurpresseurMixin:
             _LOGGER.info("Surpresseur stopped successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to stop surpresseur: %s", e)
-            await self._notify_error(
-                "Pool Control - Surpresseur Error",
-                f"Impossible d'arrêter le surpresseur: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for surpresseur stop: %s", e)
             await self._notify_error(

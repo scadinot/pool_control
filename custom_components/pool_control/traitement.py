@@ -33,11 +33,8 @@ class TraitementMixin:
                 await self.traitementStop(True)
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to refresh traitement: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement Error",
-                f"Impossible de rafraîchir l'état du traitement: {e}",
-            )
         except Exception as e:
             _LOGGER.exception("Unexpected error while refreshing traitement: %s", e)
             await self._notify_error(
@@ -60,6 +57,7 @@ class TraitementMixin:
             return traitementState.state == "on"
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to get traitement state: %s", e)
             return False
 
@@ -85,11 +83,8 @@ class TraitementMixin:
             _LOGGER.info("Traitement activated successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to activate traitement: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement Error",
-                f"Impossible d'activer le traitement: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for traitement activation: %s", e)
             await self._notify_error(
@@ -125,11 +120,8 @@ class TraitementMixin:
             _LOGGER.info("Traitement stopped successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to stop traitement: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement Error",
-                f"Impossible d'arrêter le traitement: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for traitement stop: %s", e)
             await self._notify_error(
@@ -163,11 +155,8 @@ class TraitementMixin:
                 await self.traitement_2_Stop(True)
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to refresh traitement_2: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement 2 Error",
-                f"Impossible de rafraîchir l'état du traitement 2: {e}",
-            )
         except Exception as e:
             _LOGGER.exception("Unexpected error while refreshing traitement_2: %s", e)
             await self._notify_error(
@@ -190,6 +179,7 @@ class TraitementMixin:
             return traitementState.state == "on"
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to get traitement_2 state: %s", e)
             return False
 
@@ -215,11 +205,8 @@ class TraitementMixin:
             _LOGGER.info("Traitement_2 activated successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to activate traitement_2: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement 2 Error",
-                f"Impossible d'activer le traitement 2: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for traitement_2 activation: %s", e)
             await self._notify_error(
@@ -255,11 +242,8 @@ class TraitementMixin:
             _LOGGER.info("Traitement_2 stopped successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to stop traitement_2: %s", e)
-            await self._notify_error(
-                "Pool Control - Traitement 2 Error",
-                f"Impossible d'arrêter le traitement 2: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for traitement_2 stop: %s", e)
             await self._notify_error(

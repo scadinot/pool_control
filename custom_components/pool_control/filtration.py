@@ -33,11 +33,8 @@ class FiltrationMixin:
                 await self.filtrationStop(True)
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to refresh filtration: %s", e)
-            await self._notify_error(
-                "Pool Control - Filtration Error",
-                f"Impossible de rafraîchir l'état de la filtration: {e}",
-            )
         except Exception as e:
             _LOGGER.exception("Unexpected error while refreshing filtration: %s", e)
             await self._notify_error(
@@ -71,11 +68,8 @@ class FiltrationMixin:
             _LOGGER.info("Filtration activated successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to activate filtration: %s", e)
-            await self._notify_error(
-                "Pool Control - Filtration Error",
-                f"Impossible d'activer la filtration: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for filtration activation: %s", e)
             await self._notify_error(
@@ -115,11 +109,8 @@ class FiltrationMixin:
             _LOGGER.info("Filtration stopped successfully")
 
         except (EntityNotConfiguredError, EntityNotFoundError) as e:
+            # Configuration errors - log only, no user notification
             _LOGGER.error("Failed to stop filtration: %s", e)
-            await self._notify_error(
-                "Pool Control - Filtration Error",
-                f"Impossible d'arrêter la filtration: {e}",
-            )
         except ServiceCallError as e:
             _LOGGER.error("Service call failed for filtration stop: %s", e)
             await self._notify_error(
