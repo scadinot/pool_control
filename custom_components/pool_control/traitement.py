@@ -77,7 +77,7 @@ class TraitementMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.traitement, "turn_on", verify_state="on"
+                self.traitement, "turn_on"
             )
 
             _LOGGER.info("Traitement activated successfully")
@@ -114,7 +114,7 @@ class TraitementMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.traitement, "turn_off", verify_state="off"
+                self.traitement, "turn_off"
             )
 
             _LOGGER.info("Traitement stopped successfully")
@@ -199,7 +199,7 @@ class TraitementMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.traitement_2, "turn_on", verify_state="on"
+                self.traitement_2, "turn_on"
             )
 
             _LOGGER.info("Traitement_2 activated successfully")
@@ -236,7 +236,7 @@ class TraitementMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.traitement_2, "turn_off", verify_state="off"
+                self.traitement_2, "turn_off"
             )
 
             _LOGGER.info("Traitement_2 stopped successfully")

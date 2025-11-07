@@ -58,7 +58,7 @@ class FiltrationMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.filtration, "turn_on", verify_state="on"
+                self.filtration, "turn_on"
             )
 
             # Update status display
@@ -99,7 +99,7 @@ class FiltrationMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.filtration, "turn_off", verify_state="off"
+                self.filtration, "turn_off"
             )
 
             # Update status display

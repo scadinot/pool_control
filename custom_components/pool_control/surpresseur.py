@@ -109,7 +109,7 @@ class SurpresseurMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.surpresseur, "turn_on", verify_state="on"
+                self.surpresseur, "turn_on"
             )
 
             _LOGGER.info("Surpresseur activated successfully")
@@ -146,7 +146,7 @@ class SurpresseurMixin:
 
             # Call service with error handling and state verification
             await self._safe_call_service(
-                self.surpresseur, "turn_off", verify_state="off"
+                self.surpresseur, "turn_off"
             )
 
             _LOGGER.info("Surpresseur stopped successfully")
