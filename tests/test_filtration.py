@@ -322,11 +322,14 @@ class TestFiltrationIntegration:
         mock_state_on = MagicMock()
         mock_state_on.state = "on"
 
-        # First call returns off, second call returns on
-        mock_filtration_controller.hass.states.get.side_effect = [
-            mock_state_off,  # First call (filtrationOn)
-            mock_state_on,   # Second call (filtrationStop)
-        ]
+        # Use a function to handle multiple calls to hass.states.get
+        def _states_side_effect(entity_id):
+            calls = getattr(_states_side_effect, "_calls", 0)
+            _states_side_effect._calls = calls + 1
+            # First call returns 'off' (for filtrationOn), subsequent calls return 'on'
+            return mock_state_off if calls == 0 else mock_state_on
+
+        mock_filtration_controller.hass.states.get.side_effect = _states_side_effect
 
         # Turn on
         await mock_filtration_controller.filtrationOn()
