@@ -132,7 +132,6 @@ class ServiceUtilsMixin:
                     domain,
                     service,
                     {"entity_id": entity_id},
-                    blocking=True,
                 )
 
                 # Verify state if requested
@@ -237,7 +236,6 @@ class ServiceUtilsMixin:
                     "message": message,
                     "notification_id": f"pool_control_error_{asyncio.get_event_loop().time()}",
                 },
-                blocking=False,
             )
             _LOGGER.info("Sent error notification: %s - %s", title, message)
         except Exception as e:
