@@ -40,10 +40,6 @@ def mock_hass():
     # Loop (pour asyncio)
     hass.loop = MagicMock()
 
-    # Mock config
-    hass.config = MagicMock()
-    hass.config.config_dir = "/tmp/pool_control_test"
-
     # Mock async_create_task to prevent "coroutine was never awaited" warnings
     hass.async_create_task = Mock(return_value=None)
 
