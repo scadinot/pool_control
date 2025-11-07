@@ -39,20 +39,14 @@ class ServiceUtilsMixin:
         """
 
         if not entity_id or not isinstance(entity_id, str):
-            raise InvalidEntityIdError(
-                entity_id, f"Entity ID must be a non-empty string, got: {entity_id}"
-            )
+            raise InvalidEntityIdError(entity_id)
 
         if "." not in entity_id:
-            raise InvalidEntityIdError(
-                entity_id, f"Entity ID must contain a domain separator '.'"
-            )
+            raise InvalidEntityIdError(entity_id)
 
         parts = entity_id.split(".", 1)
         if len(parts) != 2 or not parts[0] or not parts[1]:
-            raise InvalidEntityIdError(
-                entity_id, f"Entity ID must be in format 'domain.entity_name'"
-            )
+            raise InvalidEntityIdError(entity_id)
 
         return parts[0]
 
@@ -231,7 +225,7 @@ class ServiceUtilsMixin:
             await self.hass.services.async_call(
                 "persistent_notification",
                 "create",
-                {
+                service_data={
                     "title": title,
                     "message": message,
                     "notification_id": f"pool_control_error_{asyncio.get_event_loop().time()}",
