@@ -2,11 +2,11 @@
 
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
-## ✨ Nouveautés v0.0.14
+## ✨ Nouveautés v0.0.15
 
+- **Type hints à 100%** - Toutes les fonctions sont annotées pour une meilleure qualité de code
 - **Installation moderne via Config Flow** - Configuration 100% via l'interface utilisateur
 - **Création automatique des entités** - 6 capteurs et 9 boutons créés automatiquement
-- **100% de tests réussis** - Les 350 tests passent avec succès ✅
 
 ## Fonctionnalités
 
@@ -30,12 +30,12 @@ _Composant Home Assistant permettant de gérer la filtration d'une piscine en fo
 ## Entités créées automatiquement
 
 ### 6 Capteurs
-- `sensor.status_asservissement` - État du mode d'asservissement
-- `sensor.temps_de_filtration` - Temps de filtration calculé
-- `sensor.planning_de_filtration` - Planning des périodes de filtration
-- `sensor.status_filtration` - État de la pompe de filtration
-- `sensor.status_surpresseur` - État du surpresseur
-- `sensor.status_lavage_filtre` - État du lavage du filtre
+- `sensor.pool_control_asservissement_status` - État du mode d'asservissement
+- `sensor.pool_control_filtration_time` - Temps de filtration calculé
+- `sensor.pool_control_filtration_schedule` - Planning des périodes de filtration
+- `sensor.pool_control_filtration_status` - État de la pompe de filtration
+- `sensor.pool_control_surpresseur_status` - État du surpresseur
+- `sensor.pool_control_filtre_sable_lavage_status` - État du lavage du filtre
 
 ### 9 Boutons
 - `button.pool_control_reset` - Réinitialisation

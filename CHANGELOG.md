@@ -24,10 +24,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 ### Modifications
 - **Type hints** : 15 (~28%) → 82 (100%)
 - **Lignes de code** : 2362 → 2382 (+20 lignes)
-- **Lignes de tests** : 5432 → 5661 (+229 lignes)
-- **Fichiers de tests** : 12 → 15 (+3 fichiers)
-- **Tests unitaires** : 350 → 364 (+14 tests)
-- **Ratio Test/Code** : 2.3:1 → 2.38:1
+- **Lignes de tests** : 5432 (stable)
+- **Fichiers de tests** : 12 (stable)
+- **Tests unitaires** : 350 (stable)
+- **Ratio Test/Code** : 2.28:1
 - **Score de qualité** : 9.8/10 → 10/10 ⭐
 
 ### Documentation
@@ -67,12 +67,12 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 - scheduler.py - `__init__` (1 méthode)
 
 ### Statistiques
-- **Tests** : 364 tests (100% réussis) ✅
-- **Modules testés** : 9/18 (50%)
-- **Code de test** : 5661 lignes
+- **Tests** : 350 tests ✅
+- **Modules testés** : 12/19 (63%)
+- **Code de test** : 5432 lignes
 - **Code source** : 2382 lignes
 - **Fonctions annotées** : 82/82 (100%) ✅ 🔥
-- **Ratio Test/Code** : 2.38:1
+- **Ratio Test/Code** : 2.28:1
 - **Score de qualité** : 10/10 ⭐⭐⭐⭐⭐
 
 ### Bénéfices
@@ -281,8 +281,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 | Version | Date | Tests | Modules testés | Type hints | Qualité | Bugs | Statut |
 |---------|------|-------|----------------|------------|---------|------|--------|
-| 0.0.15 | 2025-11-04 | 364 | 50% (9/18) | 100% (82) | 10/10 ⭐ | 0 | ✅ Production |
-| 0.0.14 | 2025-11-03 | 350 | ~65% | ~28% (15) | 9.8/10 | 0 | ✅ Production |
+| 0.0.15 | 2025-11-04 | 350 | 63% (12/19) | 100% (82) | 10/10 ⭐ | 0 | ✅ Production |
+| 0.0.14 | 2025-11-03 | 350 | 63% (12/19) | ~28% (15) | 9.8/10 | 0 | ✅ Production |
 | 0.0.13 | 2025-11-02 | 350 | ~65% | ~28% (15) | 9.8/10 | 0 | ✅ Stable |
 | 0.0.12 | 2025-11-01 | 30 | ~15% | ~28% (15) | 8.5/10 | 0 | ✅ Stable |
 | 0.0.11 | 2025-10-31 | 0 | 0% | ~28% (15) | 8.0/10 | 0 | ✅ Documenté |
