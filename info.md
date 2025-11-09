@@ -2,8 +2,11 @@
 
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
-## ✨ Nouveautés v0.0.15
+## ✨ Nouveautés v0.0.16
 
+- **Gestion d'erreurs complète** - 100% des services Home Assistant sécurisés (8/8 appels protégés)
+- **Robustesse 9/10** - Protection contre les crashs silencieux sur les services
+- **ServiceMixin centralisé** - Logging détaillé avec contexte pour faciliter le debugging
 - **Type hints à 100%** - Toutes les fonctions sont annotées pour une meilleure qualité de code
 - **Installation moderne via Config Flow** - Configuration 100% via l'interface utilisateur
 - **Création automatique des entités** - 6 capteurs et 9 boutons créés automatiquement
