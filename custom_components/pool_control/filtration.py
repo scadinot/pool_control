@@ -1,7 +1,6 @@
 """Filtration control mixin for pool automation."""
 
 import logging
-from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,13 +46,14 @@ class FiltrationMixin:
             return
 
         # Active la filtration
-        await self.hass.services.async_call(
-            self.filtration.split(".")[0],
-            "turn_on",
-            {"entity_id": self.filtration},
+        success = await self._safe_service_call(
+            domain=self.filtration.split(".")[0],
+            service="turn_on",
+            service_data={"entity_id": self.filtration},
+            entity_name="filtration",
         )
 
-        if self.filtrationStatus:
+        if success and self.filtrationStatus:
             self.filtrationStatus.set_status("Actif")
 
         return
@@ -75,13 +75,14 @@ class FiltrationMixin:
             return
 
         # Arrête la filtration
-        await self.hass.services.async_call(
-            self.filtration.split(".")[0],
-            "turn_off",
-            {"entity_id": self.filtration},
+        success = await self._safe_service_call(
+            domain=self.filtration.split(".")[0],
+            service="turn_off",
+            service_data={"entity_id": self.filtration},
+            entity_name="filtration",
         )
 
-        if self.filtrationStatus:
+        if success and self.filtrationStatus:
             self.filtrationStatus.set_status("Arrêté")
 
         return

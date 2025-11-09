@@ -1,7 +1,6 @@
 """Traitement mixin for pool control integration."""
 
 import logging
-from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,10 +63,11 @@ class TraitementMixin:
             return
 
         # Active le traitement
-        await self.hass.services.async_call(
-            self.traitement.split(".")[0],
-            "turn_on",
-            {"entity_id": self.traitement},
+        await self._safe_service_call(
+            domain=self.traitement.split(".")[0],
+            service="turn_on",
+            service_data={"entity_id": self.traitement},
+            entity_name="traitement",
         )
 
         return
@@ -89,10 +89,11 @@ class TraitementMixin:
             return
 
         # Arrête le traitement
-        await self.hass.services.async_call(
-            self.traitement.split(".")[0],
-            "turn_off",
-            {"entity_id": self.traitement},
+        await self._safe_service_call(
+            domain=self.traitement.split(".")[0],
+            service="turn_off",
+            service_data={"entity_id": self.traitement},
+            entity_name="traitement",
         )
 
         return
@@ -154,10 +155,11 @@ class TraitementMixin:
             return
 
         # Active le traitement
-        await self.hass.services.async_call(
-            self.traitement_2.split(".")[0],
-            "turn_on",
-            {"entity_id": self.traitement_2},
+        await self._safe_service_call(
+            domain=self.traitement_2.split(".")[0],
+            service="turn_on",
+            service_data={"entity_id": self.traitement_2},
+            entity_name="traitement_2",
         )
 
         return
@@ -179,10 +181,11 @@ class TraitementMixin:
             return
 
         # Arrête le traitement
-        await self.hass.services.async_call(
-            self.traitement_2.split(".")[0],
-            "turn_off",
-            {"entity_id": self.traitement_2},
+        await self._safe_service_call(
+            domain=self.traitement_2.split(".")[0],
+            service="turn_off",
+            service_data={"entity_id": self.traitement_2},
+            entity_name="traitement_2",
         )
 
         return

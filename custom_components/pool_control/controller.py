@@ -15,6 +15,7 @@ from .lavage import LavageMixin
 from .saison import SaisonMixin
 from .scheduler import SchedulerMixin
 from .sensors import SensorMixin
+from .service import ServiceMixin
 from .surpresseur import SurpresseurMixin
 from .traitement import TraitementMixin
 from .utils import FiltrationUtilsMixin
@@ -33,6 +34,7 @@ class PoolController(
     SaisonMixin,
     SchedulerMixin,
     SensorMixin,
+    ServiceMixin,
     SurpresseurMixin,
     TraitementMixin,
     FiltrationUtilsMixin,

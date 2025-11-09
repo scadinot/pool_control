@@ -3,7 +3,6 @@
 from datetime import datetime
 import logging
 import time
-from typing import Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -88,10 +87,11 @@ class SurpresseurMixin:
             return
 
         # Active le surpresseur
-        await self.hass.services.async_call(
-            self.surpresseur.split(".")[0],
-            "turn_on",
-            {"entity_id": self.surpresseur},
+        await self._safe_service_call(
+            domain=self.surpresseur.split(".")[0],
+            service="turn_on",
+            service_data={"entity_id": self.surpresseur},
+            entity_name="surpresseur",
         )
 
         # if self.surpresseurStatus:
@@ -116,10 +116,11 @@ class SurpresseurMixin:
             return
 
         # Arrête le surpresseur
-        await self.hass.services.async_call(
-            self.surpresseur.split(".")[0],
-            "turn_off",
-            {"entity_id": self.surpresseur},
+        await self._safe_service_call(
+            domain=self.surpresseur.split(".")[0],
+            service="turn_off",
+            service_data={"entity_id": self.surpresseur},
+            entity_name="surpresseur",
         )
 
         # if self.surpresseurStatus:
