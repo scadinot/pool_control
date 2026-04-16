@@ -1,8 +1,8 @@
 """Lavage mixin for pool control."""
 
-from datetime import datetime
 import time
-from typing import Optional
+
+from .utils import formatDurationMinutesSeconds
 
 
 class LavageMixin:
@@ -37,7 +37,7 @@ class LavageMixin:
                 timeRestant = timeFin - int(time.time())
                 display = "Lavage"
                 display += " : "
-                display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
+                display += formatDurationMinutesSeconds(timeRestant)
                 if self.filtreSableLavageStatus:
                     self.filtreSableLavageStatus.set_status(display)
                 self.set_data("filtrationLavage", 2)
@@ -60,7 +60,7 @@ class LavageMixin:
                 timeRestant = timeFin - time.time()
                 display = "Rinçage"
                 display += " : "
-                display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
+                display += formatDurationMinutesSeconds(timeRestant)
                 if self.filtreSableLavageStatus:
                     self.filtreSableLavageStatus.set_status(display)
                 self.set_data("filtrationLavage", 2)

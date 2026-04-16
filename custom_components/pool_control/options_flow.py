@@ -8,6 +8,8 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, FlowResult
 from homeassistant.helpers.selector import selector
 
+from .controller import _validate_distribution
+
 
 class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
     """Gestion des options de Pool Control avec menu de navigation."""
@@ -77,8 +79,8 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle the filtration step of the options flow."""
 
         if user_input is not None:
-            user_input["distributionDatePivot"] = int(
-                user_input.get("distributionDatePivot")
+            user_input["distributionDatePivot"] = _validate_distribution(
+                user_input.get("distributionDatePivot"), "distributionDatePivot", 1
             )
             self.options.update(user_input)
             return await self.async_step_init()
@@ -146,8 +148,10 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle the hivernage step of the options flow."""
 
         if user_input is not None:
-            user_input["distributionDatePivotHivernage"] = int(
-                user_input.get("distributionDatePivotHivernage")
+            user_input["distributionDatePivotHivernage"] = _validate_distribution(
+                user_input.get("distributionDatePivotHivernage"),
+                "distributionDatePivotHivernage",
+                4,
             )
             self.options.update(user_input)
             return await self.async_step_init()

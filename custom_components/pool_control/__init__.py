@@ -39,6 +39,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.info("Unloading Pool Control")
 
+    # Arrêter les crons avant de décharger les plateformes
+    controller = hass.data.get(DOMAIN)
+    if controller is not None:
+        await controller.stopFirstCron()
+        await controller.stopSecondCron()
+
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:

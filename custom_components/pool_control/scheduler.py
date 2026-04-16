@@ -7,6 +7,8 @@ from typing import Any, Optional
 
 from homeassistant.helpers.event import async_track_time_interval
 
+from .utils import formatDurationMinutesSeconds
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -16,6 +18,7 @@ class SchedulerMixin:
     def __init__(self) -> None:
         """Initialize the SchedulerMixin with default values."""
 
+        self.firstCronCancel = None
         self.secondCronCancel = None
 
         # Propriétés de l'objet
@@ -53,9 +56,7 @@ class SchedulerMixin:
             timeRestant = timeFin - time.time()
 
             if timeRestant > 0:
-                display = (
-                    f"Actif : {datetime.fromtimestamp(timeRestant).strftime('%M:%S')}"
-                )
+                display = f"Actif : {formatDurationMinutesSeconds(timeRestant)}"
                 if self.surpresseurStatus:
                     self.surpresseurStatus.set_status(display)
             else:
@@ -69,9 +70,7 @@ class SchedulerMixin:
             timeRestant = timeFin - time.time()
 
             if timeRestant > 0:
-                display = (
-                    f"{label} : {datetime.fromtimestamp(timeRestant).strftime('%M:%S')}"
-                )
+                display = f"{label} : {formatDurationMinutesSeconds(timeRestant)}"
                 if self.filtreSableLavageStatus:
                     self.filtreSableLavageStatus.set_status(display)
             else:
@@ -82,9 +81,23 @@ class SchedulerMixin:
     async def startFirstCron(self) -> None:
         """Lance le cron '1 minute'."""
 
-        async_track_time_interval(self.hass, self.cron, timedelta(minutes=1))
+        if self.firstCronCancel is not None:
+            self.firstCronCancel()
+
+        self.firstCronCancel = async_track_time_interval(
+            self.hass, self.cron, timedelta(minutes=1)
+        )
 
         _LOGGER.info("First cron job started")
+
+    async def stopFirstCron(self) -> None:
+        """Arrete le cron '1 minute'."""
+
+        if self.firstCronCancel is not None:
+            self.firstCronCancel()
+            self.firstCronCancel = None
+
+            _LOGGER.info("First cron job stopped")
 
     async def cron(self, now: Optional[Any] = None) -> None:
         """Routine toutes les minutes : suivi de la filtration, hivernage, traitements..."""

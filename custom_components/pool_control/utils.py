@@ -3,6 +3,30 @@
 from typing import Tuple
 
 
+def formatDurationMinutesSeconds(seconds: float) -> str:
+    """Format a duration in seconds as MM:SS string.
+
+    Unlike datetime.fromtimestamp(), this correctly handles durations
+    (not absolute timestamps) and is timezone-independent.
+    """
+
+    total_seconds = max(0, int(seconds))
+    minutes, secs = divmod(total_seconds, 60)
+    return f"{minutes:02d}:{secs:02d}"
+
+
+def formatDurationHoursMinutes(seconds: float) -> str:
+    """Format a duration in seconds as HH:MM string.
+
+    Unlike datetime.fromtimestamp(), this correctly handles durations
+    (not absolute timestamps) and is timezone-independent.
+    """
+
+    total_minutes = max(0, int(seconds // 60))
+    hours, minutes = divmod(total_minutes, 60)
+    return f"{hours:02d}:{minutes:02d}"
+
+
 class FiltrationUtilsMixin:
     """Mixin providing utility methods for pool filtration time calculations."""
 
