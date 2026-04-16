@@ -1,7 +1,6 @@
 """Lavage mixin for pool control."""
 
 import time
-from typing import Optional
 
 from .utils import formatDurationMinutesSeconds
 
