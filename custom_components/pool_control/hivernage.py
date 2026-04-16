@@ -105,6 +105,16 @@ class HivernageMixin:
             filtrationDebut = filtrationPivotSecondes
             filtrationFin = filtrationPivotSecondes + filtrationSecondes
 
+        else:
+            # Valeur invalide : fallback sur la distribution par défaut hivernage (1/1 <>)
+            _LOGGER.warning(
+                "distributionDatePivotHivernage invalide (%s), fallback sur 1/1 <>",
+                self.distributionDatePivotHivernage,
+            )
+
+            filtrationDebut = filtrationPivotSecondes - filtrationSecondes
+            filtrationFin = filtrationPivotSecondes
+
         # Memorise les resultats du calcul
         if self.filtrationTimeStatus:
             self.filtrationTimeStatus.set_status(filtrationTime)

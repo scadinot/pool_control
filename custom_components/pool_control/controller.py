@@ -24,6 +24,31 @@ _LOGGER = logging.getLogger(__name__)
 STORAGE_VERSION = 1
 STORAGE_KEY = "pool_control_data"
 
+VALID_DISTRIBUTIONS = (1, 2, 3, 4, 5)
+
+
+def _validate_distribution(value: Any, name: str, default: int) -> int:
+    """Validate that a distribution config value is in the allowed range.
+
+    Returns the value as int if valid (1..5), otherwise logs a warning
+    and returns the provided default. Handles None and non-int values.
+    """
+
+    try:
+        v = int(value)
+        if v in VALID_DISTRIBUTIONS:
+            return v
+    except (TypeError, ValueError):
+        pass
+
+    _LOGGER.warning(
+        "%s invalide (%s), utilisation de la valeur par défaut %s",
+        name,
+        value,
+        default,
+    )
+    return default
+
 
 class PoolController(
     ActivationMixin,
@@ -72,7 +97,9 @@ class PoolController(
         self.methodeCalcul = int(config.get("methodeCalcul", 1))
         self.datePivot = config.get("datePivot", "13:00")
         self.pausePivot = config.get("pausePivot", 0)
-        self.distributionDatePivot = config.get("distributionDatePivot", 1)
+        self.distributionDatePivot = _validate_distribution(
+            config.get("distributionDatePivot", 1), "distributionDatePivot", 1
+        )
         self.coefficientAjustement = config.get("coefficientAjustement", 1.0)
         self.coefficientAjustementHivernage = config.get(
             "coefficientAjustementHivernage", 1.0
@@ -82,8 +109,10 @@ class PoolController(
         self.sondeLocalTechniquePause = config.get("sondeLocalTechniquePause", 0)
         self.traitementHivernage = config.get("traitementHivernage", False)
         self.tempsDeFiltrationMinimum = config.get("tempsDeFiltrationMinimum", 3)
-        self.distributionDatePivotHivernage = config.get(
-            "distributionDatePivotHivernage", 4
+        self.distributionDatePivotHivernage = _validate_distribution(
+            config.get("distributionDatePivotHivernage", 4),
+            "distributionDatePivotHivernage",
+            4,
         )
         self.choixHeureFiltrationHivernage = config.get(
             "choixHeureFiltrationHivernage", 1

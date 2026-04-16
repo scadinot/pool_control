@@ -1,8 +1,9 @@
 """Surpresseur control mixin for pool automation."""
 
-from datetime import datetime
 import logging
 import time
+
+from .utils import formatDurationMinutesSeconds
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class SurpresseurMixin:
             timeRestant = timeFin - time.time()
             display = "Actif"
             display += " : "
-            display += datetime.fromtimestamp(timeRestant).strftime("%M:%S")
+            display += formatDurationMinutesSeconds(timeRestant)
             if self.surpresseurStatus:
                 self.surpresseurStatus.set_status(display)
 

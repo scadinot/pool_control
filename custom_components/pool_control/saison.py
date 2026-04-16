@@ -5,6 +5,8 @@ import logging
 import time
 from typing import Optional
 
+from .utils import formatDurationHoursMinutes
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -51,17 +53,15 @@ class SaisonMixin:
         pausePivotSecondes = self.pausePivot * 60  # Temps de pause en secondes
         _LOGGER.debug(
             "duree pausePivot Config=%s",
-            datetime.fromtimestamp(pausePivotSecondes).strftime("%H:%M"),
+            formatDurationHoursMinutes(pausePivotSecondes),
         )
 
         # si la somme de filtrationSecondes et pausePivotSecondes est superieure a 24h on reduit pausePivotSecondes
         if (filtrationSecondes + pausePivotSecondes) > (3600 * 24):
             _LOGGER.info(
                 "duree pausePivot Ajustée=%s >> %s",
-                datetime.fromtimestamp(pausePivotSecondes).strftime("%H:%M"),
-                datetime.fromtimestamp((3600 * 24) - filtrationSecondes).strftime(
-                    "%H:%M"
-                ),
+                formatDurationHoursMinutes(pausePivotSecondes),
+                formatDurationHoursMinutes((3600 * 24) - filtrationSecondes),
             )
             pausePivotSecondes = (3600 * 24) - filtrationSecondes
 
@@ -128,6 +128,19 @@ class SaisonMixin:
 
             filtrationDebut = filtrationPivotSecondes
             filtrationFin = filtrationPivotSecondes + filtrationSecondes
+
+            filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 2.0)
+            filtrationPauseFin = filtrationPivotSecondes + (pausePivotSecondes / 2.0)
+
+        else:
+            # Valeur invalide : fallback sur la distribution par défaut (1/2 <> 1/2)
+            _LOGGER.warning(
+                "distributionDatePivot invalide (%s), fallback sur 1/2 <> 1/2",
+                self.distributionDatePivot,
+            )
+
+            filtrationDebut = filtrationPivotSecondes - (filtrationSecondes / 2.0)
+            filtrationFin = filtrationPivotSecondes + (filtrationSecondes / 2.0)
 
             filtrationPauseDebut = filtrationPivotSecondes - (pausePivotSecondes / 2.0)
             filtrationPauseFin = filtrationPivotSecondes + (pausePivotSecondes / 2.0)
