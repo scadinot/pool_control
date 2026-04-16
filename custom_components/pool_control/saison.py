@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 import logging
 import time
-from typing import Optional
 
 from .utils import formatDurationHoursMinutes
 
