@@ -10,6 +10,8 @@ _Composant Home Assistant permettant de gérer la filtration d'une piscine en fo
 
 ```
 pool_control/
+├── .github/
+│   └── workflows/             # CI GitHub Actions
 ├── custom_components/
 │   └── pool_control/
 │       ├── __init__.py
@@ -38,12 +40,18 @@ pool_control/
 │       ├── traitement.py
 │       ├── translations/
 │       └── utils.py
-├── tests/
-├── .github/workflows/
-├── hacs.json
-├── README.md
+├── img/                       # captures et schémas pour la documentation
+├── tests/                     # suite pytest
+├── .gitattributes
+├── .gitignore
+├── ANALYSIS.md
 ├── CHANGELOG.md
-└── LICENSE
+├── LICENSE
+├── README.md
+├── hacs.json
+├── info.md
+├── pytest.ini
+└── requirements_test.txt
 ```
 
 ## Fonctionnalités
