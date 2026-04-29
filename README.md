@@ -180,7 +180,7 @@ L'intégration crée automatiquement les entités suivantes — aucune `input_*`
 
 ## Tableau de bord
 
-![DashBoard](https://github.com/scadinot/pool_control/blob/main/img/dashboard.png)
+![DashBoard](img/dashboard.png)
 
 Exemple Lovelace exploitant les entités créées automatiquement :
 
@@ -303,27 +303,27 @@ L'assistant guide les opérations de lavage / rinçage / remise en filtration.
 1. Appuyez sur **Lavage**. La filtration s'arrête, le capteur affiche `[Arrêt, position lavage]`.
 2. Positionnez la vanne sur **Lavage**, puis appuyez à nouveau sur **Lavage**.
 
-   ![Position Lavage](https://github.com/scadinot/pool_control/blob/main/img//position-lavage.png)
+   ![Position Lavage](img/position-lavage.png)
 
    La filtration redémarre, le capteur affiche `[Lavage : xx]` (compte à rebours).
 
-   ![Schema Lavage](https://github.com/scadinot/pool_control/blob/main/img//schema-lavage.gif)
+   ![Schema Lavage](img/schema-lavage.gif)
 
 3. À la fin du lavage, le capteur affiche `[Arrêt, position rinçage]`. Positionnez la vanne sur **Rinçage**, puis appuyez sur **Lavage**.
 
-   ![Position Rinçage](https://github.com/scadinot/pool_control/blob/main/img//position-rincage.png)
+   ![Position Rinçage](img/position-rincage.png)
 
    Le capteur affiche `[Rinçage : xx]`.
 
-   ![Schema Rinçage](https://github.com/scadinot/pool_control/blob/main/img//schema-rincage.gif)
+   ![Schema Rinçage](img/schema-rincage.gif)
 
 4. À la fin du rinçage, le capteur affiche `[Filtration]`. Repositionnez la vanne sur **Filtration**, puis appuyez sur **Lavage**.
 
-   ![Position Filtration](https://github.com/scadinot/pool_control/blob/main/img/position-filtration.png)
+   ![Position Filtration](img/position-filtration.png)
 
    Si la filtration était active avant l'opération, elle reprend automatiquement.
 
-   ![Schema Filtration](https://github.com/scadinot/pool_control/blob/main/img/schema-filtration.gif)
+   ![Schema Filtration](img/schema-filtration.gif)
 
 Le bouton **Stop** interrompt l'assistant à tout moment.
 
