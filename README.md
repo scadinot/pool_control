@@ -6,6 +6,46 @@
 
 _Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température._
 
+## Structure du dépôt
+
+```
+pool_control/
+├── custom_components/
+│   └── pool_control/
+│       ├── __init__.py
+│       ├── activation.py
+│       ├── brand/             # assets de marque (HA ≥ 2026.3)
+│       │   ├── icon.png       # 256×256
+│       │   └── icon@2x.png    # 512×512
+│       ├── button.py
+│       ├── buttons.py
+│       ├── config_flow.py
+│       ├── const.py
+│       ├── controller.py
+│       ├── entities.py
+│       ├── filtration.py
+│       ├── hivernage.py
+│       ├── lavage.py
+│       ├── manifest.json
+│       ├── options_flow.py
+│       ├── saison.py
+│       ├── scheduler.py
+│       ├── sensor.py
+│       ├── sensors.py
+│       ├── service.py
+│       ├── strings.json
+│       ├── surpresseur.py
+│       ├── traitement.py
+│       ├── translations/
+│       └── utils.py
+├── tests/
+├── .github/workflows/
+├── hacs.json
+├── README.md
+├── CHANGELOG.md
+└── LICENSE
+```
+
 ## Fonctionnalités
 
 - Hivernage actif.
