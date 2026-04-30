@@ -3,6 +3,7 @@
 import logging
 from typing import Any, Optional
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
@@ -23,6 +24,7 @@ from .utils import FiltrationUtilsMixin
 _LOGGER = logging.getLogger(__name__)
 STORAGE_VERSION = 1
 STORAGE_KEY = "pool_control_data"
+STORAGE_KEY_PREFIX = "pool_control_data"
 
 VALID_DISTRIBUTIONS = (1, 2, 3, 4, 5)
 
@@ -66,7 +68,12 @@ class PoolController(
 ):
     """Pool controller for managing pool automation logic."""
 
-    def __init__(self, hass: HomeAssistant, config: dict) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config: dict,
+        entry: Optional[ConfigEntry] = None,
+    ) -> None:
         """Initialize the pool controller."""
 
         # Initialisation de la classe mère
@@ -75,7 +82,13 @@ class PoolController(
 
         # configuration.yaml
         self.hass = hass
-        self.store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
+        self.entry = entry
+        # Store distinct par instance afin de cohabiter en multi-instance ;
+        # une instance unique conserve la clé historique pour la rétro-compat.
+        storage_key = (
+            f"{STORAGE_KEY_PREFIX}_{entry.entry_id}" if entry is not None else STORAGE_KEY
+        )
+        self.store = Store(hass, STORAGE_VERSION, storage_key)
         self.data = {}
         self.initialized = False
 

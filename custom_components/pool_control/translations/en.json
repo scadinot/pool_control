@@ -4,8 +4,9 @@
     "step": {
       "user": {
         "title": "Pool Control Setup",
-        "description": "Configure the required entities.",
+        "description": "Configure the required entities. The name is used to distinguish multiple pools.",
         "data": {
+          "name": "Instance name",
           "temperatureWater": "Water temperature",
           "temperatureOutdoor": "Outdoor temperature",
           "leverSoleil": "Sunrise sensor",
@@ -15,6 +16,12 @@
           "surpresseur": "Booster pump"
         }
       }
+    },
+    "abort": {
+      "already_configured": "An instance with this name is already configured."
+    },
+    "error": {
+      "invalid_name": "The name cannot be empty."
     }
   },
   "options": {

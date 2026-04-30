@@ -15,7 +15,10 @@ async def async_setup_entry(
 ) -> None:
     """Set up Pool Control sensors."""
 
-    controller = hass.data[DOMAIN]
+    domain_data = hass.data[DOMAIN]
+    controller = (
+        domain_data[entry.entry_id] if isinstance(domain_data, dict) else domain_data
+    )
 
     entities = [
         PoolControlStatusSensor(
@@ -24,6 +27,7 @@ async def async_setup_entry(
             "pool_control_asservissement_status",
             "asservissementStatus",
             default_state="",
+            entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
@@ -31,6 +35,7 @@ async def async_setup_entry(
             "pool_control_filtration_time",
             "filtrationTimeStatus",
             default_state="",
+            entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
@@ -38,24 +43,28 @@ async def async_setup_entry(
             "pool_control_filtration_schedule",
             "filtrationScheduleStatus",
             default_state="",
+            entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
             "Status Filtration",
             "pool_control_filtration_status",
             "filtrationStatus",
+            entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
             "Status Surpresseur",
             "pool_control_surpresseur_status",
             "surpresseurStatus",
+            entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
             "Status Lavage Filtre",
             "pool_control_filtre_sable_lavage_status",
             "filtreSableLavageStatus",
+            entry=entry,
         ),
     ]
 

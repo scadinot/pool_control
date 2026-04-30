@@ -4,8 +4,9 @@
     "step": {
       "user": {
         "title": "Configuration de Pool Control",
-        "description": "Configurez les entités nécessaires.",
+        "description": "Configurez les entités nécessaires. Le nom permet de différencier plusieurs piscines.",
         "data": {
+          "name": "Nom de l'instance",
           "temperatureWater": "Température de l'eau",
           "temperatureOutdoor": "Température extérieure",
           "leverSoleil": "Lever du soleil",
@@ -15,6 +16,12 @@
           "surpresseur": "Surpresseur"
         }
       }
+    },
+    "abort": {
+      "already_configured": "Une instance avec ce nom est déjà configurée."
+    },
+    "error": {
+      "invalid_name": "Le nom ne peut pas être vide."
     }
   },
   "options": {
