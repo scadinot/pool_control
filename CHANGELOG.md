@@ -6,6 +6,36 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.19] — 2026-04-30
+
+### Ajouté
+- Support **multi-instance** : plusieurs piscines peuvent désormais cohabiter dans une même installation Home Assistant. Chaque instance dispose de son propre nom, ses propres entités et son propre stockage persistant.
+- Champ **« Nom de l'instance »** dans le flux de configuration initiale, utilisé comme `unique_id` (via `slugify`) et comme titre de l'entrée.
+- Validation côté UI : un nom vide ou non slugifiable est refusé (`error.invalid_name`) ; un nom déjà pris déclenche `abort.already_configured`.
+- **Regroupement des entités sous un device** : les 15 entités d'une instance (6 capteurs + 9 boutons) apparaissent maintenant sous un même appareil typé `service` dans Home Assistant. L'intégration affiche « Services · Ajouter un service » au lieu de « Éléments de l'intégration ».
+- Migration automatique **v1 → v2** des installations existantes :
+  - reprise du titre comme nom d'instance et calcul de l'`unique_id`,
+  - copie du store global `pool_control_data` vers la clé par instance `pool_control_data_<entry_id>`, puis suppression de l'ancienne clé,
+  - **préfixage des `unique_id` du registre d'entités** par `entry_id` pour préserver les customisations utilisateur (icônes, area, nom personnalisé, désactivation) sans orpheliner les entités historiques.
+
+### Modifié
+- `manifest.json` : `version` `0.0.18` → `0.0.19`.
+- `config_flow.py` : `VERSION = 2`, `async_set_unique_id` + `_abort_if_unique_id_configured` alignés sur le pattern de `shutters_management`.
+- `__init__.py` : controllers stockés par `entry_id` (`hass.data[DOMAIN][entry_id]`) au lieu d'un singleton, déchargement multi-instance correctement scopé, ajout de `async_migrate_entry`.
+- `entities.py` : déclaration d'un `DeviceInfo` (`entry_type=DeviceEntryType.SERVICE`, `manufacturer="Pool Control"`), `_attr_has_entity_name = True`, `unique_id` préfixé par `entry_id`.
+- `controller.py` : accepte un `ConfigEntry` optionnel et dérive sa clé de `Store` de `entry_id` (l'ancienne clé est conservée comme fallback pour les usages hors-flow).
+- `sensor.py`, `button.py` : récupèrent le controller scopé à `entry_id` et propagent `entry` aux entités.
+- Traductions FR/EN + `strings.json` : champ `name`, `abort.already_configured`, `error.invalid_name`.
+
+### Pas de breaking change
+- La migration v1 → v2 est **automatique et silencieuse** au premier démarrage après l'upgrade. Aucune action utilisateur n'est requise, les entités existantes conservent leurs `entity_id` et leurs customisations.
+- Les 350 tests passent sans modification du code de test.
+
+### Note de migration
+- Le minimum Home Assistant requis (`2026.3.0`) est inchangé.
+- Après upgrade, l'intégration apparaît dans Paramètres → Appareils et services sous la forme « Pool Control · Ajouter un service », chaque pool figurant comme un appareil regroupant ses 15 entités.
+- L'ajout d'une seconde piscine se fait via « Ajouter un service » et exige un nom distinct du premier.
+
 ## [0.0.18] — 2026-04-29
 
 ### Corrigé
