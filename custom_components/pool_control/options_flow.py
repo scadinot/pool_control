@@ -5,7 +5,7 @@ from typing import Any, Optional
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry, FlowResult
+from homeassistant.config_entries import FlowResult
 from homeassistant.helpers.selector import selector
 
 from .controller import _validate_distribution
@@ -14,14 +14,16 @@ from .controller import _validate_distribution
 class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
     """Gestion des options de Pool Control avec menu de navigation."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize the options flow."""
 
-        self.config_entry = config_entry
-        self.options = {**config_entry.data, **config_entry.options}
+        self.options: dict[str, Any] = {}
 
     async def async_step_init(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Étape initiale de configuration des options."""
+
+        if not self.options:
+            self.options = {**self.config_entry.data, **self.config_entry.options}
 
         if user_input is not None:
             return await getattr(self, f"async_step_{user_input['menu']}")()
