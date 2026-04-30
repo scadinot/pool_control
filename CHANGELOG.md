@@ -12,7 +12,7 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 - Support **multi-instance** : plusieurs piscines peuvent désormais cohabiter dans une même installation Home Assistant. Chaque instance dispose de son propre nom, ses propres entités et son propre stockage persistant.
 - Champ **« Nom de l'instance »** dans le flux de configuration initiale, utilisé comme `unique_id` (via `slugify`) et comme titre de l'entrée.
 - Validation côté UI : un nom vide ou non slugifiable est refusé (`error.invalid_name`) ; un nom déjà pris déclenche `abort.already_configured`.
-- **Regroupement des entités sous un device** : les 15 entités d'une instance (6 capteurs + 9 boutons) apparaissent maintenant sous un même appareil typé `service` dans Home Assistant. L'intégration affiche « Services · Ajouter un service » au lieu de « Éléments de l'intégration ».
+- **Regroupement des entités sous un device** : les 15 entités d'une instance (6 capteurs + 9 boutons) apparaissent maintenant sous un même appareil typé `service` dans Home Assistant. L'intégration affiche « Pool Control · Ajouter un service » au lieu de « Pool Control · Ajouter une entrée ».
 - Migration automatique **v1 → v2** des installations existantes :
   - reprise du titre comme nom d'instance et calcul de l'`unique_id`,
   - copie du store global `pool_control_data` vers la clé par instance `pool_control_data_<entry_id>`, puis suppression de l'ancienne clé,
