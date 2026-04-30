@@ -6,6 +6,31 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.20] — 2026-04-30
+
+### Ajouté
+- **`entity_id` internationaux et stables** via `_attr_translation_key`. Les nouvelles installations exposent des identifiants en anglais (`sensor.<instance>_filtration_time`, `button.<instance>_reset`, …) indépendants de la langue de l'interface.
+- **Libellés affichés localisés** dans le frontend Home Assistant : noms d'entités en français ou en anglais selon la langue de l'utilisateur, sans modifier l'`entity_id`. Les libellés sont définis dans `entity.sensor.*.name` et `entity.button.*.name` des fichiers `translations/fr.json` et `translations/en.json`.
+
+### Modifié
+- `manifest.json` : `version` `0.0.19` → `0.0.20`.
+- `entities.py` : `PoolControlStatusSensor` et `PoolControlButton` reçoivent désormais une `translation_key` (anglaise stable) à la place d'un `name` français. `_attr_translation_key` remplace `_attr_name`.
+- `sensor.py`, `button.py` : passage des `translation_key` au lieu des noms français.
+- `translations/fr.json`, `translations/en.json`, `strings.json` :
+  - ajout de la section `entity.sensor.*` avec 6 clés (`control_status`, `filtration_time`, `filtration_schedule`, `filtration_status`, `booster_status`, `backwash_status`),
+  - renommage des clés `entity.button.*` vers leurs équivalents anglais stables (`active`, `inactive`, `winter`, `season`, `booster`, `backwash`).
+- `README.md` :
+  - section « Entités exposées » mise à jour avec les nouveaux `entity_id` stables et un avertissement sur le préfixe d'instance,
+  - section « Tableau de bord » réécrite avec les `entity_id` anglais cohérents.
+
+### Pas de breaking change
+- Les installations existantes conservent leurs `entity_id` historiques (`sensor.temps_de_filtration`, `button.actif`, …) tels qu'inscrits dans le `entity registry` de Home Assistant. Les `unique_id` restent identiques, donc HA n'efface ni ne renomme aucun `entity_id`. Les automatisations basées sur les anciens IDs continuent de fonctionner sans modification.
+- Les 350 tests passent sans modification du code de test.
+
+### Note de migration
+- Pour aligner manuellement une installation existante sur les nouveaux `entity_id` : Paramètres → Appareils et services → Pool Control → ouvrir chaque entité → renommer l'`entity_id`. La suppression puis recréation de l'instance n'est **pas** recommandée pour cet usage car elle efface également la configuration (entités source, options avancées) et l'état persistant ; il faudrait reconfigurer l'intégration de zéro.
+- L'ajout d'une **nouvelle** instance après upgrade hérite directement des `entity_id` anglais stables.
+
 ## [0.0.19] — 2026-04-30
 
 ### Ajouté

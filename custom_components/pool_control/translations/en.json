@@ -89,6 +89,26 @@
     }
   },
   "entity": {
+    "sensor": {
+      "control_status": {
+        "name": "Status"
+      },
+      "filtration_time": {
+        "name": "Filtration time"
+      },
+      "filtration_schedule": {
+        "name": "Filtration schedule"
+      },
+      "filtration_status": {
+        "name": "Filtration status"
+      },
+      "booster_status": {
+        "name": "Booster status"
+      },
+      "backwash_status": {
+        "name": "Backwash status"
+      }
+    },
     "button": {
       "reset": {
         "name": "Reset"
@@ -96,25 +116,25 @@
       "stop": {
         "name": "Stop"
       },
-      "surpresseur": {
+      "booster": {
         "name": "Booster pump"
       },
-      "lavage": {
+      "backwash": {
         "name": "Backwash"
       },
-      "actif": {
+      "active": {
         "name": "Active"
       },
       "auto": {
         "name": "Auto"
       },
-      "inactif": {
+      "inactive": {
         "name": "Inactive"
       },
-      "hivernage": {
+      "winter": {
         "name": "Winter mode"
       },
-      "saison": {
+      "season": {
         "name": "Season mode"
       }
     }

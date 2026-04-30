@@ -89,6 +89,26 @@
     }
   },
   "entity": {
+    "sensor": {
+      "control_status": {
+        "name": "État"
+      },
+      "filtration_time": {
+        "name": "Temps de filtration"
+      },
+      "filtration_schedule": {
+        "name": "Planning de filtration"
+      },
+      "filtration_status": {
+        "name": "État de la filtration"
+      },
+      "booster_status": {
+        "name": "État du surpresseur"
+      },
+      "backwash_status": {
+        "name": "État du lavage"
+      }
+    },
     "button": {
       "reset": {
         "name": "Réinitialiser"
@@ -96,25 +116,25 @@
       "stop": {
         "name": "Arrêter"
       },
-      "surpresseur": {
+      "booster": {
         "name": "Surpresseur"
       },
-      "lavage": {
+      "backwash": {
         "name": "Lavage"
       },
-      "actif": {
+      "active": {
         "name": "Actif"
       },
       "auto": {
         "name": "Auto"
       },
-      "inactif": {
+      "inactive": {
         "name": "Inactif"
       },
-      "hivernage": {
+      "winter": {
         "name": "Hivernage"
       },
-      "saison": {
+      "season": {
         "name": "Saison"
       }
     }
