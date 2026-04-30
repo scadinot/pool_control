@@ -6,6 +6,22 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.22] — 2026-04-30
+
+### Corrigé
+- **L'`entity_id` est désormais réellement stable et indépendant de la langue active.** Le fix de la 0.0.21 utilisait `_attr_suggested_object_id`, propriété qui **n'existe pas** dans Home Assistant : `helpers/entity.py` ne lit que la *property* `suggested_object_id` (et celle-ci retourne le nom traduit). Conséquence : la suggestion était purement et simplement ignorée, et l'`entity_id` continuait d'être dérivé du nom traduit (`button.pool_control_actif` quand HA était en français au moment de la création).
+
+  La 0.0.22 abandonne cette propriété fantôme et définit directement `self.entity_id` dans `__init__` — c'est le contrat documenté par `entity_platform.py:823-845` (« An entity may suggest the entity_id by setting entity_id itself »). Cette fois, l'identifiant est vraiment figé en anglais quelle que soit la langue HA.
+
+### Modifié
+- `manifest.json` : `version` `0.0.21` → `0.0.22`.
+- `entities.py` : `_build_suggested_object_id(entry, translation_key)` remplacée par `_build_entity_id(platform, entry, translation_key)` qui retourne directement `f"{platform}.{prefix}_{translation_key}"`. `PoolControlStatusSensor` et `PoolControlButton` posent désormais `self.entity_id` au constructeur (au lieu du `_attr_suggested_object_id` ignoré).
+- `tests/test_entities.py` : adapté à la nouvelle helper, +1 test (`test_platform_prefix_is_respected`).
+
+### Note de migration
+- Les entités créées sous la 0.0.21 (avec ou sans le fix censé être appliqué) conservent leur `entity_id` historique tant que leur `unique_id` est inchangé.
+- Pour bénéficier des nouveaux IDs anglais (`button.<instance>_active`, …) sur une installation existante : supprimer puis recréer l'instance **après** avoir mis à jour vers la 0.0.22 et redémarré HA.
+
 ## [0.0.21] — 2026-04-30
 
 ### Corrigé
