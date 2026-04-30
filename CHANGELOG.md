@@ -28,7 +28,7 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 - Les 350 tests passent sans modification du code de test.
 
 ### Note de migration
-- Pour aligner manuellement une installation existante sur les nouveaux `entity_id` : Paramètres → Appareils et services → Pool Control → ouvrir chaque entité → modifier l'`entity_id`, ou supprimer puis recréer l'instance (les options de configuration sont conservées dans les data du config entry).
+- Pour aligner manuellement une installation existante sur les nouveaux `entity_id` : Paramètres → Appareils et services → Pool Control → ouvrir chaque entité → renommer l'`entity_id`. La suppression puis recréation de l'instance n'est **pas** recommandée pour cet usage car elle efface également la configuration (entités source, options avancées) et l'état persistant ; il faudrait reconfigurer l'intégration de zéro.
 - L'ajout d'une **nouvelle** instance après upgrade hérite directement des `entity_id` anglais stables.
 
 ## [0.0.19] — 2026-04-30

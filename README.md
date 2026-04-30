@@ -182,7 +182,7 @@ L'intégration crée automatiquement les entités suivantes — aucune `input_*`
 
 ![DashBoard](img/dashboard.png)
 
-Exemple Lovelace exploitant les entités créées automatiquement (instance nommée « Pool Control » ; remplacez le préfixe `pool_control_` par le `slugify` de votre nom d'instance) :
+Exemple Lovelace exploitant les entités créées automatiquement (instance nommée « Pool Control » ; remplacez le préfixe `pool_control_` par le `slugify` de votre nom d'instance). Les deux premiers capteurs `sensor.shelly_temperature_2_temperature_2` et `sensor.exterieur_sud_temperature` sont des exemples de sondes externes — remplacez-les par les `entity_id` de vos propres capteurs de température eau / air.
 
 ```yaml
 type: vertical-stack
