@@ -55,4 +55,4 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(config_entry: ConfigEntry) -> PoolControlOptionsFlowHandler:
         """Retourne le flow d'options amélioré."""
 
-        return PoolControlOptionsFlowHandler(config_entry)
+        return PoolControlOptionsFlowHandler()

@@ -7,7 +7,6 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .controller import PoolController
-from .options_flow import PoolControlOptionsFlowHandler
 
 PLATFORMS = ["sensor", "button"]
 _LOGGER = logging.getLogger(__name__)
@@ -51,9 +50,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.pop(DOMAIN, None)
 
     return unload_ok
-
-
-async def async_get_options_flow(config_entry: ConfigEntry) -> PoolControlOptionsFlowHandler:
-    """Retourne le flow d'options."""
-
-    return PoolControlOptionsFlowHandler(config_entry)

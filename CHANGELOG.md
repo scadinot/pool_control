@@ -6,6 +6,15 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.18] — 2026-04-29
+
+### Corrigé
+- Crash `500 Internal Server Error` à la deuxième ouverture du flux d'options de l'intégration. Le constructeur de `PoolControlOptionsFlowHandler` n'assigne plus `self.config_entry` (devenu propriété en lecture seule depuis Home Assistant 2024.12) et s'aligne sur la signature moderne sans paramètre. `self.options` est désormais initialisé à la volée dans `async_step_init`.
+- Suppression d'un `async_get_options_flow` mort au niveau module dans `__init__.py` (HA n'utilise que celui défini dans la classe `PoolControlConfigFlow`).
+
+### Modifié
+- `manifest.json` : `version` `0.0.17` → `0.0.18`.
+
 ## [0.0.17] — 2026-04-29
 
 ### Ajouté
