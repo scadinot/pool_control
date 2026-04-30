@@ -33,7 +33,7 @@ class PoolControlStatusSensor(SensorEntity):
     def __init__(
         self,
         controller: Any,
-        name: str,
+        translation_key: str,
         unique_id: str,
         controller_attribute_name: str,
         default_state: str = "Arrêté",
@@ -42,7 +42,7 @@ class PoolControlStatusSensor(SensorEntity):
         """Initialize the PoolControlStatusSensor."""
 
         self._controller = controller
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
         )
@@ -81,7 +81,7 @@ class PoolControlButton(ButtonEntity):
     def __init__(
         self,
         controller: Any,
-        name: str,
+        translation_key: str,
         unique_id: str,
         callback: Callable,
         entry: Optional[ConfigEntry] = None,
@@ -89,7 +89,7 @@ class PoolControlButton(ButtonEntity):
         """Initialize the PoolControlButton."""
 
         self._controller = controller
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
         )

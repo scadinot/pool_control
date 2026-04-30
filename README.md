@@ -151,38 +151,38 @@ Si la sonde est installée dans le local technique plutôt que dans le bassin :
 
 ## Entités exposées
 
-L'intégration crée automatiquement les entités suivantes — aucune `input_*` n'est à déclarer dans `configuration.yaml`.
+L'intégration crée automatiquement les entités suivantes — aucune `input_*` n'est à déclarer dans `configuration.yaml`. Les `entity_id` sont stables et indépendants de la langue de l'interface ; le nom affiché bascule automatiquement entre français et anglais selon la langue du frontend Home Assistant. Les exemples ci-dessous correspondent à une instance nommée « Pool Control » — pour un autre nom, remplacez le préfixe `pool_control_` par le `slugify` du nom choisi.
 
 ### Capteurs
 
 | Entité | Description |
 |--------|-------------|
-| `sensor.pool_control_asservissement_status` | État du mode de contrôle (Actif/Auto/Inactif + Saison/Hivernage) |
+| `sensor.pool_control_control_status` | État du mode de contrôle (Actif/Auto/Inactif + Saison/Hivernage) |
 | `sensor.pool_control_filtration_time` | Temps de filtration calculé |
 | `sensor.pool_control_filtration_schedule` | Plages horaires de filtration et température de référence |
 | `sensor.pool_control_filtration_status` | État courant de la filtration |
-| `sensor.pool_control_surpresseur_status` | État et compte à rebours du surpresseur |
-| `sensor.pool_control_filtre_sable_lavage_status` | Étape courante de l'assistant de lavage |
+| `sensor.pool_control_booster_status` | État et compte à rebours du surpresseur |
+| `sensor.pool_control_backwash_status` | Étape courante de l'assistant de lavage |
 
 ### Boutons
 
 | Entité | Action |
 |--------|--------|
 | `button.pool_control_reset` | Recalcule le temps de filtration |
-| `button.pool_control_actif` | Mode manuel (marche forcée) |
+| `button.pool_control_active` | Mode manuel (marche forcée) |
 | `button.pool_control_auto` | Mode automatique |
-| `button.pool_control_inactif` | Désactive le contrôle automatique |
-| `button.pool_control_saison` | Force le mode saison |
-| `button.pool_control_hivernage` | Force le mode hivernage |
-| `button.pool_control_surpresseur` | Lance le surpresseur pour la durée configurée |
-| `button.pool_control_lavage` | Démarre / avance l'assistant de lavage |
+| `button.pool_control_inactive` | Désactive le contrôle automatique |
+| `button.pool_control_season` | Force le mode saison |
+| `button.pool_control_winter` | Force le mode hivernage |
+| `button.pool_control_booster` | Lance le surpresseur pour la durée configurée |
+| `button.pool_control_backwash` | Démarre / avance l'assistant de lavage |
 | `button.pool_control_stop` | Arrête le surpresseur ou l'opération de lavage en cours |
 
 ## Tableau de bord
 
 ![DashBoard](img/dashboard.png)
 
-Exemple Lovelace exploitant les entités créées automatiquement :
+Exemple Lovelace exploitant les entités créées automatiquement (instance nommée « Pool Control » ; remplacez le préfixe `pool_control_` par le `slugify` de votre nom d'instance) :
 
 ```yaml
 type: vertical-stack
@@ -196,10 +196,10 @@ cards:
         entity: sensor.exterieur_sud_temperature
         name: Température Air
   - type: entity
-    entity: sensor.temps_de_filtration
+    entity: sensor.pool_control_filtration_time
     name: Temps filtration
   - type: entity
-    entity: sensor.planning_de_filtration
+    entity: sensor.pool_control_filtration_schedule
     name: Planning
   - show_name: true
     show_icon: true
@@ -212,9 +212,8 @@ cards:
     name: Reset
     icon: mdi:restart
     icon_height: 32px
-    entity: button.reset
   - type: entity
-    entity: sensor.status_asservissement
+    entity: sensor.pool_control_control_status
     name: État
   - type: horizontal-stack
     cards:
@@ -225,7 +224,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_actif
+            entity_id: button.pool_control_active
         name: Actif
         icon: mdi:play-circle
         icon_height: 32px
@@ -247,7 +246,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_inactif
+            entity_id: button.pool_control_inactive
         name: Inactif
         icon: mdi:stop-circle
         icon_height: 32px
@@ -260,7 +259,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_saison
+            entity_id: button.pool_control_season
         name: Saison
         icon: mdi:weather-sunny
         icon_height: 32px
@@ -271,12 +270,12 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_hivernage
+            entity_id: button.pool_control_winter
         name: Hivernage
         icon: mdi:snowflake
         icon_height: 32px
   - type: entity
-    entity: sensor.status_surpresseur
+    entity: sensor.pool_control_booster_status
     name: Surpresseur
   - show_name: true
     show_icon: true
@@ -285,12 +284,12 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_surpresseur
+        entity_id: button.pool_control_booster
     name: Surpresseur
     icon: mdi:pump
     icon_height: 32px
   - type: entity
-    entity: sensor.status_lavage_filtre
+    entity: sensor.pool_control_backwash_status
     name: Lavage
   - show_name: true
     show_icon: true
@@ -299,7 +298,7 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_lavage
+        entity_id: button.pool_control_backwash
     name: Lavage
     icon: mdi:air-filter
     icon_height: 32px

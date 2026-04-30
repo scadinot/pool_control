@@ -23,7 +23,7 @@ async def async_setup_entry(
     entities = [
         PoolControlStatusSensor(
             controller,
-            "Status Asservissement",
+            "control_status",
             "pool_control_asservissement_status",
             "asservissementStatus",
             default_state="",
@@ -31,7 +31,7 @@ async def async_setup_entry(
         ),
         PoolControlStatusSensor(
             controller,
-            "Temps de filtration",
+            "filtration_time",
             "pool_control_filtration_time",
             "filtrationTimeStatus",
             default_state="",
@@ -39,7 +39,7 @@ async def async_setup_entry(
         ),
         PoolControlStatusSensor(
             controller,
-            "Planning de Filtration",
+            "filtration_schedule",
             "pool_control_filtration_schedule",
             "filtrationScheduleStatus",
             default_state="",
@@ -47,21 +47,21 @@ async def async_setup_entry(
         ),
         PoolControlStatusSensor(
             controller,
-            "Status Filtration",
+            "filtration_status",
             "pool_control_filtration_status",
             "filtrationStatus",
             entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
-            "Status Surpresseur",
+            "booster_status",
             "pool_control_surpresseur_status",
             "surpresseurStatus",
             entry=entry,
         ),
         PoolControlStatusSensor(
             controller,
-            "Status Lavage Filtre",
+            "backwash_status",
             "pool_control_filtre_sable_lavage_status",
             "filtreSableLavageStatus",
             entry=entry,
