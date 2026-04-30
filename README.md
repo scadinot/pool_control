@@ -190,20 +190,20 @@ cards:
   - type: horizontal-stack
     cards:
       - type: entity
-        entity: sensor.votre_temperature_eau
+        entity: sensor.shelly_temperature_2_temperature_2
         name: Température Eau
       - type: entity
-        entity: sensor.votre_temperature_air
+        entity: sensor.exterieur_sud_temperature
         name: Température Air
   - type: entity
-    entity: sensor.pool_control_filtration_time
+    entity: sensor.temps_de_filtration
     name: Temps filtration
   - type: entity
-    entity: sensor.pool_control_filtration_schedule
+    entity: sensor.planning_de_filtration
     name: Planning
-  - type: button
-    show_name: true
+  - show_name: true
     show_icon: true
+    type: button
     tap_action:
       action: call-service
       service: button.press
@@ -211,12 +211,16 @@ cards:
         entity_id: button.pool_control_reset
     name: Reset
     icon: mdi:restart
+    icon_height: 32px
+    entity: button.reset
   - type: entity
-    entity: sensor.pool_control_asservissement_status
+    entity: sensor.status_asservissement
     name: État
   - type: horizontal-stack
     cards:
-      - type: button
+      - show_name: true
+        show_icon: true
+        type: button
         tap_action:
           action: call-service
           service: button.press
@@ -224,7 +228,10 @@ cards:
             entity_id: button.pool_control_actif
         name: Actif
         icon: mdi:play-circle
-      - type: button
+        icon_height: 32px
+      - show_name: true
+        show_icon: true
+        type: button
         tap_action:
           action: call-service
           service: button.press
@@ -232,7 +239,10 @@ cards:
             entity_id: button.pool_control_auto
         name: Auto
         icon: mdi:auto-fix
-      - type: button
+        icon_height: 32px
+      - show_name: true
+        show_icon: true
+        type: button
         tap_action:
           action: call-service
           service: button.press
@@ -240,9 +250,12 @@ cards:
             entity_id: button.pool_control_inactif
         name: Inactif
         icon: mdi:stop-circle
+        icon_height: 32px
   - type: horizontal-stack
     cards:
-      - type: button
+      - show_name: true
+        show_icon: true
+        type: button
         tap_action:
           action: call-service
           service: button.press
@@ -250,7 +263,10 @@ cards:
             entity_id: button.pool_control_saison
         name: Saison
         icon: mdi:weather-sunny
-      - type: button
+        icon_height: 32px
+      - show_name: true
+        show_icon: true
+        type: button
         tap_action:
           action: call-service
           service: button.press
@@ -258,10 +274,13 @@ cards:
             entity_id: button.pool_control_hivernage
         name: Hivernage
         icon: mdi:snowflake
+        icon_height: 32px
   - type: entity
-    entity: sensor.pool_control_surpresseur_status
+    entity: sensor.status_surpresseur
     name: Surpresseur
-  - type: button
+  - show_name: true
+    show_icon: true
+    type: button
     tap_action:
       action: call-service
       service: button.press
@@ -269,10 +288,13 @@ cards:
         entity_id: button.pool_control_surpresseur
     name: Surpresseur
     icon: mdi:pump
+    icon_height: 32px
   - type: entity
-    entity: sensor.pool_control_filtre_sable_lavage_status
+    entity: sensor.status_lavage_filtre
     name: Lavage
-  - type: button
+  - show_name: true
+    show_icon: true
+    type: button
     tap_action:
       action: call-service
       service: button.press
@@ -280,7 +302,10 @@ cards:
         entity_id: button.pool_control_lavage
     name: Lavage
     icon: mdi:air-filter
-  - type: button
+    icon_height: 32px
+  - show_name: true
+    show_icon: true
+    type: button
     tap_action:
       action: call-service
       service: button.press
@@ -288,6 +313,7 @@ cards:
         entity_id: button.pool_control_stop
     name: Stop
     icon: mdi:stop
+    icon_height: 32px
 ```
 
 ## Surpresseur
