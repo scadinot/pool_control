@@ -6,6 +6,20 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.21] — 2026-04-30
+
+### Corrigé
+- `entity_id` désormais réellement stables et indépendants de la langue active. La 0.0.20 posait bien `_attr_translation_key`, mais Home Assistant dérivait l'`object_id_base` du nom traduit dans la langue active **au moment de la création** de l'entité, produisant par exemple `button.pool_control_actif` au lieu de `button.pool_control_active` quand l'instance était créée avec HA en français. L'ajout de `_attr_suggested_object_id = "<slug(entry.title)>_<translation_key>"` force un identifiant anglais quelle que soit la langue HA.
+
+### Modifié
+- `manifest.json` : `version` `0.0.20` → `0.0.21`.
+- `entities.py` : nouvelle helper `_build_suggested_object_id(entry, translation_key)` ; `PoolControlStatusSensor` et `PoolControlButton` posent désormais `_attr_suggested_object_id`.
+
+### Note de migration
+- Les entités créées sous la 0.0.20 conservent leur `entity_id` historique (`button.<instance>_actif`, …) tant que leur `unique_id` est inchangé. Pour bénéficier des nouveaux IDs anglais (`button.<instance>_active`, …) sur une installation existante :
+  - soit renommer manuellement chaque entité dans Paramètres → Appareils et services → ouvrir l'entité → champ `entity_id`,
+  - soit supprimer puis recréer l'instance **après** un redémarrage de HA (en acceptant la perte de configuration et de l'état persistant).
+
 ## [0.0.20] — 2026-04-30
 
 ### Ajouté
