@@ -7,6 +7,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.util import slugify
 
 from .const import DOMAIN
 
@@ -23,6 +24,29 @@ def _build_device_info(entry: Optional[ConfigEntry]) -> Optional[DeviceInfo]:
         manufacturer="Pool Control",
         entry_type=DeviceEntryType.SERVICE,
     )
+
+
+def _build_suggested_object_id(
+    entry: Optional[ConfigEntry], translation_key: str
+) -> Optional[str]:
+    """Force a stable, language-agnostic object_id for new entities.
+
+    Without this, HA derives the object_id from the translated entity name
+    in the language active at creation time, which produces identifiers
+    like ``button.pool_control_actif`` when HA is in French.
+
+    The per-instance prefix is taken from ``entry.unique_id`` (already a
+    slug, set once at config flow time and never modified), with a
+    fallback to ``slugify(entry.title)`` for legacy entries that may not
+    have a unique_id yet. This keeps the prefix stable even if the user
+    later renames the config entry through the UI.
+    """
+
+    if entry is None:
+        return None
+
+    prefix = entry.unique_id if entry.unique_id else slugify(entry.title)
+    return f"{prefix}_{translation_key}"
 
 
 class PoolControlStatusSensor(SensorEntity):
@@ -45,6 +69,9 @@ class PoolControlStatusSensor(SensorEntity):
         self._attr_translation_key = translation_key
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
+        )
+        self._attr_suggested_object_id = _build_suggested_object_id(
+            entry, translation_key
         )
         self._attr_device_info = _build_device_info(entry)
         self._controller_attribute_name = controller_attribute_name
@@ -92,6 +119,9 @@ class PoolControlButton(ButtonEntity):
         self._attr_translation_key = translation_key
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
+        )
+        self._attr_suggested_object_id = _build_suggested_object_id(
+            entry, translation_key
         )
         self._attr_device_info = _build_device_info(entry)
         self._callback = callback
