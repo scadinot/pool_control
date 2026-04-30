@@ -4,6 +4,7 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.storage import Store
 from homeassistant.util import slugify
 
@@ -45,6 +46,19 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 len(legacy_data),
                 STORAGE_KEY,
             )
+
+        # Préserver les entités déjà enregistrées : préfixer leur unique_id
+        # avec entry_id pour les aligner sur le nouveau format multi-instance
+        # sans perdre les customisations du registre.
+        entity_registry = er.async_get(hass)
+        for ent in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
+            new_uid = f"{entry.entry_id}_{ent.unique_id}"
+            if ent.unique_id != new_uid and not ent.unique_id.startswith(
+                f"{entry.entry_id}_"
+            ):
+                entity_registry.async_update_entity(
+                    ent.entity_id, new_unique_id=new_uid
+                )
 
         hass.config_entries.async_update_entry(
             entry,

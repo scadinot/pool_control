@@ -19,6 +19,9 @@
     },
     "abort": {
       "already_configured": "An instance with this name is already configured."
+    },
+    "error": {
+      "invalid_name": "The name cannot be empty."
     }
   },
   "options": {

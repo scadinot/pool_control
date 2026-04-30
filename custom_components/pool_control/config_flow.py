@@ -25,9 +25,13 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             name = user_input["name"].strip()
-            await self.async_set_unique_id(slugify(name))
-            self._abort_if_unique_id_configured()
-            return self.async_create_entry(title=name, data=user_input)
+            if not name or not slugify(name):
+                errors["name"] = "invalid_name"
+            else:
+                user_input["name"] = name
+                await self.async_set_unique_id(slugify(name))
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(title=name, data=user_input)
 
         return self.async_show_form(
             step_id="user",
