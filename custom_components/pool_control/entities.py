@@ -4,10 +4,31 @@ from typing import Any, Callable, Optional
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
+
+from .const import DOMAIN
+
+
+def _build_device_info(entry: Optional[ConfigEntry]) -> Optional[DeviceInfo]:
+    """Build the DeviceInfo grouping all entities of a given config entry."""
+
+    if entry is None:
+        return None
+
+    return DeviceInfo(
+        identifiers={(DOMAIN, entry.entry_id)},
+        name=entry.title,
+        manufacturer="Pool Control",
+        entry_type=DeviceEntryType.SERVICE,
+    )
 
 
 class PoolControlStatusSensor(SensorEntity):
     """Sensor générique pour afficher un statut Pool Control."""
+
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -16,12 +37,16 @@ class PoolControlStatusSensor(SensorEntity):
         unique_id: str,
         controller_attribute_name: str,
         default_state: str = "Arrêté",
+        entry: Optional[ConfigEntry] = None,
     ) -> None:
         """Initialize the PoolControlStatusSensor."""
 
         self._controller = controller
         self._attr_name = name
-        self._attr_unique_id = unique_id
+        self._attr_unique_id = (
+            f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
+        )
+        self._attr_device_info = _build_device_info(entry)
         self._controller_attribute_name = controller_attribute_name
         self._state = default_state
         self._ready = False
@@ -51,12 +76,24 @@ class PoolControlStatusSensor(SensorEntity):
 class PoolControlButton(ButtonEntity):
     """Button générique pour Pool Control."""
 
-    def __init__(self, controller: Any, name: str, unique_id: str, callback: Callable) -> None:
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        controller: Any,
+        name: str,
+        unique_id: str,
+        callback: Callable,
+        entry: Optional[ConfigEntry] = None,
+    ) -> None:
         """Initialize the PoolControlButton."""
 
         self._controller = controller
         self._attr_name = name
-        self._attr_unique_id = unique_id
+        self._attr_unique_id = (
+            f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
+        )
+        self._attr_device_info = _build_device_info(entry)
         self._callback = callback
 
     async def async_press(self) -> None:

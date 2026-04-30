@@ -4,23 +4,67 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
+from homeassistant.util import slugify
 
 from .const import DOMAIN
-from .controller import PoolController
+from .controller import STORAGE_KEY, STORAGE_KEY_PREFIX, STORAGE_VERSION, PoolController
 
 PLATFORMS = ["sensor", "button"]
 _LOGGER = logging.getLogger(__name__)
 
 
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrer les anciennes config entries vers le format multi-instance."""
+
+    _LOGGER.info(
+        "Migrating Pool Control entry %s from version %s",
+        entry.entry_id,
+        entry.version,
+    )
+
+    if entry.version == 1:
+        # Préserver le titre existant comme nom d'instance
+        name = entry.data.get("name") or entry.title or "Pool Control"
+        new_data = {**entry.data, "name": name}
+
+        # Récupérer l'unique_id basé sur le nom (compatible Shutters Management)
+        new_unique_id = slugify(name)
+
+        # Migrer les données du Store : ancienne clé globale → clé par entry
+        legacy_store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
+        legacy_data = await legacy_store.async_load()
+        if legacy_data:
+            new_store = Store(
+                hass, STORAGE_VERSION, f"{STORAGE_KEY_PREFIX}_{entry.entry_id}"
+            )
+            await new_store.async_save(legacy_data)
+            await legacy_store.async_remove()
+            _LOGGER.info(
+                "Migrated %d storage keys from %s to per-entry store",
+                len(legacy_data),
+                STORAGE_KEY,
+            )
+
+        hass.config_entries.async_update_entry(
+            entry,
+            data=new_data,
+            unique_id=new_unique_id,
+            version=2,
+        )
+
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Installer Pool Control à partir d'un config entry."""
 
-    _LOGGER.info("Setting up Pool Control from Config Entry")
+    _LOGGER.info("Setting up Pool Control from Config Entry %s", entry.title)
 
     conf = {**entry.data, **entry.options}
 
-    controller = PoolController(hass, conf)
-    hass.data.setdefault(DOMAIN, controller)
+    controller = PoolController(hass, conf, entry)
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = controller
 
     await controller.async_initialize()
 
@@ -36,10 +80,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Décharger Pool Control."""
 
-    _LOGGER.info("Unloading Pool Control")
+    _LOGGER.info("Unloading Pool Control %s", entry.title)
 
     # Arrêter les crons avant de décharger les plateformes
-    controller = hass.data.get(DOMAIN)
+    controller = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if controller is not None:
         await controller.stopFirstCron()
         await controller.stopSecondCron()
@@ -47,6 +91,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        hass.data.pop(DOMAIN, None)
+        hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+        if not hass.data.get(DOMAIN):
+            hass.data.pop(DOMAIN, None)
 
     return unload_ok

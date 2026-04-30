@@ -8,6 +8,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, FlowResult
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
+from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .options_flow import PoolControlOptionsFlowHandler
@@ -16,15 +17,23 @@ from .options_flow import PoolControlOptionsFlowHandler
 class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Gestion de la configuration initiale de Pool Control via l'UI."""
 
+    VERSION = 2
+
     async def async_step_user(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Étape initiale de configuration."""
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            return self.async_create_entry(title="Pool Control", data=user_input)
+            name = user_input["name"].strip()
+            await self.async_set_unique_id(slugify(name))
+            self._abort_if_unique_id_configured()
+            return self.async_create_entry(title=name, data=user_input)
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
+                    vol.Required("name", default="Pool Control"): str,
                     vol.Required("temperatureWater"): selector(
                         {"entity": {"domain": ["sensor", "input_number"]}}
                     ),
@@ -48,6 +57,7 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     ),
                 }
             ),
+            errors=errors,
         )
 
     @staticmethod
