@@ -26,14 +26,18 @@ def _build_device_info(entry: Optional[ConfigEntry]) -> Optional[DeviceInfo]:
     )
 
 
-def _build_suggested_object_id(
-    entry: Optional[ConfigEntry], translation_key: str
+def _build_entity_id(
+    platform: str, entry: Optional[ConfigEntry], translation_key: str
 ) -> Optional[str]:
-    """Force a stable, language-agnostic object_id for new entities.
+    """Build a stable, language-agnostic entity_id.
 
-    Without this, HA derives the object_id from the translated entity name
-    in the language active at creation time, which produces identifiers
-    like ``button.pool_control_actif`` when HA is in French.
+    Home Assistant derives the default object_id from the translated entity
+    name in the language active at creation time, which produces French
+    identifiers like ``button.pool_control_actif`` when HA is in French —
+    even though ``translation_key`` is "active". Setting
+    ``self.entity_id`` directly in ``__init__`` is the documented way to
+    force a stable slug (see ``entity_platform.py`` ``async_add_entities``
+    contract).
 
     The per-instance prefix is taken from ``entry.unique_id`` (already a
     slug, set once at config flow time and never modified), with a
@@ -46,7 +50,7 @@ def _build_suggested_object_id(
         return None
 
     prefix = entry.unique_id if entry.unique_id else slugify(entry.title)
-    return f"{prefix}_{translation_key}"
+    return f"{platform}.{prefix}_{translation_key}"
 
 
 class PoolControlStatusSensor(SensorEntity):
@@ -70,9 +74,9 @@ class PoolControlStatusSensor(SensorEntity):
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
         )
-        self._attr_suggested_object_id = _build_suggested_object_id(
-            entry, translation_key
-        )
+        suggested = _build_entity_id("sensor", entry, translation_key)
+        if suggested is not None:
+            self.entity_id = suggested
         self._attr_device_info = _build_device_info(entry)
         self._controller_attribute_name = controller_attribute_name
         self._state = default_state
@@ -120,9 +124,9 @@ class PoolControlButton(ButtonEntity):
         self._attr_unique_id = (
             f"{entry.entry_id}_{unique_id}" if entry is not None else unique_id
         )
-        self._attr_suggested_object_id = _build_suggested_object_id(
-            entry, translation_key
-        )
+        suggested = _build_entity_id("button", entry, translation_key)
+        if suggested is not None:
+            self.entity_id = suggested
         self._attr_device_info = _build_device_info(entry)
         self._callback = callback
 
