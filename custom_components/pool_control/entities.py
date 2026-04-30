@@ -34,12 +34,19 @@ def _build_suggested_object_id(
     Without this, HA derives the object_id from the translated entity name
     in the language active at creation time, which produces identifiers
     like ``button.pool_control_actif`` when HA is in French.
+
+    The per-instance prefix is taken from ``entry.unique_id`` (already a
+    slug, set once at config flow time and never modified), with a
+    fallback to ``slugify(entry.title)`` for legacy entries that may not
+    have a unique_id yet. This keeps the prefix stable even if the user
+    later renames the config entry through the UI.
     """
 
     if entry is None:
         return None
 
-    return f"{slugify(entry.title)}_{translation_key}"
+    prefix = entry.unique_id if entry.unique_id else slugify(entry.title)
+    return f"{prefix}_{translation_key}"
 
 
 class PoolControlStatusSensor(SensorEntity):
