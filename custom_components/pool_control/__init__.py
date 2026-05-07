@@ -71,21 +71,25 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-def _build_panel_config(entry: ConfigEntry) -> dict:
-    """Construire la configuration transmise au Web Component."""
+def _slug_from_entry(entry: ConfigEntry) -> str:
+    """Slug stable et unique pour cette instance.
 
-    conf = {**entry.data, **entry.options}
-    return {
-        **conf,
-        "instance_prefix": entry.unique_id or slugify(entry.title),
-    }
+    Utilise ``entry.unique_id`` (posé au config flow et figé pour la vie
+    de l'entry), avec fallback sur ``slugify(entry.title)`` pour les
+    entries legacy qui n'auraient pas de unique_id.
+    """
+
+    return entry.unique_id or slugify(entry.title)
 
 
 async def _async_update_panel(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Recharger le panneau quand les options de l'intégration changent."""
+    """Recharger le panneau de cette instance quand ses options changent."""
 
-    await async_unregister_panel(hass)
-    await async_register_panel(hass, _build_panel_config(entry))
+    slug = _slug_from_entry(entry)
+    await async_unregister_panel(hass, slug)
+    await async_register_panel(
+        hass, slug, entry.title, {**entry.data, **entry.options}
+    )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -103,8 +107,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Démarrer les plateformes déclarées (sensor.py, button.py seront appelés ici)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Enregistrer le panneau latéral après que les entités soient prêtes
-    await async_register_panel(hass, _build_panel_config(entry))
+    # Enregistrer le panneau latéral spécifique à cette instance
+    slug = _slug_from_entry(entry)
+    await async_register_panel(hass, slug, entry.title, conf)
     entry.async_on_unload(entry.add_update_listener(_async_update_panel))
 
     # Ensuite on peut lancer le cron
@@ -118,8 +123,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.info("Unloading Pool Control %s", entry.title)
 
-    # Retirer le panneau avant tout autre cleanup
-    await async_unregister_panel(hass)
+    # Retirer le panneau de cette instance uniquement (les autres
+    # instances Pool Control encore chargées conservent le leur)
+    await async_unregister_panel(hass, _slug_from_entry(entry))
 
     # Arrêter les crons avant de décharger les plateformes
     controller = hass.data.get(DOMAIN, {}).get(entry.entry_id)

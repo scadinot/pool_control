@@ -6,6 +6,27 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.24] — 2026-05-07
+
+### Corrigé
+- **Panneau latéral compatible multi-instance.** La 0.0.23 enregistrait toujours le panneau sur l'URL fixe `/pool-control` et avec le titre figé « Pool Control ». Avec plusieurs ConfigEntry, la première gagnait, les suivantes étaient ignorées, et décharger une instance retirait le panneau pour toutes les autres. La 0.0.24 calcule désormais l'URL et le titre par instance :
+  - l'instance par défaut (slug `pool_control`) garde l'URL historique `/pool-control` et le titre « Pool Control » (pas de rupture pour les bookmarks),
+  - chaque instance supplémentaire reçoit `/pool-control-<slug>` (ex. `/pool-control-piscine`, `/pool-control-spa`) et le titre « Pool Control · <nom> ».
+
+  `async_unregister_panel` ne touche plus qu'au panneau de l'instance déchargée.
+
+- **Appel `hass.callService` côté JS conforme à la signature standard.** Le 4ᵉ paramètre `target` était passé en plus du `serviceData` ; certaines versions du frontend HA l'ignoraient et déclenchaient le service sans `entity_id`, rendant les boutons inopérants. Le `entity_id` est désormais inclus directement dans le `serviceData` (3 paramètres seulement).
+
+### Modifié
+- `manifest.json` : `version` `0.0.23` → `0.0.24`.
+- `frontend.py` : nouvelles helpers `_panel_url_path(slug)` et `_sidebar_title(slug, entry_title)`. `async_register_panel(hass, slug, entry_title, config_entry_data)` et `async_unregister_panel(hass, slug)` prennent désormais le slug d'instance en argument.
+- `__init__.py` : nouvelle helper `_slug_from_entry(entry)` qui calcule le slug depuis `entry.unique_id` (avec fallback `slugify(entry.title)`). Appliquée dans `async_setup_entry`, `async_unload_entry` et `_async_update_panel`.
+- `frontend/pool_control_panel.js` : `_callService` utilise `(domain, service, { entity_id: target })` au lieu de l'ancienne forme à 4 arguments.
+- `tests/test_frontend.py` : 5 tests adaptés à la nouvelle signature, dont un test de non-régression vérifiant qu'une 2ᵉ instance reçoit une URL et un titre distincts, et qu'`async_unregister_panel` ne touche pas aux autres instances. Réutilise désormais la fixture commune `mock_hass` (étendue avec les attributs `http` requis) au lieu de redéfinir une fixture `hass` ambiguë.
+
+### Note de migration
+- Pour les instances existantes 0.0.23 dont le slug n'est pas `pool_control` (ex. instance « Piscine » → slug `piscine`), l'URL passe de `/pool-control` à `/pool-control-piscine` après upgrade. Les bookmarks utilisateurs sur l'ancienne URL doivent être mis à jour. La sidebar HA se met à jour automatiquement.
+
 ## [0.0.23] — 2026-04-30
 
 ### Ajouté

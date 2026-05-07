@@ -47,7 +47,7 @@ class PoolControlPanel extends HTMLElement {
 
   _callService(domain, service, target) {
     if (!this._hass) return;
-    return this._hass.callService(domain, service, {}, { entity_id: target });
+    return this._hass.callService(domain, service, { entity_id: target });
   }
 
   _pressButton(buttonId) {
