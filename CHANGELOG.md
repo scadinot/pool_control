@@ -6,6 +6,45 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.24] — 2026-05-07
+
+### Corrigé
+- **Panneau latéral compatible multi-instance.** La 0.0.23 enregistrait toujours le panneau sur l'URL fixe `/pool-control` et avec le titre figé « Pool Control ». Avec plusieurs ConfigEntry, la première gagnait, les suivantes étaient ignorées, et décharger une instance retirait le panneau pour toutes les autres. La 0.0.24 calcule désormais l'URL et le titre par instance :
+  - l'instance par défaut (slug `pool_control`) garde l'URL historique `/pool-control` et le titre « Pool Control » (pas de rupture pour les bookmarks),
+  - chaque instance supplémentaire reçoit `/pool-control-<slug>` (ex. `/pool-control-piscine`, `/pool-control-spa`) et le titre « Pool Control · <nom> ».
+
+  `async_unregister_panel` ne touche plus qu'au panneau de l'instance déchargée.
+
+- **Appel `hass.callService` côté JS conforme à la signature standard.** Le 4ᵉ paramètre `target` était passé en plus du `serviceData` ; certaines versions du frontend HA l'ignoraient et déclenchaient le service sans `entity_id`, rendant les boutons inopérants. Le `entity_id` est désormais inclus directement dans le `serviceData` (3 paramètres seulement).
+
+### Modifié
+- `manifest.json` : `version` `0.0.23` → `0.0.24`.
+- `frontend.py` : nouvelles helpers `_panel_url_path(slug)` et `_sidebar_title(slug, entry_title)`. `async_register_panel(hass, slug, entry_title, config_entry_data)` et `async_unregister_panel(hass, slug)` prennent désormais le slug d'instance en argument.
+- `__init__.py` : nouvelle helper `_slug_from_entry(entry)` qui calcule le slug depuis `entry.unique_id` (avec fallback `slugify(entry.title)`). Appliquée dans `async_setup_entry`, `async_unload_entry` et `_async_update_panel`.
+- `frontend/pool_control_panel.js` : `_callService` utilise `(domain, service, { entity_id: target })` au lieu de l'ancienne forme à 4 arguments.
+- `tests/test_frontend.py` : 5 tests adaptés à la nouvelle signature, dont un test de non-régression vérifiant qu'une 2ᵉ instance reçoit une URL et un titre distincts, et qu'`async_unregister_panel` ne touche pas aux autres instances. Réutilise désormais la fixture commune `mock_hass` (étendue avec les attributs `http` requis) au lieu de redéfinir une fixture `hass` ambiguë.
+
+### Note de migration
+- Pour les instances existantes 0.0.23 dont le slug n'est pas `pool_control` (ex. instance « Piscine » → slug `piscine`), l'URL passe de `/pool-control` à `/pool-control-piscine` après upgrade. Les bookmarks utilisateurs sur l'ancienne URL doivent être mis à jour. La sidebar HA se met à jour automatiquement.
+
+## [0.0.23] — 2026-04-30
+
+### Ajouté
+- **Panneau latéral Home Assistant** dédié à Pool Control. Une entrée apparaît dans la sidebar (à côté de « Vue d'ensemble », « Énergie », …) et ouvre une vue full-page comprenant un schéma hydraulique animé (SVG vanilla, animation pilotée par classes CSS), des tuiles températures eau / air, l'état complet du contrôleur (statut, planning, temps calculé), les boutons de mode (Actif / Auto / Inactif) et de saison (Saison / Hivernage), les commandes du surpresseur et l'automate de lavage du filtre avec **instructions visuelles pour positionner la vanne 6 voies**. Le panneau s'adapte automatiquement au thème HA actif et se recharge tout seul quand les options de l'intégration changent.
+
+### Modifié
+- `manifest.json` : `version` `0.0.22` → `0.0.23`. Ajoute `frontend`, `http` et `panel_custom` aux dépendances HA.
+- `__init__.py` : `async_setup_entry` enregistre le panneau via `frontend.py` après les plateformes, et branche un update listener pour le recharger quand les options changent. `async_unload_entry` retire le panneau avant tout autre cleanup. Nouvelle helper `_build_panel_config(entry)` qui calcule l'`instance_prefix` à partir de `entry.unique_id` (avec fallback `slugify(entry.title)`).
+
+### Nouveau
+- `custom_components/pool_control/frontend.py` : enregistrement du Web Component et du chemin statique (`/pool_control_static/`) servant `pool_control_panel.js`. API conforme HA 2026.3 (`StaticPathConfig`, `async_register_static_paths`, `panel_custom.async_register_panel`).
+- `custom_components/pool_control/frontend/pool_control_panel.js` : Web Component vanilla JS (~32 ko), pas de build, pas de dépendances externes. Lit les états via `hass.states`, écrit via `hass.callService()`. Le SVG du schéma est statique, animation pilotée par les classes `.running` / `.stopped` / `.backwash-active` mises à jour à chaque setter `hass`.
+- `tests/test_frontend.py` : 4 tests de non-régression sur l'enregistrement et le retrait idempotents du panneau.
+
+### Pas de breaking change
+- Le panneau est complémentaire au dashboard Lovelace : les deux coexistent sans interférer.
+- 360 tests (356 + 4 nouveaux) passent sans modification du code de test existant.
+
 ## [0.0.22] — 2026-04-30
 
 ### Corrigé

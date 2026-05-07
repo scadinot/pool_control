@@ -24,6 +24,7 @@ Composant Home Assistant permettant de gérer la filtration d'une piscine en fon
   - [Sonde dans local technique](#sonde-dans-local-technique)
 - [Entités exposées](#entités-exposées)
 - [Tableau de bord](#tableau-de-bord)
+- [Panneau latéral](#panneau-latéral)
 - [Surpresseur](#surpresseur)
 - [Lavage du filtre à sable](#lavage-du-filtre-à-sable)
 - [Migration depuis l'ancienne version](#migration-depuis-lancienne-version)
@@ -314,6 +315,20 @@ cards:
     icon: mdi:stop
     icon_height: 32px
 ```
+
+## Panneau latéral
+
+Depuis la **0.0.23**, l'intégration enregistre automatiquement une entrée **Pool Control** dans la sidebar Home Assistant (à côté de « Vue d'ensemble », « Énergie », …). Aucune configuration supplémentaire n'est requise — l'entrée apparaît dès le premier démarrage après installation, et est retirée si l'intégration est désinstallée.
+
+Cliquer dessus ouvre une vue full-page (URL `/pool-control`) qui regroupe :
+
+- un **schéma hydraulique animé** (bassin, skimmer, pompe, filtre, refoulement) dont la circulation d'eau démarre quand la filtration est active ;
+- des **tuiles températures** eau / air ;
+- l'**état complet** du contrôleur : statut de mode, plages de filtration calculées, durée du jour ;
+- les **boutons de mode** (Actif / Auto / Inactif) et de saison (Saison / Hivernage), avec confirmation pour les actions sensibles (désactivation, bascule en hivernage) ;
+- les commandes du **surpresseur** et de l'**automate de lavage**, avec un **bandeau d'instruction visuel** qui guide explicitement le positionnement de la vanne 6 voies (« Positionnez la vanne sur LAVAGE … ») pendant les phases d'attente utilisateur.
+
+Le panneau s'adapte automatiquement au thème HA actif (clair / sombre) via les variables CSS standard, et se recharge tout seul quand vous modifiez les options de l'intégration. Il est **complémentaire au dashboard Lovelace** documenté ci-dessus : les deux coexistent sans interférer, vous pouvez utiliser l'un, l'autre, ou les deux.
 
 ## Surpresseur
 
