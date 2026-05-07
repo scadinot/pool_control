@@ -6,6 +6,24 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.23] — 2026-04-30
+
+### Ajouté
+- **Panneau latéral Home Assistant** dédié à Pool Control. Une entrée apparaît dans la sidebar (à côté de « Vue d'ensemble », « Énergie », …) et ouvre une vue full-page comprenant un schéma hydraulique animé (SVG vanilla, animation pilotée par classes CSS), des tuiles températures eau / air, l'état complet du contrôleur (statut, planning, temps calculé), les boutons de mode (Actif / Auto / Inactif) et de saison (Saison / Hivernage), les commandes du surpresseur et l'automate de lavage du filtre avec **instructions visuelles pour positionner la vanne 6 voies**. Le panneau s'adapte automatiquement au thème HA actif et se recharge tout seul quand les options de l'intégration changent.
+
+### Modifié
+- `manifest.json` : `version` `0.0.22` → `0.0.23`. Ajoute `frontend`, `http` et `panel_custom` aux dépendances HA.
+- `__init__.py` : `async_setup_entry` enregistre le panneau via `frontend.py` après les plateformes, et branche un update listener pour le recharger quand les options changent. `async_unload_entry` retire le panneau avant tout autre cleanup. Nouvelle helper `_build_panel_config(entry)` qui calcule l'`instance_prefix` à partir de `entry.unique_id` (avec fallback `slugify(entry.title)`).
+
+### Nouveau
+- `custom_components/pool_control/frontend.py` : enregistrement du Web Component et du chemin statique (`/pool_control_static/`) servant `pool_control_panel.js`. API conforme HA 2026.3 (`StaticPathConfig`, `async_register_static_paths`, `panel_custom.async_register_panel`).
+- `custom_components/pool_control/frontend/pool_control_panel.js` : Web Component vanilla JS (~32 ko), pas de build, pas de dépendances externes. Lit les états via `hass.states`, écrit via `hass.callService()`. Le SVG du schéma est statique, animation pilotée par les classes `.running` / `.stopped` / `.backwash-active` mises à jour à chaque setter `hass`.
+- `tests/test_frontend.py` : 4 tests de non-régression sur l'enregistrement et le retrait idempotents du panneau.
+
+### Pas de breaking change
+- Le panneau est complémentaire au dashboard Lovelace : les deux coexistent sans interférer.
+- 360 tests (356 + 4 nouveaux) passent sans modification du code de test existant.
+
 ## [0.0.22] — 2026-04-30
 
 ### Corrigé

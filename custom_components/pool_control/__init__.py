@@ -10,6 +10,7 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .controller import STORAGE_KEY, STORAGE_KEY_PREFIX, STORAGE_VERSION, PoolController
+from .frontend import async_register_panel, async_unregister_panel
 
 PLATFORMS = ["sensor", "button"]
 _LOGGER = logging.getLogger(__name__)
@@ -70,6 +71,23 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+def _build_panel_config(entry: ConfigEntry) -> dict:
+    """Construire la configuration transmise au Web Component."""
+
+    conf = {**entry.data, **entry.options}
+    return {
+        **conf,
+        "instance_prefix": entry.unique_id or slugify(entry.title),
+    }
+
+
+async def _async_update_panel(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Recharger le panneau quand les options de l'intégration changent."""
+
+    await async_unregister_panel(hass)
+    await async_register_panel(hass, _build_panel_config(entry))
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Installer Pool Control à partir d'un config entry."""
 
@@ -85,6 +103,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Démarrer les plateformes déclarées (sensor.py, button.py seront appelés ici)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Enregistrer le panneau latéral après que les entités soient prêtes
+    await async_register_panel(hass, _build_panel_config(entry))
+    entry.async_on_unload(entry.add_update_listener(_async_update_panel))
+
     # Ensuite on peut lancer le cron
     await controller.startFirstCron()
 
@@ -95,6 +117,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Décharger Pool Control."""
 
     _LOGGER.info("Unloading Pool Control %s", entry.title)
+
+    # Retirer le panneau avant tout autre cleanup
+    await async_unregister_panel(hass)
 
     # Arrêter les crons avant de décharger les plateformes
     controller = hass.data.get(DOMAIN, {}).get(entry.entry_id)
