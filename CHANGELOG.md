@@ -6,6 +6,27 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.25] — 2026-05-07
+
+### Modifié
+- **Refonte UI complète du panneau latéral** : passage à un style dashboard moderne avec glassmorphism, hiérarchie typographique soignée, transitions fluides et mise en page restructurée.
+  - Cards en glassmorphism (`backdrop-filter: blur(24px) saturate(180%)`, ombres profondes, bordure haute éclairée pour effet de profondeur).
+  - Background du panneau en gradient radial deux passes (cyan eau + amber air) sur fond deep navy, qui se replie sur la variable HA `--primary-background-color` en thème clair.
+  - Hiérarchie typo : températures en chiffres `44px weight 200`, statut principal en `22px weight 300`, titres de sections en `11px UPPERCASE letter-spacing 0.18em`. Échelle d'espacements 4px (`8/12/16/24/32`).
+  - Layout desktop corrigé via une **grille 12 colonnes** : Hero (8) + Modes (4) en haut, puis Schéma (8) + stack Surpresseur/Lavage (4). Ne laisse plus de zone vide à droite comme la 0.0.23.
+  - **Toggle groups** « pill connectée » pour Activation (Actif/Auto/Inactif) et Saison (Saison/Hivernage), avec glow contextuel sur le bouton actif (cyan / amber / bleu).
+  - Transitions Material `cubic-bezier(0.4, 0, 0.2, 1)` à 160 / 220 / 320 ms. Animation d'entrée cascadée sur les cards à chaque premier render.
+  - Bandeau d'instruction de vanne (glassmorphism amber, pulsation douce par `box-shadow`) avec icône 👉 désormais en pseudo-élément `::before` séparé du texte.
+  - Header sticky avec backdrop-filter, sous-titre « TABLEAU DE BORD », et badge de statut en pill arrondie avec glow contextuel selon l'état (vert / bleu / gris / neutre).
+
+### Pas de breaking change
+- Aucun changement Python : `frontend.py`, `__init__.py`, `manifest.json` (hors version), tests, traductions et logique métier sont strictement identiques.
+- Aucun changement de la logique JS du Web Component : `set hass`, `_update`, `_isFiltrationRunning`, `_controlMode`, `_backwashStep`, `_callService`, `_pressButton` et l'ensemble du SVG hydraulique sont inchangés. Tous les `entity_id` ciblés et tous les IDs DOM internes du panneau sont préservés.
+- 361 tests passent sans modification.
+
+### Note de migration
+- Aucune action utilisateur requise : le nouveau panneau est servi automatiquement après upgrade HACS et redémarrage HA. La sidebar et l'URL `/pool-control[-<slug>]` ne changent pas.
+
 ## [0.0.24] — 2026-05-07
 
 ### Corrigé
