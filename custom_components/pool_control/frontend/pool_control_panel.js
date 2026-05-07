@@ -574,6 +574,22 @@ class PoolControlPanel extends HTMLElement {
           color: var(--secondary-text-color, #8a9ba8);
           text-align: center;
         }
+
+        /* Respect des préférences d'accessibilité : si l'utilisateur a
+           désactivé les animations, on force les cards à être visibles
+           directement (sinon elles resteraient à opacity: 0) et on coupe
+           la pulsation du bandeau vanne et les animations de l'eau. */
+        @media (prefers-reduced-motion: reduce) {
+          .card {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
+          .vanne-prompt { animation: none; }
+          .running .water-particle,
+          .running .pump-rotor,
+          .running .water-surface { animation: none; }
+        }
       </style>
 
       <header class="app-header">
