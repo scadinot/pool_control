@@ -87,126 +87,446 @@ class PoolControlPanel extends HTMLElement {
       <style>
         :host {
           display: block;
-          background: var(--primary-background-color, #0b1620);
-          color: var(--primary-text-color, #e8eef3);
           min-height: 100vh;
-          font-family: var(--paper-font-body1_-_font-family, 'Roboto', 'Segoe UI', sans-serif);
-        }
-        .app-header {
-          position: sticky; top: 0; z-index: 10;
-          background: var(--app-header-background-color, #1a3a52);
-          color: var(--app-header-text-color, #fff);
-          padding: 0 16px; height: 56px;
-          display: flex; align-items: center; gap: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .app-header .menu-btn {
-          background: none; border: none; color: inherit;
-          cursor: pointer; padding: 8px; font-size: 24px; line-height: 1;
-        }
-        .app-header h1 { margin: 0; font-size: 20px; font-weight: 400; letter-spacing: 0.02em; }
-        .app-header .status-badge {
-          margin-left: auto; padding: 4px 12px; border-radius: 12px;
-          font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
-          text-transform: uppercase; background: rgba(255,255,255,0.15);
-        }
-        .app-header .status-badge.running { background: #10b981; }
-        .app-header .status-badge.winter  { background: #3b82f6; }
-        .app-header .status-badge.off     { background: #6b7280; }
+          color: var(--primary-text-color, #e8eef3);
+          font-family: var(--paper-font-body1_-_font-family, 'Inter', 'Roboto', 'Segoe UI', system-ui, sans-serif);
+          background:
+            radial-gradient(circle at 20% 0%, rgba(76, 201, 240, 0.10), transparent 55%),
+            radial-gradient(circle at 80% 100%, rgba(244, 162, 97, 0.08), transparent 55%),
+            linear-gradient(180deg, var(--primary-background-color, #0a1420) 0%, var(--primary-background-color, #060d18) 100%);
 
+          /* Design tokens */
+          --gap-xs: 8px;
+          --gap-sm: 12px;
+          --gap-md: 16px;
+          --gap-lg: 24px;
+          --gap-xl: 32px;
+
+          --radius-sm: 10px;
+          --radius-md: 14px;
+          --radius-lg: 20px;
+
+          --ease: cubic-bezier(0.4, 0, 0.2, 1);
+          --t-fast: 160ms;
+          --t-base: 220ms;
+          --t-slow: 320ms;
+
+          --accent: #f4a261;
+          --accent-water: #4cc9f0;
+          --accent-air: #f4a261;
+          --c-success: #10b981;
+          --c-danger: #ef4444;
+          --c-winter: #3b82f6;
+
+          --glass-bg: rgba(15, 32, 48, 0.55);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --glass-border-top: rgba(255, 255, 255, 0.14);
+          --glass-shadow:
+            0 8px 32px -8px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        /* ─────────────── HEADER ─────────────── */
+        .app-header {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          height: 64px;
+          padding: 0 var(--gap-lg);
+          display: flex;
+          align-items: center;
+          gap: var(--gap-md);
+          background: rgba(8, 16, 26, 0.72);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border-bottom: 1px solid var(--glass-border);
+        }
+        .menu-btn {
+          width: 40px; height: 40px;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: transparent;
+          border: none;
+          color: inherit;
+          cursor: pointer;
+          font-size: 22px;
+          border-radius: 10px;
+          transition: background var(--t-fast) var(--ease);
+        }
+        .menu-btn:hover { background: rgba(255, 255, 255, 0.06); }
+
+        .header-titles {
+          display: flex; flex-direction: column; gap: 2px; line-height: 1.1;
+        }
+        .header-title {
+          margin: 0;
+          font-size: 17px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+        }
+        .header-subtitle {
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--secondary-text-color, #8a9ba8);
+        }
+
+        .status-badge {
+          margin-left: auto;
+          padding: 6px 14px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.10em;
+          text-transform: uppercase;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.10);
+          transition: all var(--t-base) var(--ease);
+        }
+        .status-badge.running {
+          background: rgba(16, 185, 129, 0.18);
+          color: #6ee7b7;
+          border-color: rgba(16, 185, 129, 0.4);
+          box-shadow: 0 0 24px -6px rgba(16, 185, 129, 0.5);
+        }
+        .status-badge.winter {
+          background: rgba(59, 130, 246, 0.18);
+          color: #93c5fd;
+          border-color: rgba(59, 130, 246, 0.4);
+          box-shadow: 0 0 24px -6px rgba(59, 130, 246, 0.5);
+        }
+        .status-badge.off {
+          background: rgba(107, 114, 128, 0.18);
+          color: #d1d5db;
+          border-color: rgba(107, 114, 128, 0.3);
+        }
+
+        /* ─────────────── LAYOUT ─────────────── */
         .container {
-          max-width: 1400px; margin: 0 auto; padding: 20px;
-          display: grid; grid-template-columns: 1fr; gap: 20px;
+          max-width: 1440px;
+          margin: 0 auto;
+          padding: var(--gap-lg) var(--gap-md);
+          display: grid;
+          grid-template-columns: repeat(12, 1fr);
+          gap: var(--gap-md);
         }
+        @media (min-width: 720px) {
+          .container { padding: var(--gap-xl); gap: var(--gap-lg); }
+        }
+
+        /* Mobile: tout en pleine largeur */
+        .area-hero,
+        .area-modes,
+        .area-schema,
+        .area-stack { grid-column: span 12; }
+        .area-stack { display: grid; gap: var(--gap-md); }
+
+        /* Desktop: grille 12 cols */
         @media (min-width: 1100px) {
-          .container { grid-template-columns: 1fr 1.5fr; }
-          .col-schema { grid-column: 1 / -1; }
+          .area-hero    { grid-column: span 8; }
+          .area-modes   { grid-column: span 4; }
+          .area-schema  { grid-column: span 8; }
+          .area-stack   { grid-column: span 4; }
         }
+
+        /* ─────────────── CARDS (glassmorphism) ─────────────── */
         .card {
-          background: var(--card-background-color, #0f2030);
-          border: 1px solid var(--divider-color, rgba(255,255,255,0.08));
-          border-radius: 12px; padding: 20px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+          position: relative;
+          background: var(--glass-bg);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border: 1px solid var(--glass-border);
+          border-top-color: var(--glass-border-top);
+          border-radius: var(--radius-lg);
+          padding: var(--gap-lg);
+          box-shadow: var(--glass-shadow);
+          opacity: 0;
+          transform: translateY(12px);
+          animation: card-in var(--t-slow) var(--ease) forwards;
+        }
+        .card:nth-child(1) { animation-delay: 0ms; }
+        .card:nth-child(2) { animation-delay: 50ms; }
+        .card:nth-child(3) { animation-delay: 100ms; }
+        .card:nth-child(4) { animation-delay: 150ms; }
+        .area-stack .card:nth-child(2) { animation-delay: 200ms; }
+
+        @keyframes card-in {
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-head {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: var(--gap-sm);
+          margin-bottom: var(--gap-md);
         }
         .card-title {
-          font-size: 13px; font-weight: 500; text-transform: uppercase;
-          letter-spacing: 0.15em; color: #f4a261; margin: 0 0 16px;
+          margin: 0;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--accent);
           display: flex; align-items: center; gap: 8px;
         }
-        .card-title .ico { font-size: 18px; }
+        .card-title .ico { font-size: 16px; }
 
+        .card-aside {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--secondary-text-color, #8a9ba8);
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--glass-border);
+        }
+
+        /* ─────────────── HERO (températures + statut) ─────────────── */
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--gap-md);
+          margin-bottom: var(--gap-md);
+        }
+        .stat {
+          position: relative;
+          padding: var(--gap-md);
+          border-radius: var(--radius-md);
+          background: linear-gradient(135deg, rgba(76,201,240,0.06), rgba(76,201,240,0.02));
+          border: 1px solid rgba(76, 201, 240, 0.18);
+          overflow: hidden;
+        }
+        .stat::after {
+          content: '';
+          position: absolute; inset: 0;
+          background: radial-gradient(circle at 100% 0%, rgba(76,201,240,0.18), transparent 60%);
+          pointer-events: none;
+        }
+        .stat.air {
+          background: linear-gradient(135deg, rgba(244,162,97,0.06), rgba(244,162,97,0.02));
+          border-color: rgba(244, 162, 97, 0.18);
+        }
+        .stat.air::after {
+          background: radial-gradient(circle at 100% 0%, rgba(244,162,97,0.18), transparent 60%);
+        }
+        .stat-label {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--secondary-text-color, #8a9ba8);
+          display: flex; align-items: center; gap: 6px;
+          position: relative;
+        }
+        .stat-value {
+          margin-top: 6px;
+          font-size: 44px;
+          font-weight: 200;
+          line-height: 1.0;
+          letter-spacing: -0.03em;
+          font-feature-settings: "tnum";
+          position: relative;
+        }
+        .temp-tile-unit {
+          font-size: 18px;
+          font-weight: 300;
+          color: var(--secondary-text-color, #8a9ba8);
+          margin-left: 4px;
+        }
+
+        .info-list {
+          display: flex; flex-direction: column;
+          background: rgba(0, 0, 0, 0.18);
+          border-radius: var(--radius-md);
+          border: 1px solid var(--glass-border);
+          padding: 4px var(--gap-md);
+        }
         .info-row {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+          display: flex; align-items: center; justify-content: space-between;
+          padding: var(--gap-sm) 0;
+          gap: var(--gap-md);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .info-row:last-child { border-bottom: none; }
-        .info-label { color: var(--secondary-text-color, #8a9ba8); font-size: 13px; }
-        .info-value { font-weight: 500; font-size: 14px; text-align: right; }
-        .info-value.big { font-size: 18px; color: #4cc9f0; }
+        .info-label {
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          color: var(--secondary-text-color, #8a9ba8);
+          flex-shrink: 0;
+        }
+        .info-value {
+          font-size: 14px;
+          font-weight: 500;
+          text-align: right;
+          font-feature-settings: "tnum";
+        }
+        .info-value.lead {
+          font-size: 22px;
+          font-weight: 300;
+          color: var(--accent-water);
+          letter-spacing: -0.01em;
+        }
+        .info-value.schedule {
+          font-size: 12px;
+          color: var(--secondary-text-color, #8a9ba8);
+          max-width: 60%;
+        }
 
-        .temp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .temp-tile {
-          background: linear-gradient(135deg, rgba(76,201,240,0.08), rgba(39,125,161,0.15));
-          border: 1px solid rgba(76,201,240,0.2);
-          border-radius: 10px; padding: 16px; text-align: center;
-        }
-        .temp-tile.air {
-          background: linear-gradient(135deg, rgba(244,162,97,0.08), rgba(231,111,81,0.15));
-          border-color: rgba(244,162,97,0.2);
-        }
-        .temp-tile-label {
-          font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
-          color: #8a9ba8; margin-bottom: 6px;
-        }
-        .temp-tile-value { font-size: 28px; font-weight: 300; }
-        .temp-tile-unit { font-size: 16px; color: #8a9ba8; margin-left: 2px; }
-
-        .btn-row { display: grid; gap: 8px; margin-top: 12px; }
-        .btn-row.cols-2 { grid-template-columns: 1fr 1fr; }
-        .btn-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        /* ─────────────── BUTTONS ─────────────── */
+        .actions { display: grid; gap: var(--gap-sm); margin-top: var(--gap-md); }
+        .actions.cols-2 { grid-template-columns: 1fr 1fr; }
 
         button.btn {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
+          appearance: none;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: 0.02em;
           color: var(--primary-text-color, #e8eef3);
-          padding: 12px 14px; border-radius: 8px;
-          font-size: 13px; font-weight: 500; cursor: pointer;
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          transition: all 0.2s ease; font-family: inherit;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 12px 16px;
+          cursor: pointer;
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          transition: transform var(--t-fast) var(--ease),
+                      background var(--t-fast) var(--ease),
+                      border-color var(--t-fast) var(--ease),
+                      box-shadow var(--t-fast) var(--ease);
         }
+        button.btn .ico { font-size: 16px; }
         button.btn:hover:not(:disabled) {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(255,255,255,0.2);
-          transform: translateY(-1px);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.16);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
         }
         button.btn:active:not(:disabled) { transform: translateY(0); }
         button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        button.btn .ico { font-size: 18px; }
-        button.btn.active { background: var(--accent, #f4a261); color: #0b1620; border-color: var(--accent, #f4a261); }
-        button.btn.primary { background: #4cc9f0; color: #0b1620; border-color: #4cc9f0; }
-        button.btn.primary:hover { background: #6ed1f4; }
-        button.btn.success { background: #10b981; color: #fff; border-color: #10b981; }
-        button.btn.success:hover { background: #34d399; }
-        button.btn.danger  { background: #ef4444; color: #fff; border-color: #ef4444; }
-        button.btn.danger:hover { background: #f87171; }
-        button.btn.warning { background: #f4a261; color: #0b1620; border-color: #f4a261; }
-        button.btn.winter  { background: #3b82f6; color: #fff; border-color: #3b82f6; }
 
+        button.btn.primary {
+          background: linear-gradient(135deg, rgba(76,201,240,0.16), rgba(76,201,240,0.08));
+          border-color: rgba(76, 201, 240, 0.32);
+          color: #cfeefb;
+        }
+        button.btn.primary:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(76,201,240,0.24), rgba(76,201,240,0.12));
+          box-shadow: 0 8px 28px -6px rgba(76, 201, 240, 0.4);
+        }
+        button.btn.success {
+          background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.08));
+          border-color: rgba(16, 185, 129, 0.32);
+          color: #b6f0d6;
+        }
+        button.btn.success:hover:not(:disabled) {
+          box-shadow: 0 8px 28px -6px rgba(16, 185, 129, 0.4);
+        }
+        button.btn.danger {
+          background: linear-gradient(135deg, rgba(239,68,68,0.16), rgba(239,68,68,0.06));
+          border-color: rgba(239, 68, 68, 0.30);
+          color: #fbb4b4;
+        }
+        button.btn.danger:hover:not(:disabled) {
+          box-shadow: 0 8px 28px -6px rgba(239, 68, 68, 0.4);
+        }
+        button.btn.warning {
+          background: linear-gradient(135deg, rgba(244,162,97,0.16), rgba(244,162,97,0.06));
+          border-color: rgba(244, 162, 97, 0.32);
+          color: #f9d2a6;
+        }
+        button.btn.warning:hover:not(:disabled) {
+          box-shadow: 0 8px 28px -6px rgba(244, 162, 97, 0.4);
+        }
+
+        /* ─────────────── TOGGLE GROUPS ─────────────── */
+        .toggle-group {
+          display: grid;
+          gap: 4px;
+          padding: 4px;
+          background: rgba(0, 0, 0, 0.22);
+          border: 1px solid var(--glass-border);
+          border-radius: 14px;
+        }
+        .toggle-group.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .toggle-group.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+        .toggle-group .btn {
+          padding: 10px 12px;
+          background: transparent;
+          border: 1px solid transparent;
+          font-size: 12px;
+          letter-spacing: 0.04em;
+        }
+        .toggle-group .btn:hover:not(.active):not(:disabled) {
+          background: rgba(255, 255, 255, 0.04);
+          transform: none;
+          box-shadow: none;
+        }
+        .toggle-group .btn.active {
+          background: linear-gradient(135deg, rgba(76,201,240,0.22), rgba(76,201,240,0.10));
+          border-color: rgba(76, 201, 240, 0.35);
+          color: #ffffff;
+          box-shadow:
+            0 4px 16px -4px rgba(76, 201, 240, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .toggle-group .btn[data-season="hivernage"].active {
+          background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(59,130,246,0.10));
+          border-color: rgba(59, 130, 246, 0.35);
+          box-shadow:
+            0 4px 16px -4px rgba(59, 130, 246, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .toggle-group .btn[data-season="saison"].active {
+          background: linear-gradient(135deg, rgba(244,162,97,0.22), rgba(244,162,97,0.10));
+          border-color: rgba(244, 162, 97, 0.35);
+          box-shadow:
+            0 4px 16px -4px rgba(244, 162, 97, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-section-label {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--secondary-text-color, #8a9ba8);
+          margin: var(--gap-md) 0 var(--gap-xs);
+        }
+
+        /* ─────────────── VANNE PROMPT ─────────────── */
+        #vanne-prompt-zone:not(:empty) { margin-top: var(--gap-md); }
         .vanne-prompt {
-          background: linear-gradient(135deg, rgba(244,162,97,0.2), rgba(231,111,81,0.3));
-          border: 1px solid rgba(244,162,97,0.5);
-          border-radius: 10px; padding: 16px; margin-top: 12px;
-          text-align: center; animation: pulse 2s ease-in-out infinite;
+          background:
+            linear-gradient(135deg, rgba(244,162,97,0.18), rgba(244,162,97,0.08));
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(244, 162, 97, 0.40);
+          border-radius: var(--radius-md);
+          padding: var(--gap-md);
+          font-size: 13px;
+          line-height: 1.5;
+          display: flex; align-items: center; gap: var(--gap-sm);
+          color: #f9d8b4;
+          animation: vanne-pulse 2.4s var(--ease) infinite;
         }
-        @keyframes pulse {
-          0%,100% { box-shadow: 0 0 0 0 rgba(244,162,97,0.4); }
-          50%     { box-shadow: 0 0 0 8px rgba(244,162,97,0); }
+        .vanne-prompt::before {
+          content: '👉';
+          font-size: 22px;
+          flex-shrink: 0;
         }
-        .vanne-prompt strong { color: #f4a261; }
+        .vanne-prompt strong { color: var(--accent); font-weight: 600; }
+        @keyframes vanne-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(244, 162, 97, 0.0); }
+          50%      { box-shadow: 0 0 32px -4px rgba(244, 162, 97, 0.45); }
+        }
 
-        .schema-wrap {
-          background: linear-gradient(135deg, #0f2030 0%, #0b1620 100%);
-          border-radius: 10px; padding: 8px; overflow: hidden;
+        /* ─────────────── SCHEMA ─────────────── */
+        .schema-card .schema-wrap {
+          margin: 0 calc(-1 * var(--gap-lg));
+          padding: var(--gap-md) var(--gap-lg) 0;
         }
         svg.pool-svg { width: 100%; height: auto; display: block; }
 
@@ -244,39 +564,50 @@ class PoolControlPanel extends HTMLElement {
         .running .status-led { fill:#10b981; filter:drop-shadow(0 0 6px #10b981); }
         .backwash-active .filtre-rect { stroke: #f4a261; stroke-width: 3; }
 
-        .footer-info {
-          text-align: center; color: #6b7280; font-size: 11px;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          padding: 20px 0 10px;
+        .schema-info {
+          margin-top: var(--gap-md);
+          padding-top: var(--gap-md);
+          border-top: 1px solid var(--glass-border);
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.04em;
+          color: var(--secondary-text-color, #8a9ba8);
+          text-align: center;
         }
       </style>
 
-      <div class="app-header">
-        <button class="menu-btn" id="menu-btn" title="Menu">☰</button>
-        <h1>🏊 Pool Control</h1>
+      <header class="app-header">
+        <button class="menu-btn" id="menu-btn" title="Menu" aria-label="Menu">☰</button>
+        <div class="header-titles">
+          <h1 class="header-title">🏊 Pool Control</h1>
+          <span class="header-subtitle">Tableau de bord</span>
+        </div>
         <span class="status-badge" id="header-badge">—</span>
-      </div>
+      </header>
 
-      <div class="container">
-        <div class="col-info">
+      <main class="container">
 
-          <section class="card">
+        <!-- HERO : températures + état général -->
+        <section class="card area-hero">
+          <div class="card-head">
             <h2 class="card-title"><span class="ico">📊</span> État général</h2>
+          </div>
 
-            <div class="temp-grid">
-              <div class="temp-tile">
-                <div class="temp-tile-label">💧 Eau</div>
-                <div class="temp-tile-value" id="temp-water">—<span class="temp-tile-unit">°C</span></div>
-              </div>
-              <div class="temp-tile air">
-                <div class="temp-tile-label">🌡️ Air</div>
-                <div class="temp-tile-value" id="temp-air">—<span class="temp-tile-unit">°C</span></div>
-              </div>
+          <div class="hero-grid">
+            <div class="stat">
+              <div class="stat-label"><span>💧</span> Eau</div>
+              <div class="stat-value" id="temp-water">—<span class="temp-tile-unit">°C</span></div>
             </div>
+            <div class="stat air">
+              <div class="stat-label"><span>🌡️</span> Air</div>
+              <div class="stat-value" id="temp-air">—<span class="temp-tile-unit">°C</span></div>
+            </div>
+          </div>
 
+          <div class="info-list">
             <div class="info-row">
               <span class="info-label">Statut</span>
-              <span class="info-value big" id="info-control"></span>
+              <span class="info-value lead" id="info-control">—</span>
             </div>
             <div class="info-row">
               <span class="info-label">Filtration</span>
@@ -288,50 +619,73 @@ class PoolControlPanel extends HTMLElement {
             </div>
             <div class="info-row">
               <span class="info-label">Planning</span>
-              <span class="info-value" id="info-filt-schedule" style="font-size:12px; max-width:60%;">—</span>
+              <span class="info-value schedule" id="info-filt-schedule">—</span>
             </div>
+          </div>
 
-            <div class="btn-row">
-              <button class="btn warning" id="btn-reset">
-                <span class="ico">🔄</span> Recalculer le planning
-              </button>
-            </div>
-          </section>
+          <div class="actions">
+            <button class="btn warning" id="btn-reset">
+              <span class="ico">🔄</span> Recalculer le planning
+            </button>
+          </div>
+        </section>
 
-          <section class="card">
+        <!-- MODES : toggle groups -->
+        <section class="card area-modes">
+          <div class="card-head">
             <h2 class="card-title"><span class="ico">🎛️</span> Mode de contrôle</h2>
+          </div>
 
-            <div class="btn-row cols-3">
-              <button class="btn" id="btn-active" data-mode="actif">
-                <span class="ico">▶️</span> Actif
-              </button>
-              <button class="btn" id="btn-auto" data-mode="auto">
-                <span class="ico">🤖</span> Auto
-              </button>
-              <button class="btn" id="btn-inactive" data-mode="inactif">
-                <span class="ico">⏹️</span> Inactif
-              </button>
-            </div>
+          <div class="toggle-section-label">Activation</div>
+          <div class="toggle-group cols-3">
+            <button class="btn" id="btn-active" data-mode="actif">
+              <span class="ico">▶️</span> Actif
+            </button>
+            <button class="btn" id="btn-auto" data-mode="auto">
+              <span class="ico">🤖</span> Auto
+            </button>
+            <button class="btn" id="btn-inactive" data-mode="inactif">
+              <span class="ico">⏹️</span> Inactif
+            </button>
+          </div>
 
-            <div class="btn-row cols-2" style="margin-top: 12px;">
-              <button class="btn" id="btn-season" data-season="saison">
-                <span class="ico">☀️</span> Saison
-              </button>
-              <button class="btn" id="btn-winter" data-season="hivernage">
-                <span class="ico">❄️</span> Hivernage
-              </button>
-            </div>
-          </section>
+          <div class="toggle-section-label">Saison</div>
+          <div class="toggle-group cols-2">
+            <button class="btn" id="btn-season" data-season="saison">
+              <span class="ico">☀️</span> Saison
+            </button>
+            <button class="btn" id="btn-winter" data-season="hivernage">
+              <span class="ico">❄️</span> Hivernage
+            </button>
+          </div>
+        </section>
+
+        <!-- SCHEMA hydraulique -->
+        <section class="card schema-card area-schema">
+          <div class="card-head">
+            <h2 class="card-title"><span class="ico">🔧</span> Circuit hydraulique</h2>
+            <span class="card-aside">1·skimmer · 2·pompe · 3·filtre · 4·refoulement</span>
+          </div>
+          <div class="schema-wrap" id="schema-wrap">
+            ${this._svgMarkup()}
+          </div>
+          <div class="schema-info" id="schema-info">—</div>
+        </section>
+
+        <!-- STACK : Surpresseur + Lavage -->
+        <div class="area-stack">
 
           <section class="card">
-            <h2 class="card-title"><span class="ico">🌀</span> Surpresseur</h2>
-
-            <div class="info-row">
-              <span class="info-label">État</span>
-              <span class="info-value" id="info-booster">—</span>
+            <div class="card-head">
+              <h2 class="card-title"><span class="ico">🌀</span> Surpresseur</h2>
             </div>
-
-            <div class="btn-row cols-2">
+            <div class="info-list">
+              <div class="info-row">
+                <span class="info-label">État</span>
+                <span class="info-value" id="info-booster">—</span>
+              </div>
+            </div>
+            <div class="actions cols-2">
               <button class="btn success" id="btn-booster">
                 <span class="ico">▶️</span> Démarrer
               </button>
@@ -342,16 +696,19 @@ class PoolControlPanel extends HTMLElement {
           </section>
 
           <section class="card">
-            <h2 class="card-title"><span class="ico">🧴</span> Lavage du filtre</h2>
-
-            <div class="info-row">
-              <span class="info-label">Étape</span>
-              <span class="info-value" id="info-backwash">—</span>
+            <div class="card-head">
+              <h2 class="card-title"><span class="ico">🧴</span> Lavage du filtre</h2>
+            </div>
+            <div class="info-list">
+              <div class="info-row">
+                <span class="info-label">Étape</span>
+                <span class="info-value" id="info-backwash">—</span>
+              </div>
             </div>
 
             <div id="vanne-prompt-zone"></div>
 
-            <div class="btn-row cols-2">
+            <div class="actions cols-2">
               <button class="btn primary" id="btn-backwash">
                 <span class="ico">⏭️</span> Étape suivante
               </button>
@@ -363,17 +720,7 @@ class PoolControlPanel extends HTMLElement {
 
         </div>
 
-        <div class="col-schema">
-          <section class="card">
-            <h2 class="card-title"><span class="ico">🔧</span> Circuit hydraulique</h2>
-            <div class="schema-wrap" id="schema-wrap">
-              ${this._svgMarkup()}
-            </div>
-            <div class="footer-info" id="schema-info">—</div>
-          </section>
-        </div>
-
-      </div>
+      </main>
     `;
 
     const $ = (s) => this.shadowRoot.querySelector(s);
@@ -453,11 +800,11 @@ class PoolControlPanel extends HTMLElement {
     const promptZone = $('#vanne-prompt-zone');
     let promptHtml = '';
     if (step === 'pos_lavage')
-      promptHtml = `<div class="vanne-prompt">👉 Positionnez la vanne sur <strong>LAVAGE</strong>, puis appuyez sur « Étape suivante »</div>`;
+      promptHtml = `<div class="vanne-prompt"><span>Positionnez la vanne sur <strong>LAVAGE</strong>, puis appuyez sur « Étape suivante »</span></div>`;
     else if (step === 'pos_rincage')
-      promptHtml = `<div class="vanne-prompt">👉 Positionnez la vanne sur <strong>RINÇAGE</strong>, puis appuyez sur « Étape suivante »</div>`;
+      promptHtml = `<div class="vanne-prompt"><span>Positionnez la vanne sur <strong>RINÇAGE</strong>, puis appuyez sur « Étape suivante »</span></div>`;
     else if (step === 'pos_filtration')
-      promptHtml = `<div class="vanne-prompt">👉 Repositionnez la vanne sur <strong>FILTRATION</strong>, puis appuyez sur « Étape suivante »</div>`;
+      promptHtml = `<div class="vanne-prompt"><span>Repositionnez la vanne sur <strong>FILTRATION</strong>, puis appuyez sur « Étape suivante »</span></div>`;
     promptZone.innerHTML = promptHtml;
 
     const wrap = $('#schema-wrap');
@@ -598,9 +945,6 @@ class PoolControlPanel extends HTMLElement {
               font-size="11" fill="#f4a261" letter-spacing="0.15em">BASSIN</text>
         <text x="755" y="540" text-anchor="middle" font-family="Georgia,serif"
               font-size="10" fill="#8a9ba8" letter-spacing="0.15em">LOCAL TECHNIQUE</text>
-
-        <text x="200" y="500" text-anchor="middle" font-family="Georgia,serif"
-              font-size="9" fill="#6b7280">1·skimmer  2·pompe  3·filtre  4·refoulement</text>
       </svg>
     `;
   }
