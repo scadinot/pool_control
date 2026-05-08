@@ -6,6 +6,34 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.26] — 2026-05-07
+
+### Modifié
+- **Refonte du synoptique hydraulique** dans le panneau, inspirée d'un schéma 3D photoréaliste. Le SVG est repensé en perspective semi-isométrique sur fond sol/bassin, et passe de 4 à **6 éléments illustrés** :
+  1. Skimmer + Bonde de fond (aspirations multiples côté bassin),
+  2. Pompe avec préfiltre, moteur arrière et rotor qui tourne pendant la filtration,
+  3. Filtre à sable beige avec vanne 6 voies (manette latérale),
+  4. Traitement pH (boîtier bleu doseur + bidon « pH » étiqueté),
+  5. Traitement chlore (boîtier jaune doseur + bidon « Chlore » étiqueté),
+  6. Refoulement (buse de retour au bassin via tuyau qui longe le sol).
+- **Tuyauterie PVC** retracée avec gradients gris foncé pour évoquer le PVC, raccordée précisément à chaque élément. Les flèches d'écoulement (water particles) suivent désormais 4 segments cohérents :
+  - Aspiration : skimmer + bonde de fond → pompe
+  - Refoulement pompe → filtre (entrée vanne 6 voies)
+  - Filtre → doseurs pH puis chlore
+  - Retour au bassin par le sol jusqu'à la buse de refoulement
+- **Légende numérotée** (1–6) intégrée dans le SVG en bas à gauche, sur fond `#0b1620` translucide, accompagnée de pastilles ambrées sur chaque élément du schéma.
+- **Labels chips** (« Skimmer », « Bonde de fond », « Pompe », « Filtre à sable », « Traitement pH », « Traitement chlore ») en pill `rgba` sombre placés directement sur le SVG.
+- `viewBox` du SVG passé de `0 0 1100 560` à `0 0 1200 720` pour accueillir tous les éléments avec respiration.
+- `transform-origin` du `.pump-rotor` ajusté à la nouvelle position du rotor (`600px 540px`).
+
+### Pas de breaking change
+- Aucun changement Python : `frontend.py`, `__init__.py`, `manifest.json` (hors version), tests et logique métier sont strictement identiques.
+- Aucun changement de la logique JS du Web Component : `set hass`, `_update`, `_isFiltrationRunning`, `_controlMode`, `_backwashStep`, `_callService`, `_pressButton` sont inchangés. Les hooks d'animation (`.running`, `.stopped`, `.backwash-active`, `.pump-rotor`, `.flow-asp/pf/fr/ret`, `#status-led-text`, `.filtre-rect`) sont préservés.
+- 361 tests passent sans modification.
+
+### Note de migration
+- Aucune action utilisateur requise. Le nouveau synoptique apparaît automatiquement après upgrade HACS et redémarrage HA.
+
 ## [0.0.25] — 2026-05-07
 
 ### Modifié
