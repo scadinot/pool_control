@@ -63,9 +63,24 @@ class PoolControlPanel extends HTMLElement {
 
   _isHeatPumpRunning() {
     if (!this._heatPumpEntity) return false;
-    const s = this._stateText(this._heatPumpEntity).toLowerCase();
-    if (/^(off|idle|standby|unavailable|unknown)$/.test(s)) return false;
-    return /on|active|heat|cool|chauff|froid/i.test(s) || s === '';
+    const st = this._entityState(this._heatPumpEntity);
+    if (!st) return false;
+
+    // Pour une entité climate, le state correspond au hvac_mode
+    // (heat / cool / off) et reste à "heat" même quand la PAC est idle.
+    // On lit donc en priorité attributes.hvac_action qui distingue
+    // heating / cooling / idle / off.
+    if (this._heatPumpEntity.startsWith('climate.')) {
+      const action = (st.attributes && st.attributes.hvac_action) || '';
+      if (action) {
+        return /^(heating|cooling|drying|fan)$/i.test(action);
+      }
+      // Fallback : state ≠ off / unknown / unavailable
+      return !/^(off|unknown|unavailable)$/i.test(st.state);
+    }
+
+    // switch / input_boolean : on / off explicite
+    return /^on$/i.test(st.state);
   }
 
   _controlMode() {
@@ -562,12 +577,13 @@ class PoolControlPanel extends HTMLElement {
         .p7{animation-delay:-3s !important}
         .p8{animation-delay:-3.5s !important}
 
-        .pump-rotor { transform-origin: 600px 540px; }
+        /* fill-box + center : évite les coordonnées magiques quand le SVG bouge */
+        .pump-rotor { transform-box: fill-box; transform-origin: center; }
         .running .pump-rotor { animation: rot 1.2s linear infinite; }
         @keyframes rot { to { transform: rotate(360deg); } }
 
         /* Pompe à chaleur : ventilateur frontal + flux dérivé via by-pass */
-        .pac-rotor { transform-origin: 1310px 565px; }
+        .pac-rotor { transform-box: fill-box; transform-origin: center; }
         .heat-pump-active .pac-rotor { animation: rot 1.6s linear infinite; }
         .pac-housing { opacity: 0.55; }
         .heat-pump-configured .pac-housing { opacity: 1; }
