@@ -13,7 +13,8 @@
           "filtration": "Filtration",
           "traitement": "Traitement principal",
           "traitement_2": "Traitement secondaire (optionnel)",
-          "surpresseur": "Surpresseur"
+          "surpresseur": "Surpresseur",
+          "heatPump": "Pompe à chaleur (optionnel)"
         }
       }
     },
@@ -45,7 +46,8 @@
           "filtration": "Filtration",
           "traitement": "Traitement principal",
           "traitement_2": "Traitement secondaire (optionnel)",
-          "surpresseur": "Surpresseur"
+          "surpresseur": "Surpresseur",
+          "heatPump": "Pompe à chaleur (optionnel)"
         }
       },
       "filtration": {

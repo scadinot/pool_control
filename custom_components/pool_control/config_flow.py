@@ -59,6 +59,9 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required("surpresseur"): selector(
                         {"entity": {"domain": ["switch", "input_boolean"]}}
                     ),
+                    vol.Optional("heatPump"): selector(
+                        {"entity": {"domain": ["switch", "input_boolean", "climate"]}}
+                    ),
                 }
             ),
             errors=errors,

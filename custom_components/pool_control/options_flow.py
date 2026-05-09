@@ -72,6 +72,11 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         "surpresseur", default=self.options.get("surpresseur")
                     ): selector({"entity": {"domain": ["switch", "input_boolean"]}}),
+                    vol.Optional(
+                        "heatPump", default=self.options.get("heatPump")
+                    ): selector(
+                        {"entity": {"domain": ["switch", "input_boolean", "climate"]}}
+                    ),
                 }
             ),
             last_step=False,
