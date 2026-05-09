@@ -6,6 +6,46 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.27] — 2026-05-07
+
+### Ajouté
+- **Synoptique 8 étapes** dans le panneau, aligné sur un schéma 3D photoréaliste de référence :
+  1. Aspiration via skimmer
+  2. Aspiration via bonde de fond
+  3. Pompe de filtration
+  4. Filtre à sable (vanne 6 voies, manette latérale)
+  5. **Pompe à chaleur via by-pass** (nouveau) — boîtier extérieur avec hélice frontale + 2 vannes 3 voies bleues qui matérialisent le by-pass
+  6. Analyse et injection pH (sonde dans le tuyau + boîtier mural avec écran + bidon)
+  7. Analyse et injection chlore (idem séparé du pH)
+  8. Retour piscine
+- **Champ optionnel `heatPump`** dans le config flow et l'options flow (sélecteur d'entité, domaines `switch`, `input_boolean`, `climate`). Permet de relier une PAC pilotée par une autre intégration HA pour visualiser son état dans le synoptique.
+- **Animation contextuelle PAC** :
+  - PAC non configurée → boîtier représenté en transparence (`.pac-housing` opacity 0.55), eau passe par le by-pass court-circuit (`.flow-bypass`).
+  - PAC configurée mais OFF → boîtier opaque, eau toujours par le by-pass.
+  - PAC configurée et ON → hélice tourne (`.pac-rotor`), particules d'eau passent par le chemin PAC (`.flow-pac`), le by-pass est éteint visuellement.
+- **Frise pédagogique** en bas du SVG avec les 8 étapes représentées en cercles bleus numérotés et reliés par des flèches, sur fond blanc translucide.
+- **Encart de légende** en haut-gauche avec la liste numérotée 1–8 des étapes (style identique à l'image de référence).
+- **Badge « Sens de circulation de l'eau »** en bas à gauche.
+
+### Modifié
+- `manifest.json` : `version` `0.0.26` → `0.0.27`.
+- `frontend/pool_control_panel.js` :
+  - `viewBox` agrandi de `1200×720` à `1400×960` pour accueillir tous les éléments + frise + encart légende.
+  - Ajout des hooks `_heatPumpEntity` (constructeur + setter `hass`), `_isHeatPumpRunning()`, et toggle des classes `.heat-pump-active` / `.heat-pump-configured` sur le SVG dans `_update()`.
+  - Nouveaux keyframes CSS : `flowPac`, `flowBypass`, `.pac-rotor` (rotation lente 1.6s), `.pac-housing` (transition d'opacité). `prefers-reduced-motion` couvre les nouvelles animations.
+  - Réécriture complète de `_svgMarkup()` : décor (mur béton, sol carrelé, néon plafond, coffret électrique mural, bassin en perspective cavalière, galets extérieurs), tuyauterie redessinée avec les 5 segments d'écoulement (`flow-asp`, `flow-pf`, `flow-fr`, `flow-bypass` ou `flow-pac` selon état, `flow-ret`), labels chips et numéros stylisés.
+- `config_flow.py` et `options_flow.py` : nouveau `vol.Optional("heatPump")` dans le schéma user / step user, sans rupture pour les installations existantes (`vol.Optional` ne casse rien).
+- `frontend.py` : transmet `heat_pump_entity` au Web Component via `panel.config`.
+- Traductions FR/EN + `strings.json` : libellé « Pompe à chaleur (optionnel) » / « Heat pump (optional) » dans `config.step.user.data.heatPump` et `options.step.user.data.heatPump`.
+
+### Pas de breaking change
+- Les installations 0.0.26 sans PAC continuent à fonctionner sans aucune action utilisateur (`heatPump = None`).
+- Aucune logique métier Pool Control n'est modifiée — la PAC n'est pas pilotée par l'intégration, elle est juste visualisée dans le panneau.
+- 361 tests passent sans modification.
+
+### Note de migration
+- Pour ajouter une PAC à un setup existant : Paramètres → Pool Control → Configurer → Configuration des entités → renseigner « Pompe à chaleur (optionnel) » → Sauvegarder. Le panneau se recharge automatiquement et reflète l'état de l'entité choisie.
+
 ## [0.0.26] — 2026-05-07
 
 ### Modifié

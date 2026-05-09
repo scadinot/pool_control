@@ -13,6 +13,7 @@ class PoolControlPanel extends HTMLElement {
     this._rendered = false;
     this._waterTempEntity = null;
     this._airTempEntity = null;
+    this._heatPumpEntity = null;
     this._instancePrefix = 'pool_control';
   }
 
@@ -22,6 +23,7 @@ class PoolControlPanel extends HTMLElement {
       const cfg = (this.panel && this.panel.config) || {};
       if (cfg.water_entity) this._waterTempEntity = cfg.water_entity;
       if (cfg.air_entity) this._airTempEntity = cfg.air_entity;
+      if (cfg.heat_pump_entity) this._heatPumpEntity = cfg.heat_pump_entity;
       if (cfg.instance_prefix) this._instancePrefix = cfg.instance_prefix;
       this._render();
       this._rendered = true;
@@ -57,6 +59,13 @@ class PoolControlPanel extends HTMLElement {
   _isFiltrationRunning() {
     const s = this._stateText(`sensor.${this._instancePrefix}_filtration_status`).toLowerCase();
     return /actif|filtration|lavage|rin|surpress|marche/i.test(s) && !/arr[êe]t|stop|inactif/i.test(s);
+  }
+
+  _isHeatPumpRunning() {
+    if (!this._heatPumpEntity) return false;
+    const s = this._stateText(this._heatPumpEntity).toLowerCase();
+    if (/^(off|idle|standby|unavailable|unknown)$/.test(s)) return false;
+    return /on|active|heat|cool|chauff|froid/i.test(s) || s === '';
   }
 
   _controlMode() {
@@ -557,6 +566,19 @@ class PoolControlPanel extends HTMLElement {
         .running .pump-rotor { animation: rot 1.2s linear infinite; }
         @keyframes rot { to { transform: rotate(360deg); } }
 
+        /* Pompe à chaleur : ventilateur frontal + flux dérivé via by-pass */
+        .pac-rotor { transform-origin: 1310px 565px; }
+        .heat-pump-active .pac-rotor { animation: rot 1.6s linear infinite; }
+        .pac-housing { opacity: 0.55; }
+        .heat-pump-configured .pac-housing { opacity: 1; }
+        .flow-pac .water-particle { opacity: 0; }
+        .heat-pump-active .flow-pac .water-particle { opacity: 1; animation: flowPac 4s linear infinite; }
+        @keyframes flowPac { from{offset-distance:0%} to{offset-distance:100%} }
+        .running:not(.heat-pump-active) .flow-bypass .water-particle { opacity: 1; animation: flowBypass 3.5s linear infinite; }
+        .running.heat-pump-active .flow-bypass .water-particle { opacity: 0; }
+        .stopped .flow-bypass .water-particle { opacity: 0; }
+        @keyframes flowBypass { from{offset-distance:0%} to{offset-distance:100%} }
+
         .running .water-surface { animation: wave 4s ease-in-out infinite; }
         @keyframes wave { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
 
@@ -588,7 +610,10 @@ class PoolControlPanel extends HTMLElement {
           .vanne-prompt { animation: none; }
           .running .water-particle,
           .running .pump-rotor,
-          .running .water-surface { animation: none; }
+          .running .water-surface,
+          .heat-pump-active .pac-rotor,
+          .heat-pump-active .flow-pac .water-particle,
+          .running .flow-bypass .water-particle { animation: none; }
         }
       </style>
 
@@ -829,6 +854,8 @@ class PoolControlPanel extends HTMLElement {
       svg.classList.toggle('running', running);
       svg.classList.toggle('stopped', !running);
       svg.classList.toggle('backwash-active', step === 'lavage' || step === 'rincage');
+      svg.classList.toggle('heat-pump-active', running && this._isHeatPumpRunning());
+      svg.classList.toggle('heat-pump-configured', !!this._heatPumpEntity);
       const led = svg.querySelector('#status-led-text');
       if (led) led.textContent = running ? 'EN FONCTION' : 'À L\'ARRÊT';
     }
@@ -846,289 +873,403 @@ class PoolControlPanel extends HTMLElement {
 
   _svgMarkup() {
     return `
-      <svg class="pool-svg stopped" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg">
+      <svg class="pool-svg stopped" viewBox="0 0 1400 960" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Eau du bassin -->
           <linearGradient id="wG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#90e0ef" stop-opacity="0.95"/>
             <stop offset="50%" stop-color="#4cc9f0" stop-opacity="0.85"/>
             <stop offset="100%" stop-color="#277da1"/>
           </linearGradient>
-          <!-- Carrelage bassin -->
           <linearGradient id="tG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#244e6e"/>
             <stop offset="100%" stop-color="#1a3a52"/>
           </linearGradient>
-          <!-- Sol local technique -->
           <linearGradient id="floorG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#1f2937"/>
-            <stop offset="100%" stop-color="#0f172a"/>
+            <stop offset="0%" stop-color="#d6cdb8"/>
+            <stop offset="100%" stop-color="#a8a08c"/>
           </linearGradient>
-          <!-- Métal pompe / vanne -->
+          <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e8e0c9"/>
+            <stop offset="100%" stop-color="#bfb59d"/>
+          </linearGradient>
           <linearGradient id="mG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#4b5563"/>
             <stop offset="50%" stop-color="#374151"/>
             <stop offset="100%" stop-color="#1f2937"/>
           </linearGradient>
-          <!-- Cuve filtre à sable beige -->
           <linearGradient id="fG" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#a08a6a"/>
             <stop offset="50%" stop-color="#c8b48f"/>
             <stop offset="100%" stop-color="#8c7656"/>
           </linearGradient>
-          <!-- Boîtier doseur pH (bleu) -->
           <linearGradient id="phG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#3b82f6"/>
             <stop offset="100%" stop-color="#1d4ed8"/>
           </linearGradient>
-          <!-- Boîtier doseur chlore (jaune/safran) -->
           <linearGradient id="clG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#fbbf24"/>
             <stop offset="100%" stop-color="#d97706"/>
           </linearGradient>
-          <!-- Bidon plastique blanc -->
           <linearGradient id="bottleG" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#e5e7eb"/>
             <stop offset="50%" stop-color="#f3f4f6"/>
             <stop offset="100%" stop-color="#cbd5e1"/>
           </linearGradient>
-          <!-- Tuyau PVC -->
           <linearGradient id="pipeG" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#475569"/>
             <stop offset="50%" stop-color="#334155"/>
             <stop offset="100%" stop-color="#1e293b"/>
           </linearGradient>
+          <linearGradient id="pacG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f3f4f6"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
+          </linearGradient>
         </defs>
 
-        <!-- LED status (haut droite) -->
-        <circle class="status-led" cx="1160" cy="30" r="6"/>
-        <text id="status-led-text" x="1145" y="34" text-anchor="end"
+        <!-- LED status -->
+        <circle class="status-led" cx="1360" cy="30" r="6"/>
+        <text id="status-led-text" x="1345" y="34" text-anchor="end"
               font-family="Georgia,serif" font-size="11" fill="#8a9ba8"
               letter-spacing="0.1em">À L'ARRÊT</text>
 
-        <!-- Sol du local technique -->
-        <rect x="0" y="500" width="1200" height="220" fill="url(#floorG)"/>
-        <line x1="0" y1="500" x2="1200" y2="500" stroke="#4b5563" stroke-width="1" opacity="0.5"/>
+        <!-- Mur du fond (béton beige) -->
+        <rect x="100" y="80" width="1080" height="540" fill="url(#wallG)"/>
+        <line x1="100" y1="80" x2="1180" y2="80" stroke="#9a8f6c" stroke-width="1.5"/>
+        <line x1="100" y1="620" x2="1180" y2="620" stroke="#7a7058" stroke-width="2"/>
 
-        <!-- ───────── BASSIN (vue en coupe) ───────── -->
-        <!-- Margelle / bord supérieur -->
-        <rect x="20" y="100" width="430" height="14" fill="#9aa8b5" rx="2"/>
-        <!-- Cuve du bassin (carrelage) -->
-        <path d="M 30,114 L 30,380 Q 30,395 45,395 L 425,395 Q 440,395 440,380 L 440,114 Z" fill="url(#tG)"/>
-        <!-- Eau -->
-        <path d="M 42,128 L 42,378 Q 42,383 47,383 L 423,383 Q 428,383 428,378 L 428,128 Z" fill="url(#wG)"/>
-        <!-- Surface ondulée -->
+        <!-- Sol carrelé du local technique -->
+        <rect x="100" y="620" width="1080" height="160" fill="url(#floorG)"/>
+        ${Array.from({length:9}, (_,i) =>
+          `<line x1="${100+i*120}" y1="620" x2="${100+i*120}" y2="780" stroke="#9a917b" stroke-width="0.7" opacity="0.5"/>`
+        ).join('')}
+        <line x1="100" y1="700" x2="1180" y2="700" stroke="#9a917b" stroke-width="0.7" opacity="0.5"/>
+
+        <!-- Réglette néon au plafond -->
+        <rect x="600" y="105" width="320" height="14" rx="4" fill="#fafaf5" stroke="#94a3b8" stroke-width="1"/>
+        <rect x="610" y="108" width="300" height="6" fill="#fef9c3" opacity="0.9"/>
+
+        <!-- Coffret électrique mural -->
+        <rect x="200" y="180" width="120" height="180" rx="6" fill="#f3f4f6" stroke="#94a3b8" stroke-width="1.5"/>
+        <rect x="220" y="200" width="80" height="60" rx="2" fill="#0b1620"/>
+        <rect x="226" y="208" width="68" height="42" fill="#1e3a8a"/>
+        <rect x="226" y="252" width="40" height="3" fill="#10b981"/>
+        <circle cx="240" cy="290" r="6" fill="#10b981"/>
+        <circle cx="260" cy="290" r="6" fill="#374151"/>
+        <circle cx="280" cy="290" r="6" fill="#374151"/>
+        <rect x="220" y="310" width="80" height="40" rx="2" fill="#e5e7eb" stroke="#94a3b8"/>
+
+        <!-- ───────── BASSIN (vue en coupe à gauche) ───────── -->
+        <rect x="0" y="540" width="280" height="14" fill="#9aa8b5" rx="2"/>
+        <path d="M 10,554 L 10,860 Q 10,876 26,876 L 264,876 Q 280,876 280,860 L 280,554 Z" fill="url(#tG)"/>
+        <path d="M 22,568 L 22,858 Q 22,864 28,864 L 262,864 Q 268,864 268,858 L 268,568 Z" fill="url(#wG)"/>
         <g class="water-surface">
-          <path d="M 42,138 Q 80,132 120,138 T 200,138 T 280,138 T 360,138 T 428,138"
-                stroke="#caf0f8" stroke-width="1.2" fill="none" opacity="0.85"/>
+          <path d="M 22,580 Q 60,572 100,580 T 178,580 T 256,580 T 268,580"
+                stroke="#caf0f8" stroke-width="1.4" fill="none" opacity="0.85"/>
         </g>
 
-        <!-- Skimmer (boîte sur le bord droit) -->
-        <rect x="380" y="120" width="50" height="60" fill="#f3f4f6" stroke="#9aa8b5" stroke-width="1.5" rx="2"/>
-        <rect x="384" y="124" width="42" height="6" fill="#cbd5e1"/>
-        <rect x="395" y="135" width="20" height="40" fill="#0b1620"/>
+        <!-- Skimmer (#1) sur le bord droit du bassin -->
+        <rect x="240" y="558" width="36" height="46" fill="#f3f4f6" stroke="#9aa8b5" stroke-width="1.5" rx="2"/>
+        <rect x="244" y="562" width="28" height="4" fill="#cbd5e1"/>
+        <rect x="252" y="572" width="14" height="30" fill="#0b1620"/>
 
-        <!-- Bonde de fond (grille au sol du bassin) -->
-        <ellipse cx="120" cy="385" rx="32" ry="6" fill="#9aa8b5" stroke="#475569" stroke-width="1.5"/>
-        <line x1="92" y1="385" x2="148" y2="385" stroke="#475569" stroke-width="1"/>
-        <line x1="100" y1="383" x2="140" y2="383" stroke="#475569" stroke-width="0.5" opacity="0.6"/>
+        <!-- Bonde de fond (#2) au sol du bassin -->
+        <ellipse cx="140" cy="864" rx="32" ry="6" fill="#9aa8b5" stroke="#475569" stroke-width="1.5"/>
+        <line x1="112" y1="864" x2="168" y2="864" stroke="#475569" stroke-width="1"/>
+        <line x1="120" y1="862" x2="160" y2="862" stroke="#475569" stroke-width="0.5" opacity="0.6"/>
 
-        <!-- Refoulement (buse de retour eau, bord gauche bassin) -->
-        <rect x="34" y="180" width="14" height="22" fill="#374151" stroke="#1f2937" stroke-width="1"/>
-        <circle cx="36" cy="191" r="4" fill="#0b1620"/>
+        <!-- Buse de retour piscine (#8) - haut gauche du bassin -->
+        <rect x="14" y="640" width="14" height="22" fill="#374151" stroke="#1f2937" stroke-width="1"/>
+        <circle cx="16" cy="651" r="4" fill="#0b1620"/>
 
-        <!-- ───────── TUYAUTERIE PVC ───────── -->
+        <!-- ───────── TUYAUTERIE PVC (rectangles avec gradient) ───────── -->
         <g stroke="#1e293b" stroke-width="1">
-          <!-- Aspiration : skimmer → pompe -->
-          <rect x="410" y="180" width="16" height="280" fill="url(#pipeG)"/>
-          <rect x="410" y="450" width="120" height="16" fill="url(#pipeG)"/>
-          <rect x="514" y="450" width="16" height="120" fill="url(#pipeG)"/>
-          <!-- Aspiration : bonde de fond → rejoint la canalisation principale -->
-          <path d="M 120,395 L 120,460 L 410,460" fill="none" stroke="url(#pipeG)" stroke-width="14" stroke-linecap="round"/>
-          <!-- Pompe → filtre -->
-          <rect x="635" y="420" width="16" height="120" fill="url(#pipeG)"/>
-          <rect x="635" y="420" width="160" height="16" fill="url(#pipeG)"/>
-          <rect x="780" y="280" width="16" height="155" fill="url(#pipeG)"/>
-          <!-- Filtre → doseurs (en hauteur) -->
-          <rect x="860" y="270" width="80" height="14" fill="url(#pipeG)"/>
-          <rect x="930" y="218" width="14" height="60" fill="url(#pipeG)"/>
-          <rect x="940" y="218" width="225" height="14" fill="url(#pipeG)"/>
-          <!-- Retour bassin (refoulement) -->
-          <rect x="1156" y="218" width="14" height="438" fill="url(#pipeG)"/>
-          <rect x="48" y="650" width="1115" height="14" fill="url(#pipeG)"/>
-          <rect x="48" y="200" width="14" height="455" fill="url(#pipeG)"/>
-          <!-- Coude vers la buse de refoulement -->
-          <path d="M 55,200 L 55,191 L 48,191" fill="none" stroke="url(#pipeG)" stroke-width="14"/>
+          <!-- Aspiration : skimmer → tuyau au sol → pompe -->
+          <rect x="251" y="604" width="14" height="92" fill="url(#pipeG)"/>
+          <rect x="251" y="690" width="200" height="14" fill="url(#pipeG)"/>
+          <rect x="437" y="690" width="14" height="34" fill="url(#pipeG)"/>
+          <!-- Aspiration : bonde de fond → rejoint -->
+          <rect x="133" y="800" width="14" height="40" fill="url(#pipeG)"/>
+          <rect x="133" y="800" width="180" height="14" fill="url(#pipeG)"/>
+          <rect x="299" y="700" width="14" height="100" fill="url(#pipeG)"/>
+          <!-- Pompe → filtre (côté haut) -->
+          <rect x="540" y="640" width="14" height="56" fill="url(#pipeG)"/>
+          <rect x="423" y="640" width="131" height="14" fill="url(#pipeG)"/>
+          <rect x="423" y="450" width="14" height="200" fill="url(#pipeG)"/>
+          <!-- Filtre → entrée by-pass -->
+          <rect x="437" y="430" width="220" height="14" fill="url(#pipeG)"/>
+          <!-- By-pass droite (court-circuit horizontal) -->
+          <rect x="643" y="430" width="180" height="14" fill="url(#pipeG)"/>
+          <!-- By-pass bas (vers PAC) -->
+          <rect x="643" y="430" width="14" height="160" fill="url(#pipeG)"/>
+          <rect x="643" y="576" width="500" height="14" fill="url(#pipeG)"/>
+          <rect x="809" y="430" width="14" height="160" fill="url(#pipeG)"/>
+          <rect x="1129" y="430" width="14" height="160" fill="url(#pipeG)"/>
+          <rect x="809" y="576" width="334" height="14" fill="url(#pipeG)"/>
+          <!-- Sondes (segment horizontal après by-pass) -->
+          <rect x="809" y="430" width="380" height="14" fill="url(#pipeG)"/>
+          <!-- Retour piscine (#8) -->
+          <rect x="1175" y="430" width="14" height="280" fill="url(#pipeG)"/>
+          <rect x="20" y="700" width="1169" height="14" fill="url(#pipeG)"/>
+          <rect x="20" y="660" width="14" height="54" fill="url(#pipeG)"/>
         </g>
 
-        <!-- ───────── POMPE (#2) ───────── -->
-        <!-- Moteur arrière -->
-        <rect x="650" y="500" width="80" height="80" rx="6" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
-        <circle cx="690" cy="540" r="6" fill="#0b1620"/>
-        <!-- Corps de pompe (volute) -->
-        <ellipse cx="600" cy="540" rx="60" ry="50" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
-        <ellipse cx="600" cy="540" rx="42" ry="34" fill="#1f2937"/>
-        <!-- Rotor animé -->
+        <!-- Vannes by-pass (vannes à boule bleues stylisées) -->
+        <g stroke="#0b1620" stroke-width="1.5">
+          <circle cx="730" cy="437" r="13" fill="#3b82f6"/>
+          <rect x="725" y="424" width="10" height="6" fill="#1e3a8a"/>
+          <circle cx="730" cy="583" r="13" fill="#3b82f6"/>
+          <rect x="725" y="570" width="10" height="6" fill="#1e3a8a"/>
+        </g>
+        <text x="730" y="510" text-anchor="middle" font-family="'Inter', system-ui, sans-serif"
+              font-size="9" font-weight="600" fill="#475569" letter-spacing="0.08em">BY-PASS</text>
+
+        <!-- ───────── FILTRE À SABLE (#4) ───────── -->
+        <ellipse cx="380" cy="358" rx="44" ry="10" fill="url(#mG)"/>
+        <rect x="336" y="320" width="88" height="40" rx="6" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
+        <ellipse cx="380" cy="320" rx="44" ry="10" fill="#4b5563" stroke="#0b1620" stroke-width="1"/>
+        <rect x="380" y="298" width="60" height="6" rx="3" fill="#0b1620"/>
+        <circle cx="444" cy="301" r="6" fill="#1f2937" stroke="#0b1620"/>
+        <circle cx="380" cy="320" r="5" fill="#f4a261"/>
+        <ellipse cx="380" cy="370" rx="56" ry="14" fill="url(#fG)" stroke="#0b1620" stroke-width="1"/>
+        <rect class="filtre-rect" x="324" y="370" width="112" height="180" fill="url(#fG)" stroke="#0b1620" stroke-width="1.5"/>
+        <ellipse cx="380" cy="550" rx="56" ry="14" fill="#8c7656" stroke="#0b1620" stroke-width="1.5"/>
+        <rect x="340" y="550" width="80" height="22" rx="3" fill="#1f2937" stroke="#0b1620"/>
+        <rect x="330" y="430" width="100" height="100" fill="#a08a6a" opacity="0.55"/>
+
+        <!-- ───────── POMPE (#3) ───────── -->
+        <rect x="500" y="660" width="80" height="80" rx="6" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
+        <circle cx="540" cy="700" r="6" fill="#0b1620"/>
+        <ellipse cx="450" cy="700" rx="60" ry="50" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
+        <ellipse cx="450" cy="700" rx="42" ry="34" fill="#1f2937"/>
         <g class="pump-rotor">
-          <circle cx="600" cy="540" r="30" fill="#111827"/>
-          <path d="M 600,514 Q 614,540 600,566 Q 586,540 600,514" fill="#9ca3af"/>
-          <path d="M 574,540 Q 600,526 626,540 Q 600,554 574,540" fill="#9ca3af"/>
-          <circle cx="600" cy="540" r="5" fill="#f4a261"/>
+          <circle cx="450" cy="700" r="30" fill="#111827"/>
+          <path d="M 450,674 Q 464,700 450,726 Q 436,700 450,674" fill="#9ca3af"/>
+          <path d="M 424,700 Q 450,686 476,700 Q 450,714 424,700" fill="#9ca3af"/>
+          <circle cx="450" cy="700" r="5" fill="#f4a261"/>
         </g>
-        <!-- Préfiltre / panier de pompe -->
-        <rect x="544" y="558" width="40" height="34" rx="3" fill="url(#mG)" stroke="#0b1620"/>
-        <rect x="548" y="566" width="32" height="20" fill="#1f2937" opacity="0.8"/>
+        <rect x="394" y="718" width="40" height="34" rx="3" fill="url(#mG)" stroke="#0b1620"/>
+        <rect x="398" y="726" width="32" height="20" fill="#1f2937" opacity="0.8"/>
 
-        <!-- ───────── FILTRE À SABLE (#3) ───────── -->
-        <!-- Vanne 6 voies (au sommet) -->
-        <ellipse cx="820" cy="278" rx="44" ry="10" fill="url(#mG)"/>
-        <rect x="776" y="240" width="88" height="40" rx="6" fill="url(#mG)" stroke="#0b1620" stroke-width="1.5"/>
-        <ellipse cx="820" cy="240" rx="44" ry="10" fill="#4b5563" stroke="#0b1620" stroke-width="1"/>
-        <!-- Manette latérale -->
-        <rect x="820" y="218" width="60" height="6" rx="3" fill="#0b1620"/>
-        <circle cx="884" cy="221" r="6" fill="#1f2937" stroke="#0b1620"/>
-        <circle cx="820" cy="240" r="5" fill="#f4a261"/>
-        <!-- Cuve filtre -->
-        <ellipse cx="820" cy="290" rx="56" ry="14" fill="url(#fG)" stroke="#0b1620" stroke-width="1"/>
-        <rect class="filtre-rect" x="764" y="290" width="112" height="220" fill="url(#fG)" stroke="#0b1620" stroke-width="1.5"/>
-        <ellipse cx="820" cy="510" rx="56" ry="14" fill="#8c7656" stroke="#0b1620" stroke-width="1.5"/>
-        <!-- Pied / socle -->
-        <rect x="780" y="510" width="80" height="22" rx="3" fill="#1f2937" stroke="#0b1620"/>
-        <!-- Niveau de sable interne (légèrement transparent) -->
-        <rect x="770" y="370" width="100" height="130" fill="#a08a6a" opacity="0.55"/>
+        <!-- ───────── DOSEUR pH MURAL (#6) ───────── -->
+        <rect x="850" y="180" width="100" height="100" rx="8" fill="url(#phG)" stroke="#0b1620" stroke-width="1.5"/>
+        <rect x="860" y="190" width="80" height="32" rx="2" fill="#0b1620"/>
+        <rect x="864" y="194" width="72" height="24" fill="#1e3a8a"/>
+        <text x="900" y="210" text-anchor="middle" font-family="'Inter', monospace" font-size="11" font-weight="700" fill="#bfdbfe">pH</text>
+        <circle cx="900" cy="252" r="18" fill="#1e3a8a" stroke="#0b1620" stroke-width="1.5"/>
+        <circle cx="900" cy="252" r="11" fill="#1d4ed8"/>
+        <circle cx="900" cy="252" r="3" fill="#bfdbfe"/>
+        <line x1="900" y1="280" x2="900" y2="350" stroke="#3b82f6" stroke-width="3"/>
 
-        <!-- ───────── DOSEUR pH (#4) ───────── -->
-        <!-- Boîtier -->
-        <rect x="930" y="160" width="80" height="80" rx="8" fill="url(#phG)" stroke="#0b1620" stroke-width="1.5"/>
-        <circle cx="970" cy="200" r="22" fill="#1e3a8a" stroke="#0b1620" stroke-width="1.5"/>
-        <circle cx="970" cy="200" r="14" fill="#1d4ed8"/>
-        <circle cx="970" cy="200" r="3" fill="#bfdbfe"/>
-        <!-- Tube vers bidon -->
-        <line x1="970" y1="240" x2="970" y2="320" stroke="#3b82f6" stroke-width="3"/>
         <!-- Bidon pH -->
-        <ellipse cx="970" cy="320" rx="32" ry="8" fill="#cbd5e1"/>
-        <rect x="938" y="320" width="64" height="120" fill="url(#bottleG)" stroke="#94a3b8" stroke-width="1"/>
-        <ellipse cx="970" cy="440" rx="32" ry="8" fill="#94a3b8"/>
-        <rect x="950" y="305" width="40" height="20" rx="3" fill="#cbd5e1" stroke="#94a3b8"/>
-        <rect x="945" y="365" width="50" height="30" rx="2" fill="#fff"/>
-        <text x="970" y="386" text-anchor="middle" font-family="'Inter', system-ui, sans-serif"
-              font-size="14" font-weight="700" fill="#1e293b">pH</text>
+        <ellipse cx="900" cy="350" rx="32" ry="8" fill="#cbd5e1"/>
+        <rect x="868" y="350" width="64" height="100" fill="url(#bottleG)" stroke="#94a3b8" stroke-width="1"/>
+        <ellipse cx="900" cy="450" rx="32" ry="8" fill="#94a3b8"/>
+        <rect x="880" y="335" width="40" height="20" rx="3" fill="#cbd5e1" stroke="#94a3b8"/>
+        <rect x="870" y="380" width="60" height="36" rx="2" fill="#fff" stroke="#94a3b8"/>
+        <rect x="876" y="386" width="20" height="24" rx="2" fill="#3b82f6"/>
+        <text x="886" y="404" text-anchor="middle" font-family="'Inter', system-ui, sans-serif"
+              font-size="13" font-weight="700" fill="#fff">pH</text>
 
-        <!-- ───────── DOSEUR CHLORE (#5) ───────── -->
-        <!-- Boîtier -->
-        <rect x="1090" y="160" width="80" height="80" rx="8" fill="url(#clG)" stroke="#0b1620" stroke-width="1.5"/>
-        <circle cx="1130" cy="200" r="22" fill="#92400e" stroke="#0b1620" stroke-width="1.5"/>
-        <circle cx="1130" cy="200" r="14" fill="#d97706"/>
-        <circle cx="1130" cy="200" r="3" fill="#fef3c7"/>
-        <!-- Tube vers bidon -->
-        <line x1="1130" y1="240" x2="1130" y2="320" stroke="#fbbf24" stroke-width="3"/>
+        <!-- Sonde pH dans le tuyau (tube vertical) -->
+        <rect x="892" y="395" width="16" height="50" fill="#0b1620" stroke="#1f2937" stroke-width="1"/>
+        <rect x="888" y="395" width="24" height="6" rx="2" fill="#374151"/>
+        <line x1="900" y1="445" x2="900" y2="430" stroke="#1e293b" stroke-width="2"/>
+
+        <!-- ───────── DOSEUR CHLORE MURAL (#7) ───────── -->
+        <rect x="990" y="180" width="100" height="100" rx="8" fill="url(#clG)" stroke="#0b1620" stroke-width="1.5"/>
+        <rect x="1000" y="190" width="80" height="32" rx="2" fill="#0b1620"/>
+        <rect x="1004" y="194" width="72" height="24" fill="#92400e"/>
+        <text x="1040" y="210" text-anchor="middle" font-family="'Inter', monospace" font-size="11" font-weight="700" fill="#fef3c7">CL</text>
+        <circle cx="1040" cy="252" r="18" fill="#92400e" stroke="#0b1620" stroke-width="1.5"/>
+        <circle cx="1040" cy="252" r="11" fill="#d97706"/>
+        <circle cx="1040" cy="252" r="3" fill="#fef3c7"/>
+        <line x1="1040" y1="280" x2="1040" y2="350" stroke="#fbbf24" stroke-width="3"/>
+
         <!-- Bidon Chlore -->
-        <ellipse cx="1130" cy="320" rx="32" ry="8" fill="#cbd5e1"/>
-        <rect x="1098" y="320" width="64" height="120" fill="url(#bottleG)" stroke="#94a3b8" stroke-width="1"/>
-        <ellipse cx="1130" cy="440" rx="32" ry="8" fill="#94a3b8"/>
-        <rect x="1110" y="305" width="40" height="20" rx="3" fill="#cbd5e1" stroke="#94a3b8"/>
-        <rect x="1098" y="365" width="64" height="30" rx="2" fill="#fff"/>
-        <text x="1130" y="386" text-anchor="middle" font-family="'Inter', system-ui, sans-serif"
-              font-size="13" font-weight="700" fill="#1e293b">Chlore</text>
+        <ellipse cx="1040" cy="350" rx="32" ry="8" fill="#cbd5e1"/>
+        <rect x="1008" y="350" width="64" height="100" fill="url(#bottleG)" stroke="#94a3b8" stroke-width="1"/>
+        <ellipse cx="1040" cy="450" rx="32" ry="8" fill="#94a3b8"/>
+        <rect x="1020" y="335" width="40" height="20" rx="3" fill="#cbd5e1" stroke="#94a3b8"/>
+        <rect x="1010" y="380" width="60" height="36" rx="2" fill="#fff" stroke="#94a3b8"/>
+        <rect x="1016" y="386" width="20" height="24" rx="2" fill="#fbbf24"/>
+        <text x="1026" y="404" text-anchor="middle" font-family="'Inter', system-ui, sans-serif"
+              font-size="11" font-weight="700" fill="#0b1620">CL</text>
+
+        <!-- Sonde Chlore dans le tuyau (tube vertical) -->
+        <rect x="1032" y="395" width="16" height="50" fill="#0b1620" stroke="#1f2937" stroke-width="1"/>
+        <rect x="1028" y="395" width="24" height="6" rx="2" fill="#374151"/>
+
+        <!-- ───────── POMPE À CHALEUR (#5) à l'extérieur droite ───────── -->
+        <g class="pac-housing">
+          <rect x="1230" y="500" width="160" height="160" rx="6" fill="url(#pacG)" stroke="#0b1620" stroke-width="1.5"/>
+          <rect x="1230" y="500" width="160" height="20" rx="6" fill="#94a3b8"/>
+          <rect x="1238" y="528" width="6" height="124" fill="#94a3b8"/>
+          <rect x="1376" y="528" width="6" height="124" fill="#94a3b8"/>
+          <!-- Grille frontale -->
+          <circle cx="1310" cy="585" r="55" fill="#0b1620" stroke="#475569" stroke-width="1.5"/>
+          <circle cx="1310" cy="585" r="50" fill="#1f2937"/>
+          <!-- Hélice -->
+          <g class="pac-rotor">
+            <circle cx="1310" cy="585" r="12" fill="#374151" stroke="#0b1620"/>
+            <path d="M 1310,535 Q 1325,565 1310,585 Q 1295,565 1310,535" fill="#94a3b8" opacity="0.85"/>
+            <path d="M 1260,585 Q 1290,600 1310,585 Q 1290,570 1260,585" fill="#94a3b8" opacity="0.85"/>
+            <path d="M 1310,635 Q 1295,605 1310,585 Q 1325,605 1310,635" fill="#94a3b8" opacity="0.85"/>
+            <path d="M 1360,585 Q 1330,570 1310,585 Q 1330,600 1360,585" fill="#94a3b8" opacity="0.85"/>
+            <circle cx="1310" cy="585" r="5" fill="#f4a261"/>
+          </g>
+          <!-- Pied -->
+          <rect x="1240" y="660" width="140" height="14" rx="2" fill="#374151"/>
+        </g>
+        <!-- Galets / extérieur (suggéré) -->
+        <rect x="1180" y="700" width="220" height="60" fill="#a8a08c" opacity="0.6"/>
+        ${Array.from({length:18}, () => {
+          const x = 1190 + Math.floor(Math.random()*200);
+          const y = 710 + Math.floor(Math.random()*40);
+          const r = 3 + Math.floor(Math.random()*4);
+          return `<circle cx="${x}" cy="${y}" r="${r}" fill="#7a7058" opacity="0.55"/>`;
+        }).join('')}
 
         <!-- ───────── FLÈCHES D'ÉCOULEMENT ───────── -->
-        <!-- Aspiration : skimmer → pompe -->
+        <!-- Aspiration : skimmer + bonde → pompe -->
         <g class="flow-asp">
           ${[1,2,3,4,5,6,7,8].map(i =>
             `<circle class="water-particle p${i}" r="3"
-             style="offset-path: path('M 418,200 L 418,458 L 522,458 L 522,565')"/>`
+             style="offset-path: path('M 258,604 L 258,696 L 444,696 L 444,705')"/>`
           ).join('')}
         </g>
-        <!-- Pompe → filtre -->
+        <!-- Pompe → filtre (côté haut) -->
         <g class="flow-pf">
           ${[1,3,5,7].map(i =>
             `<circle class="water-particle p${i}" r="3"
-             style="offset-path: path('M 643,520 L 643,428 L 788,428 L 788,290')"/>`
+             style="offset-path: path('M 510,668 L 547,668 L 547,640 L 430,640 L 430,360')"/>`
           ).join('')}
         </g>
-        <!-- Filtre → doseurs → tuyau retour -->
+        <!-- Filtre → vanne by-pass (entrée du nœud) -->
         <g class="flow-fr">
-          ${[1,2,3,4,5,6,7,8].map(i =>
+          ${[1,2,3,5,7].map(i =>
             `<circle class="water-particle p${i}" r="2.8"
-             style="offset-path: path('M 866,277 L 937,277 L 937,225 L 1163,225')"/>`
+             style="offset-path: path('M 437,437 L 720,437')"/>`
           ).join('')}
         </g>
-        <!-- Refoulement : retour au bassin -->
+        <!-- By-pass court-circuit (PAC inactive) -->
+        <g class="flow-bypass">
+          ${[1,3,5,7].map(i =>
+            `<circle class="water-particle p${i}" r="2.6"
+             style="offset-path: path('M 740,437 L 1180,437')"/>`
+          ).join('')}
+        </g>
+        <!-- By-pass via PAC (PAC active) -->
+        <g class="flow-pac">
+          ${[1,2,3,4,5,6,7].map(i =>
+            `<circle class="water-particle p${i}" r="2.8"
+             style="offset-path: path('M 650,437 L 650,583 L 1136,583 L 1136,437 L 1180,437')"/>`
+          ).join('')}
+        </g>
+        <!-- Refoulement : sondes → retour bassin -->
         <g class="flow-ret">
-          ${[1,2,3,5,7].map(i =>
+          ${[1,2,3,4,5,6].map(i =>
             `<circle class="water-particle p${i}" r="3"
-             style="offset-path: path('M 1163,232 L 1163,657 L 55,657 L 55,193')"/>`
+             style="offset-path: path('M 1180,437 L 1180,706 L 28,706 L 28,653')"/>`
           ).join('')}
         </g>
 
         <!-- ───────── NUMÉROS (badges sur les éléments) ───────── -->
         <g font-family="'Inter', system-ui, sans-serif" font-size="13" font-weight="700">
-          <circle cx="395" cy="105" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="395" y="110" text-anchor="middle" fill="#0b1620">1</text>
-          <circle cx="600" cy="478" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="600" y="483" text-anchor="middle" fill="#0b1620">2</text>
-          <circle cx="820" cy="200" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="820" y="205" text-anchor="middle" fill="#0b1620">3</text>
-          <circle cx="970" cy="135" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="970" y="140" text-anchor="middle" fill="#0b1620">4</text>
-          <circle cx="1130" cy="135" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="1130" y="140" text-anchor="middle" fill="#0b1620">5</text>
-          <circle cx="55" cy="160" r="14" fill="#f4a261" stroke="#0b1620" stroke-width="1.5"/>
-          <text x="55" y="165" text-anchor="middle" fill="#0b1620">6</text>
+          <circle cx="258" cy="556" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="258" y="561" text-anchor="middle" fill="#fff">1</text>
+          <circle cx="80" cy="864" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="80" y="869" text-anchor="middle" fill="#fff">2</text>
+          <circle cx="450" cy="640" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="450" y="645" text-anchor="middle" fill="#fff">3</text>
+          <circle cx="380" cy="450" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="380" y="455" text-anchor="middle" fill="#fff">4</text>
+          <circle cx="1310" cy="490" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="1310" y="495" text-anchor="middle" fill="#fff">5</text>
+          <circle cx="900" cy="468" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="900" y="473" text-anchor="middle" fill="#fff">6</text>
+          <circle cx="1040" cy="468" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="1040" y="473" text-anchor="middle" fill="#fff">7</text>
+          <circle cx="34" cy="640" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+          <text x="34" y="645" text-anchor="middle" fill="#fff">8</text>
         </g>
 
-        <!-- ───────── LABELS CHIPS ───────── -->
-        <g font-family="'Inter', system-ui, sans-serif" font-size="11" font-weight="500">
-          <!-- Skimmer -->
-          <rect x="450" y="135" width="78" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="489" y="150" text-anchor="middle" fill="#e2e8f0">Skimmer</text>
-          <!-- Bonde de fond -->
-          <rect x="55" y="408" width="120" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="115" y="423" text-anchor="middle" fill="#e2e8f0">Bonde de fond</text>
-          <!-- Pompe -->
-          <rect x="668" y="610" width="60" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="698" y="625" text-anchor="middle" fill="#e2e8f0">Pompe</text>
-          <!-- Filtre à sable -->
-          <rect x="755" y="334" width="130" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="820" y="349" text-anchor="middle" fill="#e2e8f0">Filtre à sable</text>
-          <!-- Traitement pH -->
-          <rect x="918" y="125" width="104" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="970" y="140" text-anchor="middle" fill="#e2e8f0">Traitement pH</text>
-          <!-- Traitement chlore -->
-          <rect x="1070" y="125" width="120" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
-          <text x="1130" y="140" text-anchor="middle" fill="#e2e8f0">Traitement chlore</text>
-        </g>
-
-        <!-- Sigles BASSIN / LOCAL TECHNIQUE -->
-        <text x="225" y="80" text-anchor="middle" font-family="Georgia,serif"
-              font-size="11" fill="#f4a261" letter-spacing="0.18em">BASSIN</text>
-        <text x="800" y="80" text-anchor="middle" font-family="Georgia,serif"
-              font-size="10" fill="#8a9ba8" letter-spacing="0.18em">LOCAL TECHNIQUE</text>
-
-        <!-- ───────── LÉGENDE EN BAS À GAUCHE ───────── -->
+        <!-- ───────── ENCART LÉGENDE EN HAUT-GAUCHE ───────── -->
         <g font-family="'Inter', system-ui, sans-serif">
-          <rect x="20" y="528" width="280" height="160" rx="8"
-                fill="#0b1620" stroke="#1e293b" stroke-width="1" opacity="0.92"/>
-          <g font-size="12" fill="#e2e8f0">
-            <circle cx="42" cy="552" r="9" fill="#f4a261"/><text x="42" y="557" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">1</text>
-            <text x="60" y="557">Skimmer + Bonde de fond</text>
+          <rect x="20" y="20" width="320" height="290" rx="10"
+                fill="#0b1620" stroke="#1e293b" stroke-width="1" opacity="0.94"/>
+          <text x="36" y="50" font-size="14" font-weight="700" fill="#f8fafc" letter-spacing="0.08em">CIRCUIT HYDRAULIQUE</text>
+          <text x="36" y="68" font-size="10" font-weight="500" fill="#4cc9f0" letter-spacing="0.18em">ORDRE DES ÉLÉMENTS</text>
 
-            <circle cx="42" cy="578" r="9" fill="#f4a261"/><text x="42" y="583" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">2</text>
-            <text x="60" y="583">Pompe</text>
+          <g font-size="11.5" fill="#e2e8f0">
+            <circle cx="50" cy="96" r="10" fill="#1d4ed8"/><text x="50" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">1</text>
+            <text x="68" y="100">Aspiration via skimmer</text>
 
-            <circle cx="42" cy="604" r="9" fill="#f4a261"/><text x="42" y="609" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">3</text>
-            <text x="60" y="609">Filtre à sable</text>
+            <circle cx="50" cy="124" r="10" fill="#1d4ed8"/><text x="50" y="128" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">2</text>
+            <text x="68" y="128">Aspiration via bonde de fond</text>
 
-            <circle cx="42" cy="630" r="9" fill="#f4a261"/><text x="42" y="635" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">4</text>
-            <text x="60" y="635">Traitement pH</text>
+            <circle cx="50" cy="152" r="10" fill="#1d4ed8"/><text x="50" y="156" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">3</text>
+            <text x="68" y="156">Pompe de filtration</text>
 
-            <circle cx="42" cy="656" r="9" fill="#f4a261"/><text x="42" y="661" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">5</text>
-            <text x="60" y="661">Traitement chlore</text>
+            <circle cx="50" cy="180" r="10" fill="#1d4ed8"/><text x="50" y="184" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">4</text>
+            <text x="68" y="184">Filtre à sable</text>
 
-            <circle cx="42" cy="682" r="9" fill="#f4a261"/><text x="42" y="687" text-anchor="middle" font-size="11" font-weight="700" fill="#0b1620">6</text>
-            <text x="60" y="687">Refoulement</text>
+            <circle cx="50" cy="208" r="10" fill="#1d4ed8"/><text x="50" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">5</text>
+            <text x="68" y="212">Pompe à chaleur (via by-pass)</text>
+
+            <circle cx="50" cy="236" r="10" fill="#1d4ed8"/><text x="50" y="240" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">6</text>
+            <text x="68" y="240">Analyse et injection pH</text>
+
+            <circle cx="50" cy="264" r="10" fill="#1d4ed8"/><text x="50" y="268" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">7</text>
+            <text x="68" y="268">Analyse et injection chlore</text>
+
+            <circle cx="50" cy="292" r="10" fill="#1d4ed8"/><text x="50" y="296" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">8</text>
+            <text x="68" y="296">Retour piscine</text>
           </g>
         </g>
+
+        <!-- Badge "Sens de circulation de l'eau" -->
+        <g font-family="'Inter', system-ui, sans-serif">
+          <rect x="20" y="900" width="240" height="42" rx="8" fill="#0b1620" opacity="0.92"/>
+          <path d="M 38,921 L 60,921 M 54,915 L 60,921 L 54,927" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="76" y="926" font-size="12" fill="#e2e8f0">Sens de circulation de l'eau</text>
+        </g>
+
+        <!-- ───────── FRISE PÉDAGOGIQUE EN BAS ───────── -->
+        <g font-family="'Inter', system-ui, sans-serif">
+          <rect x="290" y="800" width="1100" height="140" rx="10"
+                fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" opacity="0.96"/>
+          ${[
+            {n:1, label:'Aspiration', sub:'skimmer'},
+            {n:2, label:'Aspiration', sub:'bonde de fond'},
+            {n:3, label:'Pompe de', sub:'filtration'},
+            {n:4, label:'Filtre à', sub:'sable'},
+            {n:5, label:'Pompe à chaleur', sub:'(via by-pass)'},
+            {n:6, label:'Analyse et', sub:'injection pH'},
+            {n:7, label:'Analyse et', sub:'injection chlore'},
+            {n:8, label:'Retour', sub:'piscine'},
+          ].map((step, idx) => {
+            const w = 124, gap = 6;
+            const x = 300 + idx * (w + gap);
+            const arrow = idx < 7
+              ? `<path d="M ${x+w+1},870 L ${x+w+gap-1},870 M ${x+w+gap-5},866 L ${x+w+gap-1},870 L ${x+w+gap-5},874" stroke="#1d4ed8" stroke-width="2" fill="none" stroke-linecap="round"/>`
+              : '';
+            return `
+              <circle cx="${x+w/2}" cy="822" r="13" fill="#1d4ed8" stroke="#fff" stroke-width="1.5"/>
+              <text x="${x+w/2}" y="827" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${step.n}</text>
+              <text x="${x+w/2}" y="900" text-anchor="middle" font-size="11" font-weight="600" fill="#0f172a">${step.label}</text>
+              <text x="${x+w/2}" y="916" text-anchor="middle" font-size="10" fill="#475569">${step.sub}</text>
+              ${arrow}
+            `;
+          }).join('')}
+        </g>
+
+        <!-- Sigle BASSIN -->
+        <text x="140" y="60" text-anchor="middle" font-family="Georgia,serif"
+              font-size="11" fill="#f4a261" letter-spacing="0.18em">BASSIN</text>
+        <text x="800" y="60" text-anchor="middle" font-family="Georgia,serif"
+              font-size="10" fill="#7a7058" letter-spacing="0.18em">LOCAL TECHNIQUE</text>
+        <text x="1300" y="60" text-anchor="middle" font-family="Georgia,serif"
+              font-size="10" fill="#7a7058" letter-spacing="0.18em">EXTÉRIEUR</text>
       </svg>
     `;
   }

@@ -13,7 +13,8 @@
           "filtration": "Filtration",
           "traitement": "Main treatment",
           "traitement_2": "Secondary treatment (optional)",
-          "surpresseur": "Booster pump"
+          "surpresseur": "Booster pump",
+          "heatPump": "Heat pump (optional)"
         }
       }
     },
@@ -45,7 +46,8 @@
           "filtration": "Filtration",
           "traitement": "Main treatment",
           "traitement_2": "Secondary treatment (optional)",
-          "surpresseur": "Booster pump"
+          "surpresseur": "Booster pump",
+          "heatPump": "Heat pump (optional)"
         }
       },
       "filtration": {

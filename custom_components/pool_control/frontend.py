@@ -103,6 +103,7 @@ async def async_register_panel(
         "instance_prefix": slug or DEFAULT_SLUG,
         "water_entity": config_entry_data.get("temperatureWater"),
         "air_entity": config_entry_data.get("temperatureOutdoor"),
+        "heat_pump_entity": config_entry_data.get("heatPump"),
     }
 
     await panel_custom.async_register_panel(
