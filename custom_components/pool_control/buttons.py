@@ -1,9 +1,10 @@
 """Button handlers for pool control integration."""
 
-from datetime import datetime
 import logging
 import time
 from typing import Any
+
+from .utils import formatTimestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,11 +47,11 @@ class ButtonMixin:
 
             _LOGGER.debug(
                 "filtrationFin=%s",
-                datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
             )
             _LOGGER.info(
                 "timeNow=%s",
-                datetime.fromtimestamp(time.time()).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(time.time(), "%H:%M %d-%m-%Y"),
             )
 
             if timeNow > filtrationFin:
@@ -73,11 +74,11 @@ class ButtonMixin:
 
             _LOGGER.debug(
                 "filtrationFin=%s",
-                datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
             )
             _LOGGER.info(
                 "timeNow=%s",
-                datetime.fromtimestamp(time.time()).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(time.time(), "%H:%M %d-%m-%Y"),
             )
 
             if timeNow > filtrationFin:

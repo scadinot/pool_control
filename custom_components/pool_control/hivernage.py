@@ -1,9 +1,10 @@
 """Hivernage (wintering) logic for pool control integration."""
 
-from datetime import datetime, timedelta
 import logging
 import time
 from typing import Optional
+
+from .utils import formatTimestamp, pivotTimestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,18 +53,9 @@ class HivernageMixin:
         else:
             datePivot = self.datePivotHivernage
 
-        # filtrationPivotSecondes = strtotime(datePivot)
-        todayDate = datetime.today().date()
-        combinedDatetime = datetime.strptime(
-            str(todayDate) + " " + datePivot, "%Y-%m-%d %H:%M"
-        )
-        filtrationPivotSecondes = combinedDatetime.timestamp()
-
-        # la plage doit-elle etre celle de demain ?
-        if flgTomorrow is True:
-            if filtrationPivotSecondes < time.time():
-                _LOGGER.info("+1 day")
-                filtrationPivotSecondes += timedelta(days=1).total_seconds()
+        # Horodatage du pivot dans le fuseau de Home Assistant
+        # (celui de demain si flgTomorrow et que le pivot est passé)
+        filtrationPivotSecondes = pivotTimestamp(datePivot, flgTomorrow)
 
         # Repartition de la filtration suivant Config
         if self.distributionDatePivotHivernage == 1:
@@ -120,9 +112,9 @@ class HivernageMixin:
             self.filtrationTimeStatus.set_status(filtrationTime)
 
         display = "* "
-        display += datetime.fromtimestamp(filtrationDebut).strftime("%H:%M")
+        display += formatTimestamp(filtrationDebut, "%H:%M")
         display += "-"
-        display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
+        display += formatTimestamp(filtrationFin, "%H:%M")
         display += " : "
         display += str(temperatureCalcul)
         display += "°C"
@@ -142,11 +134,11 @@ class HivernageMixin:
 
         _LOGGER.info(
             "filtrationDebut=%s",
-            datetime.fromtimestamp(filtrationDebut).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationDebut, "%H:%M %d-%m-%Y"),
         )
         _LOGGER.info(
             "filtrationFin=%s",
-            datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
         )
 
     async def calculateStatusFiltrationHivernage(
@@ -162,15 +154,15 @@ class HivernageMixin:
         timeNow = time.time()
         _LOGGER.info(
             "calculateStatusFiltration: timeNow=%s",
-            datetime.fromtimestamp(timeNow).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(timeNow, "%H:%M %d-%m-%Y"),
         )
         _LOGGER.info(
             "calculateStatusFiltration: filtrationDebut=%s",
-            datetime.fromtimestamp(filtrationDebut).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationDebut, "%H:%M %d-%m-%Y"),
         )
         _LOGGER.info(
             "calculateStatusFiltration: filtrationFin=%s",
-            datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
@@ -270,7 +262,7 @@ class HivernageMixin:
 
         # 5mn toutes les 3H
         if self.filtration5mn3h:
-            currentTime = datetime.now().strftime("%H%M")
+            currentTime = formatTimestamp(time.time(), "%H%M")
 
             if (
                 "0200" <= currentTime <= "0205"

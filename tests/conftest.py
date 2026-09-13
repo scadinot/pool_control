@@ -155,6 +155,23 @@ def setup_hass_states(mock_hass, mock_state_factory):
     return _setup
 
 
+@pytest.fixture
+def ha_time_zone():
+    """Fixe le fuseau de Home Assistant (restauré après le test).
+
+    America/New_York est volontairement différent du fuseau des machines qui
+    exécutent la suite (Europe/Paris en local, UTC en CI) : un calcul qui
+    utiliserait le fuseau du système au lieu de celui de HA échoue partout.
+    """
+    from homeassistant.util import dt as dt_util
+
+    previous = dt_util.DEFAULT_TIME_ZONE
+    zone = dt_util.get_time_zone("America/New_York")
+    dt_util.set_default_time_zone(zone)
+    yield zone
+    dt_util.set_default_time_zone(previous)
+
+
 # @pytest.fixture(autouse=True)
 # def auto_enable_custom_integrations(enable_custom_integrations):
 #     """Enable custom integration loading for all tests.

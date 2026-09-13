@@ -338,12 +338,12 @@ class TestCalculateTimeFiltration:
         duration = (filtration_fin - filtration_debut) / 3600
         assert duration <= 24.0
 
-    def test_tomorrow_flag_adds_one_day(self, mock_saison_controller):
+    def test_tomorrow_flag_adds_one_day(self, mock_saison_controller, ha_time_zone):
         """Test that flgTomorrow=True adds one day to calculation."""
         mock_saison_controller.data["temperatureMaxi"] = 0
 
-        # Current time after pivot
-        current_time = datetime(2025, 6, 15, 14, 0).timestamp()
+        # Current time after pivot (13:00 in Home Assistant's time zone)
+        current_time = datetime(2025, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
 
         with patch('time.time', return_value=current_time):
             mock_saison_controller.calculateTimeFiltration(20.0, True)
@@ -351,10 +351,58 @@ class TestCalculateTimeFiltration:
         filtration_debut = mock_saison_controller.get_data("filtrationDebut")
 
         # filtrationDebut should be tomorrow
-        debut_date = datetime.fromtimestamp(filtration_debut).date()
+        debut_date = datetime.fromtimestamp(filtration_debut, tz=ha_time_zone).date()
         expected_date = datetime(2025, 6, 16).date()
 
         assert debut_date == expected_date
+
+    def test_pivot_uses_home_assistant_time_zone(self, mock_saison_controller, ha_time_zone):
+        """Test that the pivot and the schedule display use HA's time zone, not the OS one."""
+        mock_saison_controller.data["temperatureMaxi"] = 0
+        mock_saison_controller.methodeCalcul = 2  # 12/2 = 6 hours
+        mock_saison_controller.distributionDatePivot = 1  # 1/2 <> 1/2
+        mock_saison_controller.datePivot = "13:00"
+        mock_saison_controller.pausePivot = 0
+
+        current_time = datetime(2025, 6, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+
+        with patch('time.time', return_value=current_time):
+            mock_saison_controller.calculateTimeFiltration(12.0, False)
+
+        # 13:00 +/- 3h in Home Assistant's time zone
+        assert mock_saison_controller.get_data("filtrationDebut") == int(
+            datetime(2025, 6, 15, 10, 0, tzinfo=ha_time_zone).timestamp()
+        )
+        assert mock_saison_controller.get_data("filtrationFin") == int(
+            datetime(2025, 6, 15, 16, 0, tzinfo=ha_time_zone).timestamp()
+        )
+        mock_saison_controller.filtrationScheduleStatus.set_status.assert_called_once_with(
+            "10:00-16:00 : 12.0°C"
+        )
+
+    def test_tomorrow_keeps_wall_clock_pivot_across_dst(
+        self, mock_saison_controller, ha_time_zone
+    ):
+        """Test that tomorrow's pivot stays at 13:00 local when DST ends overnight."""
+        mock_saison_controller.data["temperatureMaxi"] = 0
+        mock_saison_controller.methodeCalcul = 2  # 12/2 = 6 hours
+        mock_saison_controller.distributionDatePivot = 1  # 1/2 <> 1/2
+        mock_saison_controller.datePivot = "13:00"
+        mock_saison_controller.pausePivot = 0
+
+        # DST ends in New York on 2025-11-02 at 02:00 (the day is 25 hours long)
+        current_time = datetime(2025, 11, 1, 14, 0, tzinfo=ha_time_zone).timestamp()
+
+        with patch('time.time', return_value=current_time):
+            mock_saison_controller.calculateTimeFiltration(12.0, True)
+
+        # Adding 24 hours would give 12:00 local; expected 10:00-16:00 local
+        assert mock_saison_controller.get_data("filtrationDebut") == int(
+            datetime(2025, 11, 2, 10, 0, tzinfo=ha_time_zone).timestamp()
+        )
+        assert mock_saison_controller.get_data("filtrationFin") == int(
+            datetime(2025, 11, 2, 16, 0, tzinfo=ha_time_zone).timestamp()
+        )
 
     def test_tomorrow_flag_resets_temperature_maxi(self, mock_saison_controller):
         """Test that flgTomorrow=True resets temperatureMaxi."""
@@ -670,17 +718,17 @@ class TestSaisonIntegration:
         assert mock_saison_controller.filtrationScheduleStatus.set_status.called
 
     @pytest.mark.asyncio
-    async def test_full_day_simulation(self, mock_saison_controller):
+    async def test_full_day_simulation(self, mock_saison_controller, ha_time_zone):
         """Test full 24h cycle simulation."""
-        # Initial calculation at 8:00
-        with patch('time.time', return_value=datetime(2025, 6, 15, 8, 0).timestamp()):
+        # Initial calculation at 8:00 (Home Assistant's time zone)
+        with patch('time.time', return_value=datetime(2025, 6, 15, 8, 0, tzinfo=ha_time_zone).timestamp()):
             await mock_saison_controller.calculateStatusFiltration(22.0)
 
         # Should have calculated times
         assert mock_saison_controller.get_data("filtrationDebut") > 0
 
-        # Simulate 12:00 (likely in range)
-        with patch('time.time', return_value=datetime(2025, 6, 15, 12, 0).timestamp()):
+        # Simulate 12:00 (in range around the 13:00 pivot)
+        with patch('time.time', return_value=datetime(2025, 6, 15, 12, 0, tzinfo=ha_time_zone).timestamp()):
             await mock_saison_controller.calculateStatusFiltration(24.0)
 
         # Should track max temperature

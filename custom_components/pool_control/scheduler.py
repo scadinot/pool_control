@@ -1,6 +1,6 @@
 """Scheduler mixin for pool control integration."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import logging
 import time
 from typing import Any, Optional
@@ -8,7 +8,7 @@ from typing import Any, Optional
 from homeassistant.helpers.event import async_track_time_interval
 
 from .lavage import LAVAGE_ATTENTE_STATUS
-from .utils import formatDurationMinutesSeconds
+from .utils import formatDurationMinutesSeconds, formatTimestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class SchedulerMixin:
 
             _LOGGER.info(
                 "Time = %s",
-                datetime.fromtimestamp(time.time()).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(time.time(), "%H:%M %d-%m-%Y"),
             )
 
             # _LOGGER.info(f"temperatureWater={temperatureWater}")

@@ -6,6 +6,22 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.29] — 2026-09-13
+
+### Corrigé
+- **Plages horaires décalées quand le fuseau du système diffère de celui de Home Assistant** : les pivots (saison, hivernage à heure fixe ou au lever du soleil), l'affichage du planning et les créneaux « 5 min / 3 h » étaient calculés dans le fuseau du système d'exploitation (souvent UTC dans un conteneur sans variable `TZ`), alors que `getLeverSoleil()` renvoie depuis la 0.0.28 l'heure dans le fuseau de Home Assistant. Sur ces installations, la filtration était décalée de l'écart entre les deux fuseaux (1 à 2 h en France). Tout est désormais calculé dans le fuseau de Home Assistant ; aucun changement lorsque les deux fuseaux sont identiques.
+- **Pivot du lendemain décalé d'une heure les jours de changement d'heure** : il était obtenu en ajoutant 24 h au pivot du jour ; il est désormais recalculé à la même heure locale le lendemain.
+
+### Modifié
+- `utils.py` : nouveaux helpers `localDatetime()`, `formatTimestamp()` et `pivotTimestamp()` basés sur `homeassistant.util.dt`.
+- `saison.py`, `hivernage.py`, `buttons.py`, `scheduler.py` : plus aucun appel à `datetime.today()` / `datetime.now()` / `datetime.fromtimestamp()` dépendant du fuseau du système.
+- Tests : fixture `ha_time_zone` (fuseau HA volontairement différent de celui de la machine de test) ; tests de lendemain et « 5 min / 3 h » réécrits avec des horodatages explicites ; nouveaux tests (fuseau HA, changement d'heure, bug #9).
+- `manifest.json` : `version` `0.0.28` → `0.0.29`.
+
+### Pas de breaking change
+- Aucune action utilisateur requise, aucune entité ni option modifiée.
+- Lorsque le fuseau du système est déjà celui de Home Assistant (cas de Home Assistant OS), seul le calcul du pivot du lendemain les jours de changement d'heure change.
+
 ## [0.0.28] — 2026-09-13
 
 ### Corrigé
