@@ -6,9 +6,20 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.30] — 2026-09-13
+
 ### Ajouté
 - **Restauration des capteurs de statut au redémarrage** : `control_status`, `filtration_time`, `filtration_schedule` et `filtration_status` reprennent leur dernière valeur connue (`RestoreEntity`) au lieu de s'afficher vides ou « Arrêté » après un redémarrage de Home Assistant. Le planning et le temps de filtration n'étant recalculés qu'en fin de plage, ils restaient jusqu'ici vides pendant plusieurs heures.
 - `booster_status` et `backwash_status` ne sont volontairement pas restaurés : leur affichage est reconstruit à partir du cycle persisté (`resumeSecondCron()` / `pull()`), alors qu'un compte à rebours restauré pourrait être périmé.
+
+### Modifié
+- `manifest.json` : `version` `0.0.29` → `0.0.30`.
+- `entities.py` : `PoolControlStatusSensor` hérite de `RestoreEntity` et accepte l'option `restore_state` ; `sensor.py` l'active pour les quatre capteurs ci-dessus.
+- 8 nouveaux tests : 388 tests passent.
+
+### Pas de breaking change
+- Aucune action utilisateur requise, aucune entité ni option modifiée.
+- Home Assistant n'enregistre que les états des entités déjà restaurables au moment de l'arrêt : au redémarrage qui installe la 0.0.30, les capteurs s'affichent encore comme avant ; la restauration fonctionne à partir du redémarrage suivant.
 
 ## [0.0.29] — 2026-09-13
 
