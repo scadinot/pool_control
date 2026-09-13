@@ -313,13 +313,6 @@ class TestCalculateTimeFiltrationHivernage:
         # temperatureMaxi should be reset to 0
         assert mock_hivernage_controller.get_data("temperatureMaxi") == 0
 
-    def test_sets_calculate_status(self, mock_hivernage_controller):
-        """Test that calculateStatus is set to 1."""
-        with patch('time.time', return_value=datetime(2025, 12, 15, 5, 0).timestamp()):
-            mock_hivernage_controller.calculateTimeFiltrationHivernage(12.0, False)
-
-        assert mock_hivernage_controller.get_data("calculateStatus") == 1
-
     def test_updates_filtration_time_status(self, mock_hivernage_controller):
         """Test that filtrationTimeStatus is updated."""
         mock_hivernage_controller.data["temperatureMaxi"] = 0
@@ -387,7 +380,6 @@ class TestCalculateStatusFiltrationHivernage:
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
-        mock_hivernage_controller.data["calculateStatus"] = 0
 
         with patch('time.time', return_value=current_time.timestamp()):
             with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):
@@ -552,7 +544,6 @@ class TestCalculateStatusFiltrationHivernage:
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
-        mock_hivernage_controller.data["calculateStatus"] = 0
 
         # Time is 02:10 in Home Assistant's time zone (outside 5-minute window)
         current_time = datetime(2025, 12, 15, 2, 10, tzinfo=ha_time_zone).timestamp()
@@ -591,7 +582,6 @@ class TestCalculateStatusFiltrationHivernage:
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
-        mock_hivernage_controller.data["calculateStatus"] = 0
 
         with patch('time.time', return_value=current_time):
             with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage') as mock_calc:
@@ -634,7 +624,6 @@ class TestHivernageIntegration:
         # Verify all data is set
         assert mock_hivernage_controller.get_data("filtrationDebut") > 0
         assert mock_hivernage_controller.get_data("filtrationFin") > 0
-        assert mock_hivernage_controller.get_data("calculateStatus") == 1
 
         # Verify UI updates
         assert mock_hivernage_controller.filtrationTimeStatus.set_status.called
@@ -681,7 +670,6 @@ class TestHivernageIntegration:
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
-        mock_hivernage_controller.data["calculateStatus"] = 0
 
         with patch('time.time', return_value=current_time):
             with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):

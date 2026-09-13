@@ -13,6 +13,7 @@ Bugs testés:
 7. Bug #7: Heure de lever du soleil lue en UTC
 8. Bug #8: Surpresseur bloqué en marche après un redémarrage
 9. Bug #9: Plages horaires calculées dans le fuseau du système
+10. Bug #10: Plus aucun recalcul après une plage jamais atteinte
 """
 
 import pytest
@@ -533,6 +534,132 @@ class TestBug9_FuseauSystemeDifferentDeHA:
         assert controller.get_data("filtrationFin") == int(
             datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()
         )
+
+
+@pytest.mark.bugs
+class TestBug10_PlageManqueeBloqueRecalcul:
+    """Test Bug #10: Plus aucun recalcul après une plage jamais atteinte.
+
+    Bug original: le calcul de la plage du lendemain n'était relancé qu'après
+    être passé dans la plage courante (drapeau calculateStatus remis à 0 dans
+    la plage). Si la plage était manquée — Home Assistant arrêté pendant toute
+    sa durée, ou plage de durée nulle (méthode température / 2, sonde d'eau à
+    0 °C, sans pause) — la plage n'était plus jamais recalculée et la
+    filtration ne redémarrait plus, jusqu'à un appui sur Reset
+    Correction: recalcul pour le lendemain dès que la plage est passée
+    """
+
+    @pytest.fixture
+    def saison_controller(self, mock_hass, mock_pool_config):
+        """PoolController en mode saison : pivot 13:00, répartition 1/3 <> 2/3."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.data = {}
+        controller.datePivot = "13:00"
+        controller.pausePivot = 0
+        controller.distributionDatePivot = 2
+        controller.methodeCalcul = 1
+        controller.coefficientAjustement = 1.0
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+        return controller
+
+    @pytest.mark.asyncio
+    async def test_saison_missed_range_is_recalculated(self, saison_controller, ha_time_zone):
+        """Plage du 15 (10:00-16:00) manquée, HA redémarré à 18:00 : plage du 16."""
+        debut = int(datetime(2025, 6, 15, 10, 0, tzinfo=ha_time_zone).timestamp())
+        saison_controller.data.update({
+            "filtrationDebut": debut,
+            "filtrationFin": int(datetime(2025, 6, 15, 16, 0, tzinfo=ha_time_zone).timestamp()),
+            "filtrationPauseDebut": debut,
+            "filtrationPauseFin": debut,
+            "calculateStatus": 1,  # état persisté par les versions précédentes
+        })
+        current_time = datetime(2025, 6, 15, 18, 0, tzinfo=ha_time_zone).timestamp()
+
+        with patch("time.time", return_value=current_time):
+            await saison_controller.calculateStatusFiltration(22.0)
+
+        filtration_debut = saison_controller.get_data("filtrationDebut")
+        assert datetime.fromtimestamp(filtration_debut, tz=ha_time_zone).date() == datetime(2025, 6, 16).date()
+        assert saison_controller.get_data("filtrationFin") > current_time
+        assert saison_controller.get_data("filtrationTemperature", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_saison_zero_length_range_is_recalculated(self, saison_controller, ha_time_zone):
+        """Plage de durée nulle (0 °C, température / 2) : recalculée une fois passée."""
+        saison_controller.methodeCalcul = 2  # 0 °C / 2 = 0 h
+
+        # Premier calcul à 08:00 : plage 13:00-13:00
+        with patch("time.time", return_value=datetime(2025, 6, 15, 8, 0, tzinfo=ha_time_zone).timestamp()):
+            await saison_controller.calculateStatusFiltration(0.0)
+
+        pivot = int(datetime(2025, 6, 15, 13, 0, tzinfo=ha_time_zone).timestamp())
+        assert saison_controller.get_data("filtrationDebut") == pivot
+        assert saison_controller.get_data("filtrationFin") == pivot
+
+        # Cron suivant, juste après le pivot : jamais « dans » la plage
+        with patch("time.time", return_value=pivot + 3):
+            await saison_controller.calculateStatusFiltration(0.0)
+
+        assert saison_controller.get_data("filtrationFin") == int(
+            datetime(2025, 6, 16, 13, 0, tzinfo=ha_time_zone).timestamp()
+        )
+
+    @pytest.mark.asyncio
+    async def test_saison_recalculation_is_not_repeated(self, saison_controller, ha_time_zone):
+        """Une fois la plage du lendemain calculée, les crons suivants ne recalculent pas."""
+        debut = int(datetime(2025, 6, 15, 10, 0, tzinfo=ha_time_zone).timestamp())
+        saison_controller.data.update({
+            "filtrationDebut": debut,
+            "filtrationFin": int(datetime(2025, 6, 15, 16, 0, tzinfo=ha_time_zone).timestamp()),
+            "filtrationPauseDebut": debut,
+            "filtrationPauseFin": debut,
+        })
+
+        for minute in range(3):
+            current_time = datetime(2025, 6, 15, 18, minute, tzinfo=ha_time_zone).timestamp()
+            with patch("time.time", return_value=current_time):
+                await saison_controller.calculateStatusFiltration(22.0)
+
+        saison_controller.filtrationTimeStatus.set_status.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_hivernage_missed_range_is_recalculated(self, mock_hass, mock_pool_config, ha_time_zone):
+        """Plage d'hivernage du 15 (06:00-10:00) manquée, HA redémarré à 12:00 : plage du 16."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.getLeverSoleil = Mock(return_value="06:30")
+        controller.choixHeureFiltrationHivernage = 1
+        controller.distributionDatePivotHivernage = 2
+        controller.tempsDeFiltrationMinimum = 3
+        controller.coefficientAjustementHivernage = 1.0
+        controller.temperatureSecurite = 0
+        controller.temperatureHysteresis = 0.5
+        controller.filtration5mn3h = False
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+        controller.data = {
+            "filtrationDebut": int(datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()),
+            "filtrationFin": int(datetime(2025, 12, 15, 10, 0, tzinfo=ha_time_zone).timestamp()),
+            "calculateStatus": 1,  # état persisté par les versions précédentes
+        }
+        current_time = datetime(2025, 12, 15, 12, 0, tzinfo=ha_time_zone).timestamp()
+
+        with patch("time.time", return_value=current_time):
+            await controller.calculateStatusFiltrationHivernage(12.0, 5.0)
+
+        filtration_debut = controller.get_data("filtrationDebut")
+        assert datetime.fromtimestamp(filtration_debut, tz=ha_time_zone).date() == datetime(2025, 12, 16).date()
+        assert controller.get_data("filtrationFin") > current_time
 
 
 @pytest.mark.bugs

@@ -166,8 +166,6 @@ class SaisonMixin:
         self.set_data("filtrationPauseDebut", int(filtrationPauseDebut))
         self.set_data("filtrationPauseFin", int(filtrationPauseFin))
 
-        self.set_data("calculateStatus", 1)  # 1 >> calcul effectué
-
         if flgTomorrow is True:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
 
@@ -319,13 +317,10 @@ class SaisonMixin:
                     if int(self.get_data("marcheForcee", 0)) == 1:
                         self.set_data("marcheForcee", 0)
 
-                if int(self.get_data("calculateStatus", 0)) != 0:
-                    self.set_data("calculateStatus", 0)
-
-            calculateStatus = int(self.get_data("calculateStatus", 0))
-
-            if timeNow > filtrationFin and calculateStatus == 0:
-                # On est apres la plage de filtration, relancer le calcul pour la plage de demain
+            if timeNow > filtrationFin:
+                # On est apres la plage de filtration, relancer le calcul pour la plage de demain,
+                # meme si la plage a ete manquee (HA arrete pendant sa duree, plage de duree nulle).
+                # La plage de demain se termine apres maintenant : le calcul ne se repete pas.
                 self.calculateTimeFiltration(temperatureWater, True)
                 self.updateTemperatureDisplay(temperatureWater)
 
