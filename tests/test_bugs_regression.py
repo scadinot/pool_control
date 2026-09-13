@@ -12,10 +12,12 @@ Bugs testés:
 6. Bug #6: Entité optionnelle temperatureDisplay
 7. Bug #7: Heure de lever du soleil lue en UTC
 8. Bug #8: Surpresseur bloqué en marche après un redémarrage
+9. Bug #9: Plages horaires calculées dans le fuseau du système
 """
 
 import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock, patch
+from datetime import datetime, timezone
 import logging
 
 # Skip all tests if Home Assistant is not installed
@@ -469,6 +471,68 @@ class TestBug8_RepriseCycleApresRedemarrage:
         controller.surpresseurStatus.set_status.assert_called_with("Arrêté")
         controller.activatingDevices.assert_awaited()
         assert controller.secondCronCancel is None
+
+
+@pytest.mark.bugs
+class TestBug9_FuseauSystemeDifferentDeHA:
+    """Test Bug #9: Plages horaires calculées dans le fuseau du système.
+
+    Bug original: saison.py / hivernage.py construisaient le pivot avec
+    datetime.today() / strptime().timestamp() (fuseau du système) alors que
+    getLeverSoleil() renvoie l'heure dans le fuseau de Home Assistant : sur
+    une installation dont le système est en UTC (conteneur sans TZ), la plage
+    était décalée de l'écart entre les deux fuseaux
+    Correction: pivots et affichages calculés dans le fuseau de Home Assistant
+    """
+
+    @pytest.fixture
+    def controller(self, setup_hass_states, mock_pool_config):
+        """PoolController en hivernage, lever du soleil 07:10 à New York (12:10 UTC)."""
+        from custom_components.pool_control.controller import PoolController
+
+        hass = setup_hass_states(
+            {"sensor.sun_next_rising": "2025-12-15T12:10:00+00:00"}
+        )
+        controller = PoolController(hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.data = {}
+        controller.distributionDatePivotHivernage = 4  # 1/1 <> : fin au pivot
+        controller.coefficientAjustementHivernage = 1.0
+        controller.tempsDeFiltrationMinimum = 3
+        return controller
+
+    def test_sunrise_pivot_ends_filtration_at_real_sunrise(self, controller, ha_time_zone):
+        """Vérifie que la filtration se termine exactement au lever du soleil."""
+        controller.choixHeureFiltrationHivernage = 1  # Lever du soleil
+
+        with patch(
+            "time.time",
+            return_value=datetime(2025, 12, 15, 5, 0, tzinfo=ha_time_zone).timestamp(),
+        ):
+            controller.calculateTimeFiltrationHivernage(12.0, False)  # 12/3 = 4 h
+
+        sunrise = datetime(2025, 12, 15, 12, 10, tzinfo=timezone.utc).timestamp()
+        assert controller.get_data("filtrationFin") == int(sunrise)
+        assert controller.get_data("filtrationDebut") == int(sunrise - 4 * 3600)
+        controller.filtrationScheduleStatus.set_status.assert_called_once_with(
+            "* 03:10-07:10 : 12.0°C"
+        )
+
+    def test_fixed_pivot_uses_home_assistant_time_zone(self, controller, ha_time_zone):
+        """Vérifie qu'une heure fixe est interprétée dans le fuseau de HA."""
+        controller.choixHeureFiltrationHivernage = 2  # Heure fixe
+        controller.datePivotHivernage = "06:00"
+
+        with patch(
+            "time.time",
+            return_value=datetime(2025, 12, 15, 5, 0, tzinfo=ha_time_zone).timestamp(),
+        ):
+            controller.calculateTimeFiltrationHivernage(12.0, False)
+
+        assert controller.get_data("filtrationFin") == int(
+            datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()
+        )
 
 
 @pytest.mark.bugs

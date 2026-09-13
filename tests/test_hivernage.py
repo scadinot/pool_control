@@ -285,12 +285,12 @@ class TestCalculateTimeFiltrationHivernage:
 
         assert mock_hivernage_controller.get_data("filtrationDebut") is not None
 
-    def test_tomorrow_flag_adds_one_day(self, mock_hivernage_controller):
+    def test_tomorrow_flag_adds_one_day(self, mock_hivernage_controller, ha_time_zone):
         """Test that flgTomorrow=True adds one day to calculation."""
         mock_hivernage_controller.data["temperatureMaxi"] = 0
 
-        # Current time after pivot
-        current_time = datetime(2025, 12, 15, 8, 0).timestamp()
+        # Current time after pivot (06:30 sunrise in Home Assistant's time zone)
+        current_time = datetime(2025, 12, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
 
         with patch('time.time', return_value=current_time):
             mock_hivernage_controller.calculateTimeFiltrationHivernage(12.0, True)
@@ -298,7 +298,7 @@ class TestCalculateTimeFiltrationHivernage:
         filtration_debut = mock_hivernage_controller.get_data("filtrationDebut")
 
         # filtrationDebut should be tomorrow
-        debut_date = datetime.fromtimestamp(filtration_debut).date()
+        debut_date = datetime.fromtimestamp(filtration_debut, tz=ha_time_zone).date()
         expected_date = datetime(2025, 12, 16).date()
 
         assert debut_date == expected_date
@@ -501,66 +501,64 @@ class TestCalculateStatusFiltrationHivernage:
         assert mock_hivernage_controller.get_data("filtrationHivernageSecurite") == 1
 
     @pytest.mark.asyncio
-    async def test_5min_every_3h_at_0200(self, mock_hivernage_controller):
+    async def test_5min_every_3h_at_0200(self, mock_hivernage_controller, ha_time_zone):
         """Test 5-minute cycle at 02:00."""
         mock_hivernage_controller.filtration5mn3h = True
 
-        debut = datetime(2025, 12, 15, 6, 0).timestamp()
-        fin = datetime(2025, 12, 15, 10, 0).timestamp()
+        debut = datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()
+        fin = datetime(2025, 12, 15, 10, 0, tzinfo=ha_time_zone).timestamp()
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
 
-        # Time is 02:02 (in 5-minute window)
-        with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
-            mock_dt.now.return_value.strftime.return_value = "0202"
-            with patch('time.time', return_value=datetime(2025, 12, 15, 2, 2).timestamp()):
-                await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
+        # Time is 02:02 in Home Assistant's time zone (in 5-minute window)
+        current_time = datetime(2025, 12, 15, 2, 2, tzinfo=ha_time_zone).timestamp()
+        with patch('time.time', return_value=current_time):
+            await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
 
         # Should activate filtration
         assert mock_hivernage_controller.get_data("filtrationHivernage") == 1
 
     @pytest.mark.asyncio
-    async def test_5min_every_3h_all_time_slots(self, mock_hivernage_controller):
+    async def test_5min_every_3h_all_time_slots(self, mock_hivernage_controller, ha_time_zone):
         """Test all 8 time slots for 5-minute cycles."""
         mock_hivernage_controller.filtration5mn3h = True
 
-        debut = datetime(2025, 12, 15, 6, 0).timestamp()
-        fin = datetime(2025, 12, 15, 10, 0).timestamp()
+        debut = datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()
+        fin = datetime(2025, 12, 15, 10, 0, tzinfo=ha_time_zone).timestamp()
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
 
-        # Test all 8 time slots
-        time_slots = ["0202", "0502", "0802", "1102", "1402", "1702", "2002", "2302"]
+        # Test all 8 time slots (HH:02 in Home Assistant's time zone)
+        for hour in [2, 5, 8, 11, 14, 17, 20, 23]:
+            mock_hivernage_controller.data["filtrationHivernage"] = 0
+            current_time = datetime(2025, 12, 15, hour, 2, tzinfo=ha_time_zone).timestamp()
 
-        for time_slot in time_slots:
-            with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
-                mock_dt.now.return_value.strftime.return_value = time_slot
-                with patch('time.time', return_value=datetime(2025, 12, 15, 2, 2).timestamp()):
+            with patch('time.time', return_value=current_time):
+                with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):
                     await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
 
             # Should activate filtration for each slot
-            assert mock_hivernage_controller.get_data("filtrationHivernage") == 1
+            assert mock_hivernage_controller.get_data("filtrationHivernage") == 1, hour
 
     @pytest.mark.asyncio
-    async def test_5min_every_3h_outside_window(self, mock_hivernage_controller):
+    async def test_5min_every_3h_outside_window(self, mock_hivernage_controller, ha_time_zone):
         """Test that 5-minute cycle doesn't activate outside windows."""
         mock_hivernage_controller.filtration5mn3h = True
 
-        debut = datetime(2025, 12, 15, 6, 0).timestamp()
-        fin = datetime(2025, 12, 15, 10, 0).timestamp()
+        debut = datetime(2025, 12, 15, 6, 0, tzinfo=ha_time_zone).timestamp()
+        fin = datetime(2025, 12, 15, 10, 0, tzinfo=ha_time_zone).timestamp()
 
         mock_hivernage_controller.data["filtrationDebut"] = int(debut)
         mock_hivernage_controller.data["filtrationFin"] = int(fin)
         mock_hivernage_controller.data["calculateStatus"] = 0
 
-        # Time is 02:10 (outside 5-minute window)
-        with patch('custom_components.pool_control.hivernage.datetime') as mock_dt:
-            mock_dt.now.return_value.strftime.return_value = "0210"
-            with patch('time.time', return_value=datetime(2025, 12, 15, 12, 0).timestamp()):
-                with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):
-                    await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
+        # Time is 02:10 in Home Assistant's time zone (outside 5-minute window)
+        current_time = datetime(2025, 12, 15, 2, 10, tzinfo=ha_time_zone).timestamp()
+        with patch('time.time', return_value=current_time):
+            with patch.object(mock_hivernage_controller, 'calculateTimeFiltrationHivernage'):
+                await mock_hivernage_controller.calculateStatusFiltrationHivernage(10.0, 5.0)
 
         # Should not activate (outside range and outside 5min window)
         assert mock_hivernage_controller.get_data("filtrationHivernage", 0) == 0

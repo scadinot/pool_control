@@ -1,10 +1,9 @@
 """Seasonal filtration logic for pool control."""
 
-from datetime import datetime, timedelta
 import logging
 import time
 
-from .utils import formatDurationHoursMinutes
+from .utils import formatDurationHoursMinutes, formatTimestamp, pivotTimestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,18 +35,9 @@ class SaisonMixin:
         # datePivot (suivant config)
         datePivot = self.datePivot  # 13:00
 
-        # filtrationPivotSecondes = strtotime(datePivot)
-        todayDate = datetime.today().date()
-        combinedDatetime = datetime.strptime(
-            str(todayDate) + " " + datePivot, "%Y-%m-%d %H:%M"
-        )
-        filtrationPivotSecondes = combinedDatetime.timestamp()
-
-        # la plage doit-elle etre celle de demain ?
-        if flgTomorrow is True:
-            if filtrationPivotSecondes < time.time():
-                _LOGGER.info("+1 day")
-                filtrationPivotSecondes += timedelta(days=1).total_seconds()
+        # Horodatage du pivot dans le fuseau de Home Assistant
+        # (celui de demain si flgTomorrow et que le pivot est passé)
+        filtrationPivotSecondes = pivotTimestamp(datePivot, flgTomorrow)
 
         pausePivotSecondes = self.pausePivot * 60  # Temps de pause en secondes
         _LOGGER.debug(
@@ -149,22 +139,22 @@ class SaisonMixin:
             self.filtrationTimeStatus.set_status(filtrationTime)
 
         if filtrationPauseDebut != filtrationPauseFin:
-            display = datetime.fromtimestamp(filtrationDebut).strftime("%H:%M")
+            display = formatTimestamp(filtrationDebut, "%H:%M")
             display += "-"
-            display += datetime.fromtimestamp(filtrationPauseDebut).strftime("%H:%M")
+            display += formatTimestamp(filtrationPauseDebut, "%H:%M")
             display += " "
-            display += datetime.fromtimestamp(filtrationPauseFin).strftime("%H:%M")
+            display += formatTimestamp(filtrationPauseFin, "%H:%M")
             display += "-"
-            display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
+            display += formatTimestamp(filtrationFin, "%H:%M")
             display += " : "
             display += str(temperatureCalcul)
             display += "°C"
             if self.filtrationScheduleStatus:
                 self.filtrationScheduleStatus.set_status(display)
         else:
-            display = datetime.fromtimestamp(filtrationDebut).strftime("%H:%M")
+            display = formatTimestamp(filtrationDebut, "%H:%M")
             display += "-"
-            display += datetime.fromtimestamp(filtrationFin).strftime("%H:%M")
+            display += formatTimestamp(filtrationFin, "%H:%M")
             display += " : "
             display += str(temperatureCalcul)
             display += "°C"
@@ -186,22 +176,22 @@ class SaisonMixin:
 
         _LOGGER.info(
             "filtrationDebut=%s",
-            datetime.fromtimestamp(filtrationDebut).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationDebut, "%H:%M %d-%m-%Y"),
         )
 
         if filtrationPauseDebut != filtrationPauseFin:
             _LOGGER.info(
                 "filtrationPauseDebut=%s",
-                datetime.fromtimestamp(filtrationPauseDebut).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(filtrationPauseDebut, "%H:%M %d-%m-%Y"),
             )
             _LOGGER.info(
                 "filtrationPauseFin=%s",
-                datetime.fromtimestamp(filtrationPauseFin).strftime("%H:%M %d-%m-%Y"),
+                formatTimestamp(filtrationPauseFin, "%H:%M %d-%m-%Y"),
             )
 
         _LOGGER.info(
             "filtrationFin=%s",
-            datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
         )
 
     async def calculateStatusFiltration(self, temperatureWater: float) -> None:
@@ -216,15 +206,15 @@ class SaisonMixin:
         timeNow = time.time()
         _LOGGER.info(
             "calculateStatusFiltration: timeNow=%s",
-            datetime.fromtimestamp(timeNow).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(timeNow, "%H:%M %d-%m-%Y"),
         )
         _LOGGER.info(
             "calculateStatusFiltration: filtrationDebut=%s",
-            datetime.fromtimestamp(filtrationDebut).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationDebut, "%H:%M %d-%m-%Y"),
         )
         _LOGGER.info(
             "calculateStatusFiltration: filtrationFin=%s",
-            datetime.fromtimestamp(filtrationFin).strftime("%H:%M %d-%m-%Y"),
+            formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:

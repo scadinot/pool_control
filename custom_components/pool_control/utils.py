@@ -1,6 +1,51 @@
 """Utility mixin for pool filtration time calculations."""
 
+from datetime import datetime, timedelta
+import logging
+import time
 from typing import Tuple
+
+from homeassistant.util import dt as dt_util
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def localDatetime(timestamp: float) -> datetime:
+    """Convert a Unix timestamp to an aware datetime in Home Assistant's time zone.
+
+    Unlike datetime.fromtimestamp(), the result does not depend on the time
+    zone of the operating system (often UTC in a container).
+    """
+
+    return dt_util.as_local(dt_util.utc_from_timestamp(timestamp))
+
+
+def formatTimestamp(timestamp: float, fmt: str) -> str:
+    """Format a Unix timestamp in Home Assistant's time zone."""
+
+    return localDatetime(timestamp).strftime(fmt)
+
+
+def pivotTimestamp(pivot: str, flgTomorrow: bool) -> float:
+    """Return the timestamp of today's HH:MM pivot in Home Assistant's time zone.
+
+    With flgTomorrow, a pivot already passed is moved to the same wall-clock
+    time on the next day, which stays correct across DST changes (unlike
+    adding 24 hours).
+    """
+
+    now = localDatetime(time.time())
+    pivotTime = datetime.strptime(pivot, "%H:%M").time()
+    pivotDatetime = datetime.combine(now.date(), pivotTime, tzinfo=now.tzinfo)
+
+    # la plage doit-elle etre celle de demain ?
+    if flgTomorrow is True and pivotDatetime.timestamp() < time.time():
+        _LOGGER.info("+1 day")
+        pivotDatetime = datetime.combine(
+            now.date() + timedelta(days=1), pivotTime, tzinfo=now.tzinfo
+        )
+
+    return pivotDatetime.timestamp()
 
 
 def formatDurationMinutesSeconds(seconds: float) -> str:
