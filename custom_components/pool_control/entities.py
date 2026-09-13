@@ -5,8 +5,10 @@ from typing import Any, Callable, Optional
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import slugify
 
 from .const import DOMAIN
@@ -53,7 +55,7 @@ def _build_entity_id(
     return f"{platform}.{prefix}_{translation_key}"
 
 
-class PoolControlStatusSensor(SensorEntity):
+class PoolControlStatusSensor(SensorEntity, RestoreEntity):
     """Sensor générique pour afficher un statut Pool Control."""
 
     _attr_has_entity_name = True
@@ -66,6 +68,7 @@ class PoolControlStatusSensor(SensorEntity):
         controller_attribute_name: str,
         default_state: str = "Arrêté",
         entry: Optional[ConfigEntry] = None,
+        restore_state: bool = False,
     ) -> None:
         """Initialize the PoolControlStatusSensor."""
 
@@ -81,12 +84,28 @@ class PoolControlStatusSensor(SensorEntity):
         self._controller_attribute_name = controller_attribute_name
         self._state = default_state
         self._ready = False
+        self._restore_state = restore_state
+        self._status_set = False
 
         # Dès la création, on attache l'entité au controller dynamiquement
         setattr(controller, controller_attribute_name, self)
 
     async def async_added_to_hass(self) -> None:
         """Call when the entity is added to hass."""
+
+        await super().async_added_to_hass()
+
+        # Reprendre le dernier état connu après un redémarrage : sans cela, un
+        # statut recalculé seulement de temps en temps (planning, temps de
+        # filtration) reste vide jusqu'au prochain calcul. Un statut déjà
+        # fourni par le controller reste prioritaire.
+        if self._restore_state and not self._status_set:
+            last_state = await self.async_get_last_state()
+            if last_state is not None and last_state.state not in (
+                STATE_UNKNOWN,
+                STATE_UNAVAILABLE,
+            ):
+                self._state = last_state.state
 
         self._ready = True
 
@@ -100,6 +119,7 @@ class PoolControlStatusSensor(SensorEntity):
         """Set the status of the sensor."""
 
         self._state = value
+        self._status_set = True
         if self._ready:
             self.async_write_ha_state()
 

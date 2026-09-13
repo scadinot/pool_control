@@ -28,6 +28,7 @@ async def async_setup_entry(
             "asservissementStatus",
             default_state="",
             entry=entry,
+            restore_state=True,
         ),
         PoolControlStatusSensor(
             controller,
@@ -36,6 +37,7 @@ async def async_setup_entry(
             "filtrationTimeStatus",
             default_state="",
             entry=entry,
+            restore_state=True,
         ),
         PoolControlStatusSensor(
             controller,
@@ -44,6 +46,7 @@ async def async_setup_entry(
             "filtrationScheduleStatus",
             default_state="",
             entry=entry,
+            restore_state=True,
         ),
         PoolControlStatusSensor(
             controller,
@@ -51,7 +54,11 @@ async def async_setup_entry(
             "pool_control_filtration_status",
             "filtrationStatus",
             entry=entry,
+            restore_state=True,
         ),
+        # Surpresseur et lavage : pas de restauration, l'affichage est
+        # reconstruit à partir du cycle persisté (resumeSecondCron / pull) ;
+        # un compte à rebours restauré pourrait être périmé
         PoolControlStatusSensor(
             controller,
             "booster_status",
