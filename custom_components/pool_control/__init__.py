@@ -115,6 +115,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Ensuite on peut lancer le cron
     await controller.startFirstCron()
 
+    # Reprendre un cycle surpresseur / lavage interrompu par un redémarrage
+    # (après la création des capteurs, utilisés par pull() pour l'affichage)
+    await controller.resumeSecondCron()
+
     return True
 
 

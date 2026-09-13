@@ -4,6 +4,13 @@ import time
 
 from .utils import formatDurationMinutesSeconds
 
+# Messages affichés pendant les étapes d'attente (vanne 6 voies à positionner)
+LAVAGE_ATTENTE_STATUS = {
+    1: "Arrêt, position lavage",
+    3: "Arrêt, position rinçage",
+    5: "Arrêt, position filtration",
+}
+
 
 class LavageMixin:
     """Mixin class providing lavage (filter cleaning) logic for pool control."""
@@ -18,7 +25,7 @@ class LavageMixin:
                 # Arrêt, mettre la vanne sur la position lavage
                 self.set_data("filtrationLavageEtat", 1)
                 if self.filtreSableLavageStatus:
-                    self.filtreSableLavageStatus.set_status("Arrêt, position lavage")
+                    self.filtreSableLavageStatus.set_status(LAVAGE_ATTENTE_STATUS[1])
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
 
@@ -47,7 +54,7 @@ class LavageMixin:
                 # Arrêt, mettre la vanne sur la position rinçage
                 self.set_data("filtrationLavageEtat", 3)
                 if self.filtreSableLavageStatus:
-                    self.filtreSableLavageStatus.set_status("Arrêt, position rinçage")
+                    self.filtreSableLavageStatus.set_status(LAVAGE_ATTENTE_STATUS[3])
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
 
@@ -70,9 +77,7 @@ class LavageMixin:
                 # Arrêt, mettre la vanne sur la position filtration
                 self.set_data("filtrationLavageEtat", 5)
                 if self.filtreSableLavageStatus:
-                    self.filtreSableLavageStatus.set_status(
-                        "Arrêt, position filtration"
-                    )
+                    self.filtreSableLavageStatus.set_status(LAVAGE_ATTENTE_STATUS[5])
                 self.set_data("filtrationLavage", 1)
                 await self.activatingDevices()
 
