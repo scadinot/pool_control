@@ -6,6 +6,13 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+### Corrigé
+- **Filtration bloquée après une plage manquée** : la plage du lendemain n'était recalculée qu'après être passé au moins une fois dans la plage courante (drapeau `calculateStatus`). Si la plage était manquée — Home Assistant arrêté pendant toute sa durée (coupure de courant, maintenance), ou plage de durée nulle (méthode « Température / 2 », sonde d'eau lue à 0 °C, sans pause pivot) — plus aucun calcul n'avait lieu et la filtration ne redémarrait plus, jusqu'à un appui sur Reset. La plage du lendemain est désormais calculée dès que la plage courante est passée, en saison comme en hivernage.
+
+### Modifié
+- `saison.py`, `hivernage.py` : suppression du drapeau `calculateStatus` (la clé éventuellement présente dans le stockage est ignorée). Le recalcul ne peut pas se répéter : la plage du lendemain se termine toujours après l'heure courante.
+- Tests : références à `calculateStatus` retirées ; nouveaux tests de non-régression (bug #10).
+
 ## [0.0.30] — 2026-09-13
 
 ### Ajouté

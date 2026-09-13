@@ -414,13 +414,6 @@ class TestCalculateTimeFiltration:
         # temperatureMaxi should be reset to 0
         assert mock_saison_controller.get_data("temperatureMaxi") == 0
 
-    def test_sets_calculate_status(self, mock_saison_controller):
-        """Test that calculateStatus is set to 1."""
-        with patch('time.time', return_value=datetime(2025, 6, 15, 10, 0).timestamp()):
-            mock_saison_controller.calculateTimeFiltration(20.0, False)
-
-        assert mock_saison_controller.get_data("calculateStatus") == 1
-
     def test_updates_filtration_time_status(self, mock_saison_controller):
         """Test that filtrationTimeStatus is updated."""
         mock_saison_controller.data["temperatureMaxi"] = 0
@@ -512,7 +505,6 @@ class TestCalculateStatusFiltration:
         mock_saison_controller.data["filtrationFin"] = int(fin)
         mock_saison_controller.data["filtrationPauseDebut"] = int(debut)
         mock_saison_controller.data["filtrationPauseFin"] = int(debut)
-        mock_saison_controller.data["calculateStatus"] = 0
 
         with patch('time.time', return_value=current_time.timestamp()):
             with patch.object(mock_saison_controller, 'calculateTimeFiltration') as mock_calc:
@@ -666,7 +658,6 @@ class TestCalculateStatusFiltration:
         mock_saison_controller.data["filtrationFin"] = int(fin)
         mock_saison_controller.data["filtrationPauseDebut"] = int(debut)
         mock_saison_controller.data["filtrationPauseFin"] = int(debut)
-        mock_saison_controller.data["calculateStatus"] = 0
 
         with patch('time.time', return_value=current_time):
             with patch.object(mock_saison_controller, 'calculateTimeFiltration') as mock_calc:
@@ -711,7 +702,6 @@ class TestSaisonIntegration:
         # Verify all data is set
         assert mock_saison_controller.get_data("filtrationDebut") > 0
         assert mock_saison_controller.get_data("filtrationFin") > 0
-        assert mock_saison_controller.get_data("calculateStatus") == 1
 
         # Verify UI updates
         assert mock_saison_controller.filtrationTimeStatus.set_status.called
