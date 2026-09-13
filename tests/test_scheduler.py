@@ -148,6 +148,76 @@ class TestStopSecondCron:
 
 
 @pytest.mark.unit
+class TestResumeSecondCron:
+    """Tests for resumeSecondCron() - Resume 5-second cron after a restart."""
+
+    @pytest.fixture(autouse=True)
+    def mock_start_second_cron(self, mock_scheduler_controller):
+        """Replace startSecondCron by an AsyncMock."""
+        mock_scheduler_controller.startSecondCron = AsyncMock()
+
+    @pytest.mark.asyncio
+    async def test_does_nothing_without_interrupted_cycle(
+        self, mock_scheduler_controller
+    ):
+        """Test resumeSecondCron does not start the cron when no cycle is in progress."""
+        mock_scheduler_controller.data = {
+            "filtrationSurpresseur": 0,
+            "filtrationLavageEtat": 0,
+        }
+
+        await mock_scheduler_controller.resumeSecondCron()
+
+        mock_scheduler_controller.startSecondCron.assert_not_called()
+        mock_scheduler_controller.filtreSableLavageStatus.set_status.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_resumes_surpresseur_cycle(self, mock_scheduler_controller):
+        """Test resumeSecondCron starts the cron when the surpresseur was running."""
+        mock_scheduler_controller.data = {
+            "filtrationSurpresseur": 1,
+            "filtrationTempsRestant": 2000,
+        }
+
+        await mock_scheduler_controller.resumeSecondCron()
+
+        mock_scheduler_controller.startSecondCron.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("etat", [2, 4])
+    async def test_resumes_timed_lavage_step(self, mock_scheduler_controller, etat):
+        """Test resumeSecondCron resumes lavage / rinçage; pull() refreshes the display."""
+        mock_scheduler_controller.data = {"filtrationLavageEtat": etat}
+
+        await mock_scheduler_controller.resumeSecondCron()
+
+        mock_scheduler_controller.startSecondCron.assert_awaited_once()
+        mock_scheduler_controller.filtreSableLavageStatus.set_status.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "etat, status",
+        [
+            (1, "Arrêt, position lavage"),
+            (3, "Arrêt, position rinçage"),
+            (5, "Arrêt, position filtration"),
+        ],
+    )
+    async def test_restores_waiting_lavage_step_status(
+        self, mock_scheduler_controller, etat, status
+    ):
+        """Test resumeSecondCron restores the valve positioning prompt."""
+        mock_scheduler_controller.data = {"filtrationLavageEtat": etat}
+
+        await mock_scheduler_controller.resumeSecondCron()
+
+        mock_scheduler_controller.filtreSableLavageStatus.set_status.assert_called_once_with(
+            status
+        )
+        mock_scheduler_controller.startSecondCron.assert_awaited_once()
+
+
+@pytest.mark.unit
 class TestPull:
     """Tests for pull() - 5-second routine for timer monitoring."""
 

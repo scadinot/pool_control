@@ -1,7 +1,7 @@
-"""Tests de non-régression pour les 6 bugs critiques corrigés.
+"""Tests de non-régression pour les bugs critiques corrigés.
 
-Ces tests garantissent que les bugs identifiés et corrigés dans la PR #1
-ne reviennent pas dans les futures versions.
+Ces tests garantissent que les bugs identifiés et corrigés (PR #1 pour les
+bugs #1 à #6) ne reviennent pas dans les futures versions.
 
 Bugs testés:
 1. Bug #1: Méthode manquante executePoolStop() → executeButtonStop()
@@ -10,6 +10,8 @@ Bugs testés:
 4. Bug #4: Type incohérent methodeCalcul
 5. Bug #5: Crash si traitement non configuré
 6. Bug #6: Entité optionnelle temperatureDisplay
+7. Bug #7: Heure de lever du soleil lue en UTC
+8. Bug #8: Surpresseur bloqué en marche après un redémarrage
 """
 
 import pytest
@@ -333,6 +335,140 @@ class TestBug6_TemperatureDisplayOptional:
             "input_number.temperatureDisplay",
             25.5
         )
+
+
+@pytest.mark.bugs
+class TestBug7_LeverSoleilFuseau:
+    """Test Bug #7: Heure de lever du soleil lue en UTC.
+
+    Bug original: sensors.py extrayait HH:MM de sensor.sun_next_rising (UTC) sans
+    conversion, décalant le pivot d'hivernage de 1 à 2 h, et plantait sur "unavailable"
+    Correction: Conversion dans le fuseau de Home Assistant, repli sur 06:00
+    """
+
+    @pytest.fixture(autouse=True)
+    def ha_time_zone(self):
+        """Fuseau Home Assistant fixé à UTC+2 (heure d'été de Paris)."""
+        from datetime import timedelta, timezone
+        from homeassistant.util import dt as dt_util
+
+        previous = dt_util.DEFAULT_TIME_ZONE
+        dt_util.set_default_time_zone(timezone(timedelta(hours=2)))
+        yield
+        dt_util.set_default_time_zone(previous)
+
+    @pytest.fixture
+    def controller_with_sunrise(self, setup_hass_states, mock_pool_config):
+        """Crée un PoolController dont sensor.sun_next_rising a l'état donné."""
+        from custom_components.pool_control.controller import PoolController
+
+        def _create(state):
+            states = {} if state is None else {"sensor.sun_next_rising": state}
+            return PoolController(setup_hass_states(states), mock_pool_config)
+
+        return _create
+
+    def test_utc_sunrise_is_converted_to_local_time(self, controller_with_sunrise):
+        """Vérifie que 05:33 UTC donne 07:33 en heure locale (UTC+2)."""
+        controller = controller_with_sunrise("2026-09-14T05:33:12+00:00")
+
+        assert controller.getLeverSoleil() == "07:33"
+
+    def test_naive_sunrise_is_kept_as_local_time(self, controller_with_sunrise):
+        """Vérifie qu'un horodatage sans fuseau est considéré comme local."""
+        controller = controller_with_sunrise("2026-09-14T07:33:12")
+
+        assert controller.getLeverSoleil() == "07:33"
+
+    @pytest.mark.parametrize("state", ["unavailable", "unknown", ""])
+    def test_invalid_state_falls_back_without_crash(self, controller_with_sunrise, state):
+        """Vérifie qu'un état non horodaté ne fait pas planter le cron."""
+        controller = controller_with_sunrise(state)
+
+        assert controller.getLeverSoleil() == "06:00"
+
+    def test_missing_entity_falls_back(self, controller_with_sunrise):
+        """Vérifie le repli sur 06:00 si l'entité n'existe pas."""
+        controller = controller_with_sunrise(None)
+
+        assert controller.getLeverSoleil() == "06:00"
+
+
+@pytest.mark.bugs
+class TestBug8_RepriseCycleApresRedemarrage:
+    """Test Bug #8: Surpresseur bloqué en marche après un redémarrage.
+
+    Bug original: filtrationSurpresseur / filtrationLavageEtat étaient restaurés depuis
+    le Store mais le cron '5 secondes' n'était pas relancé : le compte à rebours
+    n'était plus suivi et le surpresseur restait actif indéfiniment
+    Correction: async_setup_entry() appelle resumeSecondCron()
+    """
+
+    @pytest.mark.asyncio
+    async def test_setup_entry_resumes_second_cron(self, mock_hass):
+        """Vérifie que async_setup_entry() reprend un cycle interrompu."""
+        from custom_components import pool_control
+
+        controller = MagicMock()
+        controller.async_initialize = AsyncMock()
+        controller.startFirstCron = AsyncMock()
+        controller.resumeSecondCron = AsyncMock()
+
+        entry = MagicMock()
+        entry.entry_id = "test_entry_id"
+        entry.unique_id = "piscine"
+        entry.title = "Piscine"
+        entry.data = {}
+        entry.options = {}
+
+        mock_hass.config_entries = MagicMock()
+        mock_hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+        with patch.object(
+            pool_control, "PoolController", return_value=controller
+        ), patch.object(pool_control, "async_register_panel", new=AsyncMock()):
+            assert await pool_control.async_setup_entry(mock_hass, entry) is True
+
+        controller.startFirstCron.assert_awaited_once()
+        controller.resumeSecondCron.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_expired_surpresseur_is_stopped_after_restart(self, mock_hass, mock_pool_config):
+        """Vérifie qu'un cycle surpresseur écoulé pendant l'arrêt de HA est terminé."""
+        from custom_components.pool_control.controller import PoolController
+        import time
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.surpresseurStatus = MagicMock()
+        controller.filtreSableLavageStatus = MagicMock()
+        controller.activatingDevices = AsyncMock()
+
+        # État restauré depuis le Store : cycle lancé avant l'arrêt, durée écoulée
+        controller.data = {
+            "filtrationSurpresseur": 1,
+            "filtrationTempsRestant": int(time.time()) - 60,
+        }
+
+        callbacks = []
+
+        def fake_track(hass, action, interval):
+            callbacks.append(action)
+            return Mock()
+
+        with patch(
+            "custom_components.pool_control.scheduler.async_track_time_interval",
+            side_effect=fake_track,
+        ):
+            await controller.resumeSecondCron()
+
+            # Premier tick du cron '5 secondes'
+            assert len(callbacks) == 1
+            await callbacks[0]()
+
+        assert controller.get_data("filtrationSurpresseur") == 0
+        controller.surpresseurStatus.set_status.assert_called_with("Arrêté")
+        controller.activatingDevices.assert_awaited()
+        assert controller.secondCronCancel is None
 
 
 @pytest.mark.bugs

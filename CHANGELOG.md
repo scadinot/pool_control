@@ -6,6 +6,10 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+### Corrigé
+- **Heure de lever du soleil décalée en hivernage** : `sensor.sun_next_rising` est exprimé en UTC et l'heure en était extraite telle quelle, décalant le pivot d'hivernage de 1 à 2 h en France (ex. 05:33 au lieu de 07:33). L'horodatage est désormais converti dans le fuseau de Home Assistant (`dt_util.as_local`). Un état non horodaté (`unavailable`, `unknown`) ne fait plus planter le cron : repli sur `06:00` avec un log d'erreur.
+- **Surpresseur bloqué en marche après un redémarrage** : si Home Assistant redémarrait (ou si l'intégration était rechargée) pendant un cycle surpresseur ou lavage, le cron « 5 secondes » n'était pas relancé ; le compte à rebours n'était plus suivi et le surpresseur restait actif jusqu'à un appui sur Stop. Le cycle est désormais repris au démarrage (`resumeSecondCron`) : il se termine normalement, ou immédiatement si sa durée est écoulée. L'étape d'attente de l'assistant de lavage (« Arrêt, position … ») est réaffichée.
+
 ## [0.0.27] — 2026-05-07
 
 ### Ajouté

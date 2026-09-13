@@ -1,7 +1,8 @@
 """Sensor mixin for Pool Control integration."""
 
-from datetime import datetime
 import logging
+
+from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class SensorMixin:
         return temperatureOutdoor
 
     def getLeverSoleil(self) -> str:
-        """Récupére l'heure de lever du soleil."""
+        """Récupére l'heure locale de lever du soleil au format HH:MM."""
 
         leverSoleilState = self.hass.states.get(self.leverSoleil)
 
@@ -54,11 +55,22 @@ class SensorMixin:
             _LOGGER.error("Lever du soleil %s not found", self.leverSoleil)
             return "06:00"
 
-        # Extraire l'heure de lever du soleil à partir de l'état
-        sunriseTimeStr = leverSoleilState.state
-
         # Convertir la chaîne de caractères ISO 8601 en objet datetime
-        sunriseTime = datetime.fromisoformat(sunriseTimeStr)
+        # (None si l'état n'est pas un horodatage, ex. "unavailable")
+        try:
+            sunriseTime = dt_util.parse_datetime(leverSoleilState.state)
+        except ValueError:
+            sunriseTime = None
+
+        if sunriseTime is None:
+            _LOGGER.error("Invalid sunrise value: %s", leverSoleilState.state)
+            return "06:00"
+
+        # sensor.sun_next_rising est exprimé en UTC : conversion dans le fuseau
+        # de Home Assistant avant d'extraire l'heure (une valeur sans fuseau
+        # est considérée comme déjà locale)
+        if sunriseTime.tzinfo is not None:
+            sunriseTime = dt_util.as_local(sunriseTime)
 
         # Convertir l'objet datetime en chaîne de caractères dans le format "06:00"
         return sunriseTime.strftime("%H:%M")

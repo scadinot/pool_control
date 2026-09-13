@@ -7,6 +7,7 @@ from typing import Any, Optional
 
 from homeassistant.helpers.event import async_track_time_interval
 
+from .lavage import LAVAGE_ATTENTE_STATUS
 from .utils import formatDurationMinutesSeconds
 
 _LOGGER = logging.getLogger(__name__)
@@ -45,6 +46,33 @@ class SchedulerMixin:
             self.secondCronCancel = None
 
             _LOGGER.info("Second cron job stopped")
+
+    async def resumeSecondCron(self) -> None:
+        """Relance le cron '5 secondes' si un cycle surpresseur / lavage était en cours.
+
+        Les états sont persistés dans le Store mais le cron ne l'est pas : après un
+        redémarrage de Home Assistant (ou un rechargement de l'intégration), le compte
+        à rebours n'était plus suivi et le surpresseur restait actif indéfiniment.
+        """
+
+        surpresseurActif = int(self.get_data("filtrationSurpresseur", 0)) == 1
+        lavageEtat = int(self.get_data("filtrationLavageEtat", 0))
+
+        if not surpresseurActif and lavageEtat == 0:
+            return
+
+        _LOGGER.info(
+            "Resuming interrupted cycle (filtrationSurpresseur=%s, filtrationLavageEtat=%s)",
+            int(surpresseurActif),
+            lavageEtat,
+        )
+
+        # Les étapes minutées (surpresseur, lavage 2, rinçage 4) sont réaffichées
+        # par pull() ; seules les étapes d'attente doivent être restaurées ici
+        if lavageEtat in LAVAGE_ATTENTE_STATUS and self.filtreSableLavageStatus:
+            self.filtreSableLavageStatus.set_status(LAVAGE_ATTENTE_STATUS[lavageEtat])
+
+        await self.startSecondCron()
 
     async def pull(self, now: Optional[Any] = None) -> None:
         """Routine toutes les 5 secondes pour suivi du lavage et surpresseur."""
