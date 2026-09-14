@@ -6,6 +6,21 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+### Ajouté
+- **Nouveau panneau latéral : synoptique réaliste du local technique**, en remplacement du schéma de la 0.0.27. Équipements dessinés en relief (bassin, skimmer, bonde de fond, pompe avec préfiltre, filtre à sable et vanne 6 voies, pompe à chaleur sur by-pass, pompes doseuses avec bidons, surpresseur), eau animée dans le sens de circulation, vannes du by-pass qui basculent quand la PAC chauffe.
+- **Consommation des équipements** : puissance de la pompe, des traitements, du surpresseur et de la PAC, lue sur le capteur de puissance du même appareil que le relais (recherche automatique via le registre des entités).
+- **Champ optionnel `heatPumpPower`** (« Capteur de puissance de la PAC ») dans le config flow et l'options flow, pour les PAC dont le capteur n'est pas sur le même appareil. Sans PAC configurée, la PAC reste dessinée en grisé.
+- **Alerte d'incohérence** : relais activé mais moins de 5 W depuis 60 s, ou relais éteint mais plus de 5 W. Triangle ambre sur l'équipement et badge d'état en haut du panneau.
+- **Fiche native** : un clic sur un équipement ou une température ouvre la fiche Home Assistant de l'entité.
+- **Assistant de lavage plein panneau** : « Démarrer le lavage » remplace le synoptique par la vanne 6 voies (position actuelle et position à prendre), une coupe du filtre (sens de l'eau dans le sable, sortie à l'égout), la consigne, le compte à rebours et les 5 étapes, jusqu'à la fin ou l'annulation.
+- **Frise du planning** sur 24 h, calée sur le fuseau de Home Assistant.
+
+### Modifié
+- `frontend.py` : transmet au panneau les relais (`filtration`, `traitement`, `traitement_2`, `surpresseur`), la PAC, son capteur de puissance et les durées de lavage et de rinçage.
+- `frontend/pool_control_panel.js` : réécriture complète. Couleurs issues du thème HA, actions sensibles (désactivation, hivernage, annulation du lavage) confirmées par un second clic au lieu de `confirm()`.
+- Traductions FR / EN et `strings.json` : libellé du nouveau champ.
+- Tests : configuration transmise au panneau (2 nouveaux tests).
+
 ## [0.0.31] — 2026-09-13
 
 ### Corrigé

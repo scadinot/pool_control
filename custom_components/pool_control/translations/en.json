@@ -14,7 +14,8 @@
           "traitement": "Main treatment",
           "traitement_2": "Secondary treatment (optional)",
           "surpresseur": "Booster pump",
-          "heatPump": "Heat pump (optional)"
+          "heatPump": "Heat pump (optional)",
+          "heatPumpPower": "Heat pump power sensor (optional)"
         }
       }
     },
@@ -47,7 +48,8 @@
           "traitement": "Main treatment",
           "traitement_2": "Secondary treatment (optional)",
           "surpresseur": "Booster pump",
-          "heatPump": "Heat pump (optional)"
+          "heatPump": "Heat pump (optional)",
+          "heatPumpPower": "Heat pump power sensor (optional)"
         }
       },
       "filtration": {

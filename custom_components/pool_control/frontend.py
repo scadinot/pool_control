@@ -97,13 +97,22 @@ async def async_register_panel(
 
     # Configuration transmise au Web Component via panel.config.
     # Les clés du config_flow Pool Control sont en camelCase
-    # (temperatureWater, temperatureOutdoor) ; on les remappe vers les
-    # noms attendus par le Web Component.
+    # (temperatureWater, temperatureOutdoor, …) ; on les remappe vers les
+    # noms attendus par le Web Component. Les relais permettent au
+    # synoptique d'afficher l'état réel des équipements et de retrouver
+    # leur capteur de puissance sur le même appareil.
     panel_config = {
         "instance_prefix": slug or DEFAULT_SLUG,
         "water_entity": config_entry_data.get("temperatureWater"),
         "air_entity": config_entry_data.get("temperatureOutdoor"),
+        "filtration_entity": config_entry_data.get("filtration"),
+        "treatment_entity": config_entry_data.get("traitement"),
+        "treatment_2_entity": config_entry_data.get("traitement_2"),
+        "booster_entity": config_entry_data.get("surpresseur"),
         "heat_pump_entity": config_entry_data.get("heatPump"),
+        "heat_pump_power_entity": config_entry_data.get("heatPumpPower"),
+        "backwash_duration": config_entry_data.get("lavageDuree", 2),
+        "rinse_duration": config_entry_data.get("rincageDuree", 2),
     }
 
     await panel_custom.async_register_panel(

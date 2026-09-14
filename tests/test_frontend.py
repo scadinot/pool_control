@@ -50,6 +50,57 @@ async def test_register_panel_default_instance(panel_hass):
     assert kwargs["config"]["air_entity"] == "sensor.air"
 
 
+async def test_register_panel_passes_equipment_configuration(panel_hass):
+    """Le synoptique reçoit les relais, la PAC, son capteur de puissance et les durées."""
+
+    with patch(
+        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        new=AsyncMock(),
+    ) as mock_register:
+        await async_register_panel(
+            panel_hass,
+            "piscine",
+            "Piscine",
+            {
+                "filtration": "switch.filtration",
+                "traitement": "switch.traitement_chlore",
+                "traitement_2": "switch.traitement_ph",
+                "surpresseur": "switch.surpresseur",
+                "heatPump": "climate.pac",
+                "heatPumpPower": "sensor.pac_power",
+                "lavageDuree": 3,
+                "rincageDuree": 0,
+            },
+        )
+
+    config = mock_register.call_args.kwargs["config"]
+    assert config["filtration_entity"] == "switch.filtration"
+    assert config["treatment_entity"] == "switch.traitement_chlore"
+    assert config["treatment_2_entity"] == "switch.traitement_ph"
+    assert config["booster_entity"] == "switch.surpresseur"
+    assert config["heat_pump_entity"] == "climate.pac"
+    assert config["heat_pump_power_entity"] == "sensor.pac_power"
+    assert config["backwash_duration"] == 3
+    assert config["rinse_duration"] == 0
+
+
+async def test_register_panel_optional_equipment_defaults(panel_hass):
+    """Sans équipement optionnel, les entités valent None et les durées 2 min."""
+
+    with patch(
+        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        new=AsyncMock(),
+    ) as mock_register:
+        await async_register_panel(panel_hass, "pool_control", "Pool Control", {})
+
+    config = mock_register.call_args.kwargs["config"]
+    assert config["treatment_2_entity"] is None
+    assert config["heat_pump_entity"] is None
+    assert config["heat_pump_power_entity"] is None
+    assert config["backwash_duration"] == 2
+    assert config["rinse_duration"] == 2
+
+
 async def test_register_panel_per_instance_url_and_title(panel_hass):
     """Une 2ᵉ instance reçoit une URL et un titre disambiguïsés."""
 
