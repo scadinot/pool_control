@@ -86,6 +86,8 @@ Composant Home Assistant permettant de gérer la filtration d'une piscine en fon
 | Traitement | Relais du traitement chimique |
 | Traitement 2 (optionnel) | Second relais de traitement si applicable |
 | Surpresseur | Relais du surpresseur |
+| Pompe à chaleur (optionnel) | Entité de la PAC (`switch`, `input_boolean` ou `climate`), affichée dans le synoptique |
+| Capteur de puissance de la PAC (optionnel) | À renseigner si la consommation de la PAC n'est pas trouvée automatiquement |
 
 Une fois l'intégration ajoutée, ouvrez **Paramètres** → **Appareils et services** → **Pool Control** → **CONFIGURER** pour accéder aux menus suivants.
 
@@ -320,15 +322,16 @@ cards:
 
 Depuis la **0.0.23**, l'intégration enregistre automatiquement une entrée **Pool Control** dans la sidebar Home Assistant (à côté de « Vue d'ensemble », « Énergie », …). Aucune configuration supplémentaire n'est requise — l'entrée apparaît dès le premier démarrage après installation, et est retirée si l'intégration est désinstallée.
 
-Cliquer dessus ouvre une vue full-page (URL `/pool-control`) qui regroupe :
+Cliquer dessus ouvre une vue pleine page (URL `/pool-control`) qui regroupe :
 
-- un **schéma hydraulique animé** (bassin, skimmer, pompe, filtre, refoulement) dont la circulation d'eau démarre quand la filtration est active ;
-- des **tuiles températures** eau / air ;
-- l'**état complet** du contrôleur : statut de mode, plages de filtration calculées, durée du jour ;
-- les **boutons de mode** (Actif / Auto / Inactif) et de saison (Saison / Hivernage), avec confirmation pour les actions sensibles (désactivation, bascule en hivernage) ;
-- les commandes du **surpresseur** et de l'**automate de lavage**, avec un **bandeau d'instruction visuel** qui guide explicitement le positionnement de la vanne 6 voies (« Positionnez la vanne sur LAVAGE … ») pendant les phases d'attente utilisateur.
+- un **synoptique réaliste du local technique** : bassin avec skimmer et bonde de fond, pompe avec préfiltre, filtre à sable et vanne 6 voies, pompe à chaleur sur by-pass, pompes doseuses et surpresseur. L'eau s'anime dans les tuyaux dans le sens de circulation, et les vannes du by-pass basculent quand la PAC chauffe ;
+- la **consommation** de chaque équipement, lue sur le capteur de puissance porté par le même appareil que le relais (par exemple une voie de Shelly Pro 4PM). Pour la PAC, un capteur peut aussi être choisi dans la configuration. Sans PAC configurée, elle reste dessinée en grisé ;
+- une **alerte d'incohérence** : relais activé mais moins de 5 W pendant 60 s, ou relais éteint mais plus de 5 W (pompe désamorcée, disjoncteur, relais bloqué…) ;
+- un **clic sur un équipement ou une température** ouvre sa fiche Home Assistant (historique, puissance) ;
+- le **planning du jour** sur une frise de 24 h, les **boutons de pilotage** (Auto / Actif / Inactif, Saison / Hivernage, Recalculer) et le **surpresseur** ;
+- l'**assistant de lavage** : le bouton « Démarrer le lavage » remplace le synoptique par la vanne 6 voies, une coupe du filtre montrant le sens de l'eau dans le sable et les étapes à suivre, jusqu'à la fin ou l'annulation.
 
-Le panneau s'adapte automatiquement au thème HA actif (clair / sombre) via les variables CSS standard, et se recharge tout seul quand vous modifiez les options de l'intégration. Il est **complémentaire au dashboard Lovelace** documenté ci-dessus : les deux coexistent sans interférer, vous pouvez utiliser l'un, l'autre, ou les deux.
+Les actions sensibles (désactivation, hivernage, annulation du lavage) demandent un second clic de confirmation. Le panneau suit le thème HA actif (clair / sombre) et se recharge tout seul quand vous modifiez les options de l'intégration. Il est **complémentaire au dashboard Lovelace** documenté ci-dessus : les deux coexistent sans interférer, vous pouvez utiliser l'un, l'autre, ou les deux.
 
 ## Surpresseur
 

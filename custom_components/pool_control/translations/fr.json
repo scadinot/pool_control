@@ -14,7 +14,8 @@
           "traitement": "Traitement principal",
           "traitement_2": "Traitement secondaire (optionnel)",
           "surpresseur": "Surpresseur",
-          "heatPump": "Pompe à chaleur (optionnel)"
+          "heatPump": "Pompe à chaleur (optionnel)",
+          "heatPumpPower": "Capteur de puissance de la PAC (optionnel)"
         }
       }
     },
@@ -47,7 +48,8 @@
           "traitement": "Traitement principal",
           "traitement_2": "Traitement secondaire (optionnel)",
           "surpresseur": "Surpresseur",
-          "heatPump": "Pompe à chaleur (optionnel)"
+          "heatPump": "Pompe à chaleur (optionnel)",
+          "heatPumpPower": "Capteur de puissance de la PAC (optionnel)"
         }
       },
       "filtration": {

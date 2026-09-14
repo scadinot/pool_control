@@ -77,6 +77,13 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
                     ): selector(
                         {"entity": {"domain": ["switch", "input_boolean", "climate"]}}
                     ),
+                    # suggested_value (et non default) : le champ peut être vidé
+                    vol.Optional(
+                        "heatPumpPower",
+                        description={
+                            "suggested_value": self.options.get("heatPumpPower")
+                        },
+                    ): selector({"entity": {"domain": "sensor", "device_class": "power"}}),
                 }
             ),
             last_step=False,
