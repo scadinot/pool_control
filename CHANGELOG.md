@@ -6,6 +6,8 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.32] — 2026-09-14
+
 ### Ajouté
 - **Nouveau panneau latéral : synoptique réaliste du local technique**, en remplacement du schéma de la 0.0.27. Équipements dessinés en relief (bassin, skimmer, bonde de fond, pompe avec préfiltre, filtre à sable et vanne 6 voies, pompe à chaleur sur by-pass, pompes doseuses avec bidons, surpresseur), eau animée dans le sens de circulation, vannes du by-pass qui basculent quand la PAC chauffe.
 - **Consommation des équipements** : puissance de la pompe, des traitements, du surpresseur et de la PAC, lue sur le capteur de puissance du même appareil que le relais (recherche automatique via le registre des entités).
@@ -20,6 +22,14 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 - `frontend/pool_control_panel.js` : réécriture complète. Couleurs issues du thème HA, actions sensibles (désactivation, hivernage, annulation du lavage) confirmées par un second clic au lieu de `confirm()`.
 - Traductions FR / EN et `strings.json` : libellé du nouveau champ.
 - Tests : configuration transmise au panneau (2 nouveaux tests).
+- `manifest.json` : `version` `0.0.31` → `0.0.32`.
+
+### Pas de breaking change
+- Aucune entité ni option modifiée ; le tableau de bord Lovelace n'est pas concerné.
+- Le champ « Capteur de puissance de la PAC » est optionnel.
+
+### Note de migration
+- Si l'ancien panneau s'affiche encore après la mise à jour, rechargez la page du navigateur en vidant le cache.
 
 ## [0.0.31] — 2026-09-13
 
