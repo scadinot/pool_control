@@ -6,6 +6,10 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+### Corrigé
+- **Fausse alerte de consommation sur les traitements** : quand le relais d'un traitement n'est qu'un contact de commande — pompe doseuse alimentée ailleurs, cas courant — sa voie ne mesure jamais rien et le panneau signalait en permanence « activé mais sans consommation » pendant chaque plage de filtration. L'alerte d'incohérence est désormais limitée à la pompe, au surpresseur et à la pompe à chaleur.
+- **Watts affichés uniquement quand ils existent** : un équipement dont la voie ne mesure rien s'affiche sans valeur, au lieu d'un « 0 W » permanent. La carte du surpresseur ne laisse plus traîner un séparateur sans valeur.
+
 ## [0.0.32] — 2026-09-14
 
 ### Ajouté

@@ -100,8 +100,11 @@ class PoolControlPanel extends HTMLElement {
     return v;
   }
 
+  // Chaîne vide quand il n'y a pas de mesure exploitable : certains relais ne
+  // sont qu'un contact de commande (pompe doseuse alimentée ailleurs), leur
+  // voie mesure toujours 0 W et l'afficher n'apprendrait rien.
   _fmtWatts(v) {
-    if (v === null || v === undefined) return '';
+    if (v === null || v === undefined || v < 0.5) return '';
     if (v >= 1000) return `${(v / 1000).toLocaleString(this._lang(), { maximumFractionDigits: 2 })} kW`;
     return `${Math.round(v).toLocaleString(this._lang())} W`;
   }
@@ -404,7 +407,10 @@ class PoolControlPanel extends HTMLElement {
       e.on = k === 'pac' ? this._isHeatPumpRunning() : this._isOn(e.entity);
       e.power = k === 'pac' ? (c.heat_pump_power_entity || this._powerSensorFor(e.entity)) : this._powerSensorFor(e.entity);
       e.watts = e.power ? this._watts(e.power) : null;
-      e.alert = this._mismatch(e.entity, e.power, e.on, k === 'pac');
+      // Pas d'alerte sur les traitements : leur relais est souvent un simple
+      // contact de commande, la pompe doseuse étant alimentée ailleurs, donc
+      // la voie ne mesure jamais rien et l'alerte serait toujours fausse.
+      e.alert = (k === 'cl' || k === 'ph') ? null : this._mismatch(e.entity, e.power, e.on, k === 'pac');
     }
 
     const ctrl = this._controlMode();
@@ -427,7 +433,7 @@ class PoolControlPanel extends HTMLElement {
     const chip = $('chip-state');
     let state = { text: "À l'arrêt", tone: '' };
     if (bw.step > 0) state = { text: 'Lavage du filtre en cours', tone: 'warn' };
-    else if (alerted) state = { text: alerted.alert === 'nopower' ? `Défaut : ${alerted.name} activé mais sans consommation` : `Défaut : ${alerted.name} éteint mais consomme`, tone: 'warn' };
+    else if (alerted) state = { text: alerted.alert === 'nopower' ? `Défaut : ${alerted.name} — relais activé, aucune consommation` : `Défaut : ${alerted.name} — relais éteint, consommation détectée`, tone: 'warn' };
     else if (ctrl.mode === 'inactif') state = { text: 'Contrôle désactivé', tone: '' };
     else if (eq.pump.on) state = { text: eq.bo.on ? 'En filtration · surpresseur' : (pacConfigured && eq.pac.on ? 'En filtration · chauffe' : 'En filtration'), tone: 'run' };
     chip.textContent = state.text;
@@ -485,7 +491,8 @@ class PoolControlPanel extends HTMLElement {
     /* Surpresseur */
     const booster = this._stateText(`sensor.${this._prefix()}_booster_status`, '—');
     const boActive = /actif/i.test(booster);
-    $('bo-txt').textContent = booster + (eq.bo.watts !== null && eq.bo.on ? ` · ${this._fmtWatts(eq.bo.watts)}` : '');
+    const boWatts = this._fmtWatts(eq.bo.watts);
+    $('bo-txt').textContent = booster + (boWatts && eq.bo.on ? ` · ${boWatts}` : '');
     $('btn-booster').disabled = boActive || bw.step > 0;
     $('btn-booster-stop').disabled = !boActive;
   }

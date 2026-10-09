@@ -325,8 +325,8 @@ Depuis la **0.0.23**, l'intégration enregistre automatiquement une entrée **Po
 Cliquer dessus ouvre une vue pleine page (URL `/pool-control`) qui regroupe :
 
 - un **synoptique réaliste du local technique** : bassin avec skimmer et bonde de fond, pompe avec préfiltre, filtre à sable et vanne 6 voies, pompe à chaleur sur by-pass, pompes doseuses et surpresseur. L'eau s'anime dans les tuyaux dans le sens de circulation, et les vannes du by-pass basculent quand la PAC chauffe ;
-- la **consommation** de chaque équipement, lue sur le capteur de puissance porté par le même appareil que le relais (par exemple une voie de Shelly Pro 4PM). Pour la PAC, un capteur peut aussi être choisi dans la configuration. Sans PAC configurée, elle reste dessinée en grisé ;
-- une **alerte d'incohérence** : relais activé mais moins de 5 W pendant 60 s, ou relais éteint mais plus de 5 W (pompe désamorcée, disjoncteur, relais bloqué…) ;
+- la **consommation** de chaque équipement, lue sur le capteur de puissance porté par le même appareil que le relais (par exemple une voie de Shelly Pro 4PM). Pour la PAC, un capteur peut aussi être choisi dans la configuration. Sans PAC configurée, elle reste dessinée en grisé. Un équipement dont la voie ne mesure rien — relais utilisé comme simple contact de commande, appareil alimenté ailleurs — s'affiche sans watts ;
+- une **alerte d'incohérence** sur la pompe, le surpresseur et la PAC : relais activé mais moins de 5 W pendant 60 s, ou relais éteint mais plus de 5 W (pompe désamorcée, disjoncteur, relais bloqué…). Les traitements en sont exclus, leur relais ne commandant souvent que des pompes doseuses alimentées ailleurs ;
 - un **clic sur un équipement ou une température** ouvre sa fiche Home Assistant (historique, puissance) ;
 - le **planning du jour** sur une frise de 24 h, les **boutons de pilotage** (Auto / Actif / Inactif, Saison / Hivernage, Recalculer) et le **surpresseur** ;
 - l'**assistant de lavage** : le bouton « Démarrer le lavage » remplace le synoptique par la vanne 6 voies, une coupe du filtre montrant le sens de l'eau dans le sable et les étapes à suivre, jusqu'à la fin ou l'annulation.
