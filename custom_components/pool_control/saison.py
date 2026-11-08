@@ -2,6 +2,7 @@
 
 import logging
 import time
+from typing import Optional
 
 from .utils import formatDurationHoursMinutes, formatTimestamp, pivotTimestamp
 
@@ -192,7 +193,7 @@ class SaisonMixin:
             formatTimestamp(filtrationFin, "%H:%M %d-%m-%Y"),
         )
 
-    async def calculateStatusFiltration(self, temperatureWater: float) -> None:
+    async def calculateStatusFiltration(self, temperatureWater: Optional[float]) -> None:
         """Calculate the filtration state in Saison mode."""
 
         filtrationTemperature = 0
@@ -216,16 +217,25 @@ class SaisonMixin:
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
-            # Le calcul n'a jamais ete lancé, on le lance maintenant
-            self.calculateTimeFiltration(temperatureWater, False)
+            # Le calcul n'a jamais ete lancé, on le lance maintenant.
+            # Sans mesure, il est reporte au cycle suivant : une plage
+            # fabriquee sur une valeur fantome serait fausse pour la journee.
+            if temperatureWater is not None:
+                self.calculateTimeFiltration(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
-            filtrationFin = self.get_data("filtrationFin", 0)
-            timeNow = time.time()
+                # Verifie si la plage calculée est passée
+                filtrationFin = self.get_data("filtrationFin", 0)
+                timeNow = time.time()
 
-            if timeNow > filtrationFin:
-                # On est apres la plage de filtration, relancer le calcul pour la plage de demain
-                self.calculateTimeFiltration(temperatureWater, True)
+                if timeNow > filtrationFin:
+                    # On est apres la plage de filtration, relancer le calcul pour la plage de demain
+                    self.calculateTimeFiltration(temperatureWater, True)
+            else:
+                # DEBUG et non WARNING : le cron repasse chaque minute et la
+                # panne est deja signalee une seule fois par _readTemperature().
+                _LOGGER.debug(
+                    "Pas de mesure d'eau : calcul de la plage reporte"
+                )
 
         else:
             if filtrationPauseDebut != filtrationPauseFin:
@@ -235,6 +245,16 @@ class SaisonMixin:
                 if timeNow >= filtrationDebut and timeNow <= filtrationPauseDebut:
                     if timeNow >= filtrationDebut + (60 * 5):
                         self.updateTemperatureDisplay(temperatureWater)
+
+                    # Secours seulement : le suivi de temperatureMaxi reste
+                    # reserve au second segment, comme avant. Sans cette
+                    # ecriture, une panne survenant avant le second segment
+                    # privait le calcul suivant de tout secours, alors qu'une
+                    # mesure valide venait d'etre lue pompe en marche.
+                    if self.sondeLocalTechnique is not True or timeNow >= (
+                        filtrationDebut + (60 * self.sondeLocalTechniquePause)
+                    ):
+                        self.recordTemperatureWaterFallback(temperatureWater)
 
                     # Active la filtration
                     filtrationTemperature = 1
@@ -246,31 +266,10 @@ class SaisonMixin:
                             60 * self.sondeLocalTechniquePause
                         ):
                             self.updateTemperatureDisplay(temperatureWater)
-
-                            # Determine la temperature maxi pour le prochain calcul
-                            temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                            if temperatureWater > temperatureMaxi:
-                                self.set_data("temperatureMaxi", temperatureWater)
-                                _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                                _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                                _LOGGER.debug(
-                                    "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                                    temperatureWater,
-                                )
+                            self.recordTemperatureWater(temperatureWater)
 
                     else:
-                        # Determine la temperature maxi pour le prochain calcul
-                        temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                        if temperatureWater > temperatureMaxi:
-                            self.set_data("temperatureMaxi", temperatureWater)
-                            _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                            _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                            _LOGGER.debug(
-                                "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                                temperatureWater,
-                            )
+                        self.recordTemperatureWater(temperatureWater)
 
                     # Active la filtration
                     filtrationTemperature = 1
@@ -281,33 +280,10 @@ class SaisonMixin:
                         60 * self.sondeLocalTechniquePause
                     ):
                         self.updateTemperatureDisplay(temperatureWater)
-
-                        # Determine la temperature maxi pour le prochain calcul
-                        temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                        if temperatureWater > temperatureMaxi:
-                            self.set_data("temperatureMaxi", temperatureWater)
-
-                            _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                            _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                            _LOGGER.debug(
-                                "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                                temperatureWater,
-                            )
+                        self.recordTemperatureWater(temperatureWater)
 
                 else:
-                    # Determine la temperature maxi pour le prochain calcul
-                    temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                    if temperatureWater > temperatureMaxi:
-                        self.set_data("temperatureMaxi", temperatureWater)
-
-                        _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                        _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                        _LOGGER.debug(
-                            "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                            temperatureWater,
-                        )
+                    self.recordTemperatureWater(temperatureWater)
 
                 # Active la filtration
                 filtrationTemperature = 1
@@ -317,7 +293,7 @@ class SaisonMixin:
                     if int(self.get_data("marcheForcee", 0)) == 1:
                         self.set_data("marcheForcee", 0)
 
-            if timeNow > filtrationFin:
+            if timeNow > filtrationFin and temperatureWater is not None:
                 # On est apres la plage de filtration, relancer le calcul pour la plage de demain,
                 # meme si la plage a ete manquee (HA arrete pendant sa duree, plage de duree nulle).
                 # La plage de demain se termine apres maintenant : le calcul ne se repete pas.

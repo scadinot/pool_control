@@ -33,10 +33,34 @@ class ButtonMixin:
     async def executeButtonReset(self) -> None:
         """Reinitialise le calcul."""
 
+        # La mesure est lue avant toute ecriture : sans elle, le planning
+        # serait refait sur une valeur fantome et temperatureMaxi perdue.
+        temperatureWater = self.getTemperatureWaterOrLast()
+
+        if temperatureWater is None:
+            _LOGGER.warning(
+                "Recalcul demande sans aucune mesure d'eau connue : planning conserve"
+            )
+
+            # Le recalcul de la plage a besoin d'une mesure, mais ni les
+            # transitions horaires ni la securite gel n'en dependent : le
+            # statut du mode courant est evalue quand meme, ses gardes
+            # preservant le planning et temperatureMaxi. Sans cela, un appui
+            # sur Recalculer pendant une gelee appliquait les anciens
+            # indicateurs jusqu'au cron suivant.
+            if self.getHivernage() is True:
+                await self.calculateStatusFiltrationHivernage(
+                    None, self.getTemperatureOutdoor()
+                )
+            else:
+                await self.calculateStatusFiltration(None)
+
+            await self.activatingDevices()
+            return
+
         if self.getHivernage() is True:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
 
-            temperatureWater = self.getTemperatureWater()
             temperatureOutdoor = self.getTemperatureOutdoor()
 
             self.calculateTimeFiltrationHivernage(temperatureWater, False)
@@ -65,7 +89,6 @@ class ButtonMixin:
         else:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
 
-            temperatureWater = self.getTemperatureWater()
             self.calculateTimeFiltration(temperatureWater, False)
 
             # Verifie si la plage calculée est passée

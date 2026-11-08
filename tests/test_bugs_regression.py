@@ -14,6 +14,7 @@ Bugs testés:
 8. Bug #8: Surpresseur bloqué en marche après un redémarrage
 9. Bug #9: Plages horaires calculées dans le fuseau du système
 10. Bug #10: Plus aucun recalcul après une plage jamais atteinte
+11. Bug #11: Sonde de température indisponible lue comme 0 °C
 """
 
 import pytest
@@ -660,6 +661,658 @@ class TestBug10_PlageManqueeBloqueRecalcul:
         filtration_debut = controller.get_data("filtrationDebut")
         assert datetime.fromtimestamp(filtration_debut, tz=ha_time_zone).date() == datetime(2025, 12, 16).date()
         assert controller.get_data("filtrationFin") > current_time
+
+
+@pytest.mark.bugs
+class TestBug11_SondeTemperatureIndisponible:
+    """Test Bug #11: une sonde indisponible etait lue comme 0 °C.
+
+    Bug original: getTemperatureWater() et getTemperatureOutdoor() renvoyaient
+    0.0 quand l'entite etait absente ou son etat non numerique ("unavailable").
+    Cette valeur de repli traversait ensuite toute la logique comme une vraie
+    mesure. En hivernage, 0.0 > (temperatureSecurite + temperatureHysteresis)
+    desarmait la securite gel : une panne de sonde pendant une gelee arretait
+    la filtration au lieu de la maintenir.
+
+    Correction: les deux getters renvoient None en l'absence de mesure, et
+    chaque decision qui depend d'une temperature conserve son etat precedent
+    plutot que de se fonder sur une valeur fantome.
+    """
+
+    def _hivernage_controller(self, mock_hass, mock_pool_config):
+        """Controleur en hivernage, hors plage de filtration."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.getLeverSoleil = Mock(return_value="06:30")
+        controller.temperatureSecurite = -2
+        controller.temperatureHysteresis = 0.5
+        controller.filtration5mn3h = False
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+        return controller
+
+    # -- Les getters signalent l'absence de mesure ---------------------------
+
+    def test_getter_renvoie_none_quand_la_sonde_est_indisponible(
+        self, mock_hass, mock_pool_config, mock_state_factory
+    ):
+        """Un etat 'unavailable' ne doit plus etre converti en 0 °C."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        mock_hass.states.get.return_value = mock_state_factory(
+            "sensor.exterieur", "unavailable"
+        )
+
+        assert controller.getTemperatureOutdoor() is None
+        assert controller.getTemperatureWater() is None
+
+    def test_getter_renvoie_none_quand_l_entite_est_absente(
+        self, mock_hass, mock_pool_config
+    ):
+        """Une entite inexistante ne doit plus etre convertie en 0 °C."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        mock_hass.states.get.return_value = None
+
+        assert controller.getTemperatureOutdoor() is None
+        assert controller.getTemperatureWater() is None
+
+    def test_getter_renvoie_la_mesure_quand_elle_existe(
+        self, mock_hass, mock_pool_config, mock_state_factory
+    ):
+        """Non-regression : une mesure valide reste lue telle quelle."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        mock_hass.states.get.return_value = mock_state_factory(
+            "sensor.exterieur", "-4.5"
+        )
+
+        assert controller.getTemperatureOutdoor() == -4.5
+
+    def test_un_seul_avertissement_par_panne_de_sonde(
+        self, mock_hass, mock_pool_config, mock_state_factory, caplog
+    ):
+        """cron() appelle le getter chaque minute : une panne = une ligne."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        mock_hass.states.get.return_value = mock_state_factory(
+            "sensor.exterieur", "unavailable"
+        )
+
+        logger_name = "custom_components.pool_control.sensors"
+        with caplog.at_level(logging.DEBUG, logger=logger_name):
+            for _ in range(10):
+                controller.getTemperatureOutdoor()
+
+        records = [r for r in caplog.records if r.name == logger_name]
+        assert len([r for r in records if r.levelno == logging.WARNING]) == 1
+        assert [r for r in records if r.levelno >= logging.ERROR] == []
+
+    def test_le_retour_de_la_sonde_est_journalise(
+        self, mock_hass, mock_pool_config, mock_state_factory, caplog
+    ):
+        """Le retablissement doit etre visible dans le journal."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        logger_name = "custom_components.pool_control.sensors"
+
+        with caplog.at_level(logging.DEBUG, logger=logger_name):
+            mock_hass.states.get.return_value = mock_state_factory(
+                "sensor.exterieur", "unavailable"
+            )
+            controller.getTemperatureOutdoor()
+
+            mock_hass.states.get.return_value = mock_state_factory(
+                "sensor.exterieur", "3.2"
+            )
+            assert controller.getTemperatureOutdoor() == 3.2
+
+        records = [r for r in caplog.records if r.name == logger_name]
+        assert [r.levelno for r in records] == [logging.WARNING, logging.INFO]
+
+    # -- Securite gel : conserver l'etat precedent ---------------------------
+
+    @pytest.mark.asyncio
+    async def test_securite_gel_reste_armee_quand_la_sonde_decroche(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Le bug principal : une panne de sonde desarmait la securite gel."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 1, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            # Plage a venir : seule la securite gel peut activer la filtration
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "filtrationHivernageSecurite": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(5.0, None)
+
+        assert controller.get_data("filtrationHivernageSecurite") == 1
+        assert controller.get_data("filtrationHivernage") == 1
+
+    @pytest.mark.asyncio
+    async def test_securite_gel_ne_s_arme_pas_sur_une_valeur_fantome(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Sans mesure, la securite au repos doit le rester."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 1, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "filtrationHivernageSecurite": 0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(5.0, None)
+
+        assert controller.get_data("filtrationHivernageSecurite") == 0
+        assert controller.get_data("filtrationHivernage", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_securite_gel_s_arme_toujours_quand_il_gele(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Non-regression : une vraie mesure sous le seuil arme la securite."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 1, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "filtrationHivernageSecurite": 0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(5.0, -5.0)
+
+        assert controller.get_data("filtrationHivernageSecurite") == 1
+        assert controller.get_data("filtrationHivernage") == 1
+
+    @pytest.mark.asyncio
+    async def test_securite_gel_se_desarme_sur_une_vraie_remontee(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Non-regression : au-dessus du seuil + hysteresis, on desarme."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 1, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "filtrationHivernageSecurite": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(5.0, 1.0)
+
+        assert controller.get_data("filtrationHivernageSecurite") == 0
+        assert controller.get_data("filtrationHivernage", 0) == 0
+
+    # -- Temperature de l'eau absente ----------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_plage_inchangee_quand_la_sonde_eau_est_absente(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Sans mesure, aucun planning ne doit etre fabrique sur 0 °C."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        now = datetime(2026, 6, 15, 20, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            # Plage terminee : sans la correction, le recalcul partait sur 0 °C
+            "filtrationDebut": int(now - 7200),
+            "filtrationFin": int(now - 60),
+            "temperatureMaxi": 24.0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(None)
+
+        controller.calculateTimeFiltration.assert_not_called()
+        controller.updateTemperatureDisplay.assert_not_called()
+        assert controller.get_data("temperatureMaxi") == 24.0
+        assert controller.get_data("filtrationFin") == int(now - 60)
+
+    @pytest.mark.asyncio
+    async def test_la_plage_memorisee_est_appliquee_meme_sans_mesure(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Les transitions de la plage dependent de l'heure, pas d'une mesure.
+
+        Sans cette evaluation, un Store contenant filtrationTemperature=1 mais
+        pas encore de secours laissait la pompe demandee apres filtrationFin.
+        """
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        now = datetime(2026, 6, 15, 20, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 7200),
+            "filtrationFin": int(now - 60),
+            # Etat herite d'un Store anterieur : la pompe etait demandee
+            "filtrationTemperature": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(None)
+
+        # La plage est terminee : la pompe n'est plus demandee
+        assert controller.get_data("filtrationTemperature") == 0
+        # ... mais rien n'a ete recalcule sur une valeur fantome
+        controller.calculateTimeFiltration.assert_not_called()
+        assert controller.get_data("filtrationFin") == int(now - 60)
+
+    @pytest.mark.asyncio
+    async def test_la_plage_en_cours_est_maintenue_sans_mesure(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Pendant la plage, la filtration reste demandee sans mesure."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(None)
+
+        assert controller.get_data("filtrationTemperature") == 1
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    def test_seule_une_mesure_validee_alimente_le_secours(
+        self, mock_hass, mock_pool_config
+    ):
+        """Avec la sonde en local technique, lire ne suffit pas a memoriser.
+
+        Hors filtration, une sonde de local technique lit de l'eau stagnante :
+        elle ne doit pas devenir le secours. Seuls les points qui ont passe les
+        gardes d'echantillonnage appellent recordTemperatureWater().
+        """
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.getTemperatureWater = Mock(return_value=19.0)
+
+        assert controller.getTemperatureWaterOrLast() == 19.0
+        assert controller.get_data("temperatureWaterDerniere") is None
+
+        controller.recordTemperatureWater(19.0)
+        assert controller.get_data("temperatureWaterDerniere") == 19.0
+
+    def test_le_secours_n_est_pas_reecrit_a_chaque_dixieme(
+        self, mock_hass, mock_pool_config
+    ):
+        """Le Store est sauvegarde a chaque changement : pas pour 0,1 °C."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+
+        controller.recordTemperatureWater(19.0)
+        assert controller.get_data("temperatureWaterDerniere") == 19.0
+
+        controller.recordTemperatureWater(19.2)
+        assert controller.get_data("temperatureWaterDerniere") == 19.0
+
+        controller.recordTemperatureWater(19.8)
+        assert controller.get_data("temperatureWaterDerniere") == 19.8
+
+    @pytest.mark.asyncio
+    async def test_cron_utilise_la_derniere_temperature_connue(
+        self, mock_hass, mock_pool_config
+    ):
+        """Sonde eau en panne : on repart de la derniere mesure connue."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.getTemperatureWater = Mock(return_value=None)
+        controller.getTemperatureOutdoor = Mock(return_value=None)
+        controller.getHivernage = Mock(return_value=False)
+        controller.calculateStatusFiltration = AsyncMock()
+        controller.activatingDevices = AsyncMock()
+        controller.data = {"temperatureWaterDerniere": 22.5}
+
+        await controller.cron()
+
+        controller.calculateStatusFiltration.assert_awaited_once_with(22.5)
+
+    @pytest.mark.asyncio
+    async def test_cron_transmet_none_si_aucune_mesure_connue(
+        self, mock_hass, mock_pool_config
+    ):
+        """Aucune mesure n'a jamais ete vue : le calcul est reporte."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.getTemperatureWater = Mock(return_value=None)
+        controller.getTemperatureOutdoor = Mock(return_value=None)
+        controller.getHivernage = Mock(return_value=False)
+        controller.calculateStatusFiltration = AsyncMock()
+        controller.activatingDevices = AsyncMock()
+
+        await controller.cron()
+
+        controller.calculateStatusFiltration.assert_awaited_once_with(None)
+
+    @pytest.mark.asyncio
+    async def test_reset_ne_recalcule_pas_sans_mesure(
+        self, mock_hass, mock_pool_config
+    ):
+        """Le bouton Recalculer ne doit pas ecraser le planning ni temperatureMaxi."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.getHivernage = Mock(return_value=False)
+        controller.getTemperatureWater = Mock(return_value=None)
+        controller.calculateTimeFiltration = Mock()
+        controller.calculateStatusFiltration = AsyncMock()
+        controller.activatingDevices = AsyncMock()
+        controller.data = {"temperatureMaxi": 24.0}
+
+        await controller.executeButtonReset()
+
+        controller.calculateTimeFiltration.assert_not_called()
+        assert controller.get_data("temperatureMaxi") == 24.0
+        # Le statut est quand meme evalue : les transitions horaires ne
+        # dependent pas d'une mesure
+        controller.calculateStatusFiltration.assert_awaited_once_with(None)
+        controller.activatingDevices.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_reset_en_hivernage_ne_desarme_pas_la_securite_gel(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Le bouton Recalculer passe aussi par la securite gel : pas de desarmement."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.getHivernage = Mock(return_value=True)
+        controller.getTemperatureWater = Mock(return_value=5.0)
+        controller.getTemperatureOutdoor = Mock(return_value=None)
+        controller.calculateTimeFiltrationHivernage = Mock()
+        controller.activatingDevices = AsyncMock()
+
+        now = datetime(2026, 1, 15, 8, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "filtrationHivernageSecurite": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.executeButtonReset()
+
+        assert controller.get_data("filtrationHivernageSecurite") == 1
+        assert controller.get_data("filtrationHivernage") == 1
+
+    @pytest.mark.asyncio
+    async def test_reset_sans_mesure_arme_quand_meme_la_securite_gel(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Le bouton Recalculer evalue le statut meme sans aucune mesure d'eau.
+
+        Le recalcul de la plage a besoin d'une mesure, mais ni les transitions
+        horaires ni la securite gel n'en dependent. Sans cette evaluation, un
+        appui sur Recalculer pendant une gelee laissait la protection desarmee
+        jusqu'au cron suivant.
+        """
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.getHivernage = Mock(return_value=True)
+        # Ni mesure courante ni secours memorise
+        controller.getTemperatureWater = Mock(return_value=None)
+        controller.getTemperatureOutdoor = Mock(return_value=-5.0)
+        controller.calculateTimeFiltrationHivernage = Mock()
+        controller.activatingDevices = AsyncMock()
+
+        # 09:30 : hors des creneaux 5mn/3h, seule la securite gel peut activer
+        now = datetime(2026, 1, 15, 9, 30, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            # Plage a venir : le segment horaire ne peut pas activer non plus
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "temperatureMaxi": 24.0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.executeButtonReset()
+
+        assert controller.get_data("filtrationHivernageSecurite") == 1
+        assert controller.get_data("filtrationHivernage", 0) == 1
+        # Le planning et temperatureMaxi restent intacts
+        controller.calculateTimeFiltrationHivernage.assert_not_called()
+        assert controller.get_data("temperatureMaxi") == 24.0
+        assert controller.get_data("filtrationDebut") == int(now + 3600)
+        controller.activatingDevices.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_la_panne_n_est_pas_journalisee_a_chaque_cron(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """La panne est signalee une fois par le getter, pas a chaque minute.
+
+        Sans plage initiale ni secours, le report du calcul etait annonce en
+        WARNING a chaque passage du cron : la panne redevenait un message par
+        minute, ce que cette correction visait justement a supprimer.
+        """
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        logger = "custom_components.pool_control.saison"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            for _ in range(3):
+                await controller.calculateStatusFiltration(None)
+            records = [r for r in caplog.records if r.name == logger]
+
+        # Le report est trace, mais sans remonter au niveau WARNING
+        assert records != []
+        assert [r for r in records if r.levelno >= logging.WARNING] == []
+
+    @pytest.mark.asyncio
+    async def test_la_panne_en_hivernage_n_est_pas_journalisee_a_chaque_cron(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """Meme chose en hivernage : le report du calcul n'est pas un WARNING."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.calculateTimeFiltrationHivernage = Mock()
+
+        logger = "custom_components.pool_control.hivernage"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            for _ in range(3):
+                await controller.calculateStatusFiltrationHivernage(None, None)
+            records = [r for r in caplog.records if r.name == logger]
+
+        assert records != []
+        assert [r for r in records if r.levelno >= logging.WARNING] == []
+
+    # -- Le secours ne retient que de l'eau reellement en circulation -------
+
+    def _saison_controller(self, mock_hass, mock_pool_config):
+        """Controleur en saison, sans effet de bord sur les entites."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.sondeLocalTechniquePause = 10
+        controller.disableMarcheForcee = False
+        return controller
+
+    @pytest.mark.asyncio
+    async def test_le_premier_segment_memorise_le_secours(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Dans une plage avec pause, le premier segment alimente le secours.
+
+        Il ne le faisait pas : une panne survenant avant le second segment
+        privait le calcul suivant de secours, alors qu'une mesure valide
+        venait d'etre lue pompe en marche.
+        """
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 6, 15, 11, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationPauseDebut": int(now + 3600),
+            "filtrationPauseFin": int(now + 7200),
+            "filtrationFin": int(now + 10800),
+            "temperatureMaxi": 24.0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 21.0
+        # Le suivi de temperatureMaxi reste reserve au second segment
+        assert controller.get_data("temperatureMaxi") == 24.0
+
+    @pytest.mark.asyncio
+    async def test_le_premier_segment_respecte_le_delai_du_local_technique(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Sonde en local technique : le secours attend la mise en circulation."""
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+
+        now = datetime(2026, 6, 15, 11, 0, tzinfo=ha_time_zone).timestamp()
+        # Filtration demarree depuis 6 minutes : le delai de 10 mn court encore
+        controller.data = {
+            "filtrationDebut": int(now - 360),
+            "filtrationPauseDebut": int(now + 3600),
+            "filtrationPauseFin": int(now + 7200),
+            "filtrationFin": int(now + 10800),
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+
+        # Delai ecoule : la mesure devient valable
+        controller.data["filtrationDebut"] = int(now - 1200)
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 21.0
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_ne_memorise_pas_l_eau_stagnante(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """En mode Inactif la pompe reste arretee malgre la plage horaire.
+
+        cron() continue d'evaluer les plages, mais activatingDevices() garde
+        tout a l'arret : une sonde de local technique ne lit alors que de
+        l'eau stagnante, qui ne doit ni servir de secours ni fausser la duree.
+        """
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(28.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_memorise_une_sonde_en_bassin(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Une sonde dans le bassin lit la vraie eau, pompe a l'arret ou non."""
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = False
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(28.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 28.0
+        assert controller.get_data("temperatureMaxi") == 28.0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_en_hivernage_ne_memorise_pas_non_plus(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Meme garde en hivernage : le point d'ecriture est commun."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+        controller.sondeLocalTechniquePause = 10
+        controller.calculateTimeFiltrationHivernage = Mock()
+
+        now = datetime(2026, 1, 15, 9, 30, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(8.0, 5.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+        assert controller.get_data("temperatureMaxi", 0) == 0
 
 
 @pytest.mark.bugs

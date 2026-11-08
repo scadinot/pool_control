@@ -145,12 +145,21 @@ La filtration démarre 2 h avant le lever du soleil (ou à l'heure configurée) 
 - Si la température air < seuil de sécurité : marche forcée en continu (hors-gel).
 - L'option « Filtration 5 mn / 3 h » assure une circulation régulière en cas de basses températures sans déclenchement hors-gel.
 
+### Sonde de température indisponible
+
+Une sonde absente ou en panne ne vaut pas 0 °C : elle ne donne aucune mesure, et l'intégration conserve alors la décision précédente plutôt que d'en prendre une nouvelle sur une valeur fantôme.
+
+- **Sonde d'air** : la sécurité hors-gel garde son état. Si elle était déclenchée, la filtration continue tant que la sonde ne redonne pas de mesure.
+- **Sonde d'eau** : la plage déjà calculée continue de s'appliquer, ses transitions ne dépendant que de l'heure. Pour le prochain calcul, la dernière mesure validée sert de secours — validée au sens des règles d'échantillonnage ci-dessous, donc jamais une lecture d'eau stagnante. Si aucune n'a jamais été relevée, le calcul est reporté au cycle suivant.
+- Le journal signale la panne une seule fois, puis le retour à la normale, au lieu d'une erreur par minute.
+
 ### Sonde dans local technique
 
 Si la sonde est installée dans le local technique plutôt que dans le bassin :
 
 - La température n'est échantillonnée que pendant la filtration.
 - Une pause configurable laisse l'eau circuler avant que la sonde reflète la température réelle du bassin.
+- En mode **Inactif**, la pompe reste à l'arrêt même pendant la plage horaire : aucune mesure n'est retenue, ni pour la température maxi du jour, ni comme secours. Une sonde placée dans le bassin n'est pas concernée, elle lit la vraie eau que la pompe tourne ou non.
 
 ## Entités exposées
 

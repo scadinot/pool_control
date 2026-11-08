@@ -1,6 +1,7 @@
 """Sensor mixin for Pool Control integration."""
 
 import logging
+from typing import Optional
 
 from homeassistant.util import dt as dt_util
 
@@ -10,41 +11,149 @@ _LOGGER = logging.getLogger(__name__)
 class SensorMixin:
     """Mixin class providing sensor methods for Pool Control integration."""
 
-    def getTemperatureWater(self) -> float:
-        """Récupére la température de l'eau."""
+    def _readTemperature(self, entity_id: str, label: str) -> Optional[float]:
+        """Lit une sonde de température, ou None s'il n'y a pas de mesure.
 
-        temperatureWaterState = self.hass.states.get(self.temperatureWater)
+        Une entité absente ou un état non numérique ("unavailable",
+        "unknown") sont des situations courantes et passagères : elles ne
+        valent pas 0 °C, elles ne valent rien. Les appelants doivent
+        conserver leur état précédent plutôt que de décider sur une valeur
+        fantôme — une sonde d'air muette désarmait la sécurité gel.
 
-        if temperatureWaterState is None:
-            _LOGGER.error("Temperature water %s not found", self.temperatureWater)
-            return 0.0
+        Le cron relit la sonde toutes les minutes : seules les transitions
+        sont journalisées, pas chaque lecture.
+        """
 
-        try:
-            temperatureWater = float(temperatureWaterState.state)
-        except ValueError:
-            _LOGGER.error("Invalid temperature value: %s", temperatureWaterState.state)
-            return 0.0
+        state = self.hass.states.get(entity_id)
+        value = None
+        reason = ""
 
-        return temperatureWater
+        if state is None:
+            reason = "entité introuvable"
+        else:
+            try:
+                value = float(state.state)
+            except (TypeError, ValueError):
+                reason = f"état non numérique ({state.state})"
 
-    def getTemperatureOutdoor(self) -> float:
-        """Récupére la température de l'air."""
+        # Attribut créé à la volée : les mixins ne chaînent pas leurs __init__
+        outages = getattr(self, "_temperatureOutages", None)
+        if outages is None:
+            outages = self._temperatureOutages = {}
 
-        temperatureOutdoorState = self.hass.states.get(self.temperatureOutdoor)
+        if value is None:
+            if not outages.get(entity_id):
+                outages[entity_id] = True
+                _LOGGER.warning(
+                    "%s : pas de mesure sur %s (%s), dernière décision conservée",
+                    label,
+                    entity_id,
+                    reason,
+                )
+            return None
 
-        if temperatureOutdoorState is None:
-            _LOGGER.error("Temperature air %s not found", self.temperatureOutdoor)
-            return 0.0
+        if outages.get(entity_id):
+            outages[entity_id] = False
+            _LOGGER.info("%s : mesure de nouveau disponible sur %s", label, entity_id)
 
-        try:
-            temperatureOutdoor = float(temperatureOutdoorState.state)
-        except ValueError:
-            _LOGGER.error(
-                "Invalid temperature value: %s", temperatureOutdoorState.state
+        return value
+
+    def getTemperatureWater(self) -> Optional[float]:
+        """Récupére la température de l'eau, ou None faute de mesure."""
+
+        return self._readTemperature(self.temperatureWater, "Température de l'eau")
+
+    def getTemperatureOutdoor(self) -> Optional[float]:
+        """Récupére la température de l'air, ou None faute de mesure."""
+
+        return self._readTemperature(self.temperatureOutdoor, "Température de l'air")
+
+    def getTemperatureWaterOrLast(self) -> Optional[float]:
+        """Mesure courante de l'eau, ou la dernière validée si la sonde est muette.
+
+        Lecture seule : le secours est écrit par ``recordTemperatureWater``,
+        depuis les seuls points où les gardes d'échantillonnage sont passées.
+        None n'est renvoyé que si aucune mesure n'a jamais été validée, auquel
+        cas le calcul de la plage est reporté.
+        """
+
+        temperatureWater = self.getTemperatureWater()
+
+        if temperatureWater is not None:
+            return temperatureWater
+
+        derniere = self.get_data("temperatureWaterDerniere")
+        return float(derniere) if derniere is not None else None
+
+    def _isTemperatureWaterRecordable(
+        self, temperatureWater: Optional[float]
+    ) -> bool:
+        """Dit si une mesure d'eau peut être mémorisée.
+
+        Les appelants sont déjà passés par les gardes horaires de leur plage,
+        mais celles-ci ignorent le mode Inactif : ``cron()`` continue d'évaluer
+        les plages alors qu'``activatingDevices()`` garde tout à l'arrêt. Une
+        sonde placée dans le local technique ne lit alors que de l'eau
+        stagnante. Une sonde dans le bassin, elle, lit la vraie eau que la
+        pompe tourne ou non : la garde ne la concerne pas.
+        """
+
+        if temperatureWater is None:
+            return False
+
+        if self.sondeLocalTechnique is True:
+            if int(self.get_data("arretTotal", 0)) != 0:
+                _LOGGER.debug(
+                    "Mode Inactif : mesure de local technique non mémorisée"
+                )
+                return False
+
+        return True
+
+    def recordTemperatureWaterFallback(
+        self, temperatureWater: Optional[float]
+    ) -> None:
+        """Mémorise la mesure de secours, sans toucher à la température maxi.
+
+        Appelée depuis les points où la filtration tourne et où le délai de
+        ``sondeLocalTechniquePause`` est écoulé, y compris le premier segment
+        d'une plage avec pause — lequel n'alimente volontairement pas
+        ``temperatureMaxi``.
+        """
+
+        if not self._isTemperatureWaterRecordable(temperatureWater):
+            return
+
+        # Ecriture du secours seulement sur un ecart significatif : la sonde est
+        # relue chaque minute et le Store est sauvegarde a chaque changement de
+        # valeur ; memoriser le moindre dixieme userait le support de stockage
+        # sans rien apporter.
+        derniere = self.get_data("temperatureWaterDerniere")
+
+        if derniere is None or abs(temperatureWater - float(derniere)) >= 0.5:
+            self.set_data("temperatureWaterDerniere", temperatureWater)
+
+    def recordTemperatureWater(self, temperatureWater: Optional[float]) -> None:
+        """Mémorise une mesure d'eau validée : secours et température maxi.
+
+        Appelée depuis les seuls points où la filtration tourne et où le délai
+        de ``sondeLocalTechniquePause`` est écoulé. Une sonde installée dans le
+        local technique lit sinon de l'eau stagnante, qui ne doit ni servir de
+        secours ni fausser la durée de filtration calculée.
+        """
+
+        if not self._isTemperatureWaterRecordable(temperatureWater):
+            return
+
+        self.recordTemperatureWaterFallback(temperatureWater)
+
+        temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
+
+        if temperatureWater > temperatureMaxi:
+            self.set_data("temperatureMaxi", temperatureWater)
+            _LOGGER.debug(
+                "temperatureMaxi: %s >> %s", temperatureMaxi, temperatureWater
             )
-            return 0.0
-
-        return temperatureOutdoor
 
     def getLeverSoleil(self) -> str:
         """Récupére l'heure locale de lever du soleil au format HH:MM."""
@@ -75,8 +184,11 @@ class SensorMixin:
         # Convertir l'objet datetime en chaîne de caractères dans le format "06:00"
         return sunriseTime.strftime("%H:%M")
 
-    def updateTemperatureDisplay(self, temperature: float) -> None:
+    def updateTemperatureDisplay(self, temperature: Optional[float]) -> None:
         """Met à jour l'affichage de température si l'entité existe."""
+
+        if temperature is None:
+            return
 
         entity_id = "input_number.temperatureDisplay"
         if self.hass.states.get(entity_id) is not None:
