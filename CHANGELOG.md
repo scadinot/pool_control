@@ -12,7 +12,7 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 - **Protection hors-gel désarmée par une sonde en panne** : une sonde absente ou indisponible était lue comme 0 °C. En hivernage, cette valeur fantôme est au-dessus du seuil de sécurité, si bien qu'une panne de la sonde d'air pendant une gelée désarmait la protection et arrêtait la filtration. Sans mesure, la sécurité gel conserve désormais son état.
 - **Plage de filtration préservée quand la sonde d'eau se tait** : la plage déjà calculée continue de s'appliquer, ses transitions ne dépendant que de l'heure. Pour le prochain calcul, la dernière mesure validée sert de secours ; si aucune n'a jamais été relevée, le calcul est reporté au cycle suivant au lieu d'être fait sur 0 °C.
 - **Journal lisible pendant une panne** : la perte de mesure est signalée une seule fois, puis le retour à la normale, au lieu d'une erreur par minute — plus de 400 lignes identiques en sept heures sur une panne réelle.
-- **Bouton Recalculer sans mesure** : il conserve le planning et la température maxi du jour au lieu de les refaire sur une valeur fantôme, tout en continuant d'évaluer les transitions horaires et la sécurité gel.
+- **Bouton Recalculer sans aucune mesure** : faute de mesure courante *et* de mesure mémorisée, il conserve le planning et la température maxi du jour au lieu de les refaire sur une valeur fantôme, tout en continuant d'évaluer les transitions horaires et la sécurité gel. Dès qu'une mesure de secours existe, le recalcul a lieu normalement, sur cette valeur.
 - **Eau stagnante plus jamais retenue comme référence** : avec la sonde dans le local technique, le premier segment d'une plage avec pause alimente maintenant la mesure de secours, et aucune mesure n'est retenue en mode Inactif, où la pompe reste à l'arrêt malgré la plage horaire.
 
 ### Modifié
@@ -23,7 +23,8 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 - `manifest.json` : `version` `0.0.33` → `0.0.34`.
 
 ### Pas de breaking change
-- Aucune entité ni option modifiée. Les sondes qui répondent normalement produisent exactement les mêmes décisions qu'avant.
+- Aucune entité ni option modifiée, aucune intervention à prévoir sur la configuration.
+- Une seule exception comportementale, décrite ci-dessus : avec la sonde installée dans le local technique, les mesures prises en mode Inactif ne sont plus retenues. `temperatureMaxi` servant de référence à `calculateTimeFiltration()`, le planning suivant peut donc différer de ce qu'il aurait été, même sans aucune panne de sonde. Partout ailleurs, une sonde qui répond produit les mêmes décisions qu'avant.
 
 ## [0.0.33] — 2026-10-09
 
