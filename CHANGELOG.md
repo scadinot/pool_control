@@ -6,6 +6,25 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.34] — 2026-11-08
+
+### Corrigé
+- **Protection hors-gel désarmée par une sonde en panne** : une sonde absente ou indisponible était lue comme 0 °C. En hivernage, cette valeur fantôme est au-dessus du seuil de sécurité, si bien qu'une panne de la sonde d'air pendant une gelée désarmait la protection et arrêtait la filtration. Sans mesure, la sécurité gel conserve désormais son état.
+- **Plage de filtration préservée quand la sonde d'eau se tait** : la plage déjà calculée continue de s'appliquer, ses transitions ne dépendant que de l'heure. Pour le prochain calcul, la dernière mesure validée sert de secours ; si aucune n'a jamais été relevée, le calcul est reporté au cycle suivant au lieu d'être fait sur 0 °C.
+- **Journal lisible pendant une panne** : la perte de mesure est signalée une seule fois, puis le retour à la normale, au lieu d'une erreur par minute — plus de 400 lignes identiques en sept heures sur une panne réelle.
+- **Bouton Recalculer sans mesure** : il conserve le planning et la température maxi du jour au lieu de les refaire sur une valeur fantôme, tout en continuant d'évaluer les transitions horaires et la sécurité gel.
+- **Eau stagnante plus jamais retenue comme référence** : avec la sonde dans le local technique, le premier segment d'une plage avec pause alimente maintenant la mesure de secours, et aucune mesure n'est retenue en mode Inactif, où la pompe reste à l'arrêt malgré la plage horaire.
+
+### Modifié
+- `temperatureMaxi` n'est plus alimenté en mode Inactif avec une sonde installée dans le local technique : la pompe étant à l'arrêt, la mesure ne reflète pas le bassin. Une sonde placée dans le bassin n'est pas concernée.
+- CI : le cron quotidien des workflows de validation est retiré, remplacé par un déclenchement manuel. GitHub désactive les workflows planifiés après 60 jours d'inactivité sur un dépôt public, ce qui faisait disparaître silencieusement leurs contrôles des pull requests.
+- Tests : nouvelle classe de non-régression `TestBug11_SondeTemperatureIndisponible`. La suite passe de 392 à 418 tests.
+- `README.md` : comportement en cas de sonde indisponible, et échantillonnage en mode Inactif.
+- `manifest.json` : `version` `0.0.33` → `0.0.34`.
+
+### Pas de breaking change
+- Aucune entité ni option modifiée. Les sondes qui répondent normalement produisent exactement les mêmes décisions qu'avant.
+
 ## [0.0.33] — 2026-10-09
 
 ### Corrigé
