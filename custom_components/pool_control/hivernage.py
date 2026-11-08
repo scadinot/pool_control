@@ -178,7 +178,9 @@ class HivernageMixin:
                     # On est apres la plage de filtration, relancer le calcul pour la plage de demain
                     self.calculateTimeFiltrationHivernage(temperatureWater, True)
             else:
-                _LOGGER.warning(
+                # DEBUG et non WARNING : le cron repasse chaque minute et la
+                # panne est deja signalee une seule fois par _readTemperature().
+                _LOGGER.debug(
                     "Pas de mesure d'eau : calcul de la plage d'hivernage reporte"
                 )
 

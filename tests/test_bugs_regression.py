@@ -1051,6 +1051,10 @@ class TestBug11_SondeTemperatureIndisponible:
 
         controller.calculateTimeFiltration.assert_not_called()
         assert controller.get_data("temperatureMaxi") == 24.0
+        # Le statut est quand meme evalue : les transitions horaires ne
+        # dependent pas d'une mesure
+        controller.calculateStatusFiltration.assert_awaited_once_with(None)
+        controller.activatingDevices.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_reset_en_hivernage_ne_desarme_pas_la_securite_gel(
@@ -1076,6 +1080,94 @@ class TestBug11_SondeTemperatureIndisponible:
 
         assert controller.get_data("filtrationHivernageSecurite") == 1
         assert controller.get_data("filtrationHivernage") == 1
+
+    @pytest.mark.asyncio
+    async def test_reset_sans_mesure_arme_quand_meme_la_securite_gel(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Le bouton Recalculer evalue le statut meme sans aucune mesure d'eau.
+
+        Le recalcul de la plage a besoin d'une mesure, mais ni les transitions
+        horaires ni la securite gel n'en dependent. Sans cette evaluation, un
+        appui sur Recalculer pendant une gelee laissait la protection desarmee
+        jusqu'au cron suivant.
+        """
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.getHivernage = Mock(return_value=True)
+        # Ni mesure courante ni secours memorise
+        controller.getTemperatureWater = Mock(return_value=None)
+        controller.getTemperatureOutdoor = Mock(return_value=-5.0)
+        controller.calculateTimeFiltrationHivernage = Mock()
+        controller.activatingDevices = AsyncMock()
+
+        # 09:30 : hors des creneaux 5mn/3h, seule la securite gel peut activer
+        now = datetime(2026, 1, 15, 9, 30, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            # Plage a venir : le segment horaire ne peut pas activer non plus
+            "filtrationDebut": int(now + 3600),
+            "filtrationFin": int(now + 7200),
+            "temperatureMaxi": 24.0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.executeButtonReset()
+
+        assert controller.get_data("filtrationHivernageSecurite") == 1
+        assert controller.get_data("filtrationHivernage", 0) == 1
+        # Le planning et temperatureMaxi restent intacts
+        controller.calculateTimeFiltrationHivernage.assert_not_called()
+        assert controller.get_data("temperatureMaxi") == 24.0
+        assert controller.get_data("filtrationDebut") == int(now + 3600)
+        controller.activatingDevices.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_la_panne_n_est_pas_journalisee_a_chaque_cron(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """La panne est signalee une fois par le getter, pas a chaque minute.
+
+        Sans plage initiale ni secours, le report du calcul etait annonce en
+        WARNING a chaque passage du cron : la panne redevenait un message par
+        minute, ce que cette correction visait justement a supprimer.
+        """
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        logger = "custom_components.pool_control.saison"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            for _ in range(3):
+                await controller.calculateStatusFiltration(None)
+            records = [r for r in caplog.records if r.name == logger]
+
+        # Le report est trace, mais sans remonter au niveau WARNING
+        assert records != []
+        assert [r for r in records if r.levelno >= logging.WARNING] == []
+
+    @pytest.mark.asyncio
+    async def test_la_panne_en_hivernage_n_est_pas_journalisee_a_chaque_cron(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """Meme chose en hivernage : le report du calcul n'est pas un WARNING."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.calculateTimeFiltrationHivernage = Mock()
+
+        logger = "custom_components.pool_control.hivernage"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            for _ in range(3):
+                await controller.calculateStatusFiltrationHivernage(None, None)
+            records = [r for r in caplog.records if r.name == logger]
+
+        assert records != []
+        assert [r for r in records if r.levelno >= logging.WARNING] == []
 
 
 @pytest.mark.bugs

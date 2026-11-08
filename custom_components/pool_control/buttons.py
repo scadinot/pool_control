@@ -41,6 +41,20 @@ class ButtonMixin:
             _LOGGER.warning(
                 "Recalcul demande sans aucune mesure d'eau connue : planning conserve"
             )
+
+            # Le recalcul de la plage a besoin d'une mesure, mais ni les
+            # transitions horaires ni la securite gel n'en dependent : le
+            # statut du mode courant est evalue quand meme, ses gardes
+            # preservant le planning et temperatureMaxi. Sans cela, un appui
+            # sur Recalculer pendant une gelee appliquait les anciens
+            # indicateurs jusqu'au cron suivant.
+            if self.getHivernage() is True:
+                await self.calculateStatusFiltrationHivernage(
+                    None, self.getTemperatureOutdoor()
+                )
+            else:
+                await self.calculateStatusFiltration(None)
+
             await self.activatingDevices()
             return
 
