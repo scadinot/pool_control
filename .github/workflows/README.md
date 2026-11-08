@@ -24,7 +24,6 @@ Ce dossier contient les workflows GitHub Actions pour l'intégration continue (C
 **Déclenchement** :
 - À chaque push
 - À chaque Pull Request
-- Quotidiennement (cron)
 - Manuellement
 
 **Actions** :
@@ -37,6 +36,7 @@ Ce dossier contient les workflows GitHub Actions pour l'intégration continue (C
 **Déclenchement** :
 - À chaque push
 - À chaque Pull Request
+- Manuellement
 
 **Actions** :
 - Valide que l'intégration respecte les standards Home Assistant
