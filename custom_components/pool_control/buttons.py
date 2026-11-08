@@ -33,10 +33,20 @@ class ButtonMixin:
     async def executeButtonReset(self) -> None:
         """Reinitialise le calcul."""
 
+        # La mesure est lue avant toute ecriture : sans elle, le planning
+        # serait refait sur une valeur fantome et temperatureMaxi perdue.
+        temperatureWater = self.getTemperatureWaterOrLast()
+
+        if temperatureWater is None:
+            _LOGGER.warning(
+                "Recalcul demande sans aucune mesure d'eau connue : planning conserve"
+            )
+            await self.activatingDevices()
+            return
+
         if self.getHivernage() is True:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
 
-            temperatureWater = self.getTemperatureWater()
             temperatureOutdoor = self.getTemperatureOutdoor()
 
             self.calculateTimeFiltrationHivernage(temperatureWater, False)
@@ -65,7 +75,6 @@ class ButtonMixin:
         else:
             self.set_data("temperatureMaxi", 0)  # reset temperature maxi
 
-            temperatureWater = self.getTemperatureWater()
             self.calculateTimeFiltration(temperatureWater, False)
 
             # Verifie si la plage calculée est passée

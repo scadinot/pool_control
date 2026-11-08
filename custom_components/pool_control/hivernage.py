@@ -140,7 +140,7 @@ class HivernageMixin:
         )
 
     async def calculateStatusFiltrationHivernage(
-        self, temperatureWater: float, temperatureOutdoor: float
+        self, temperatureWater: Optional[float], temperatureOutdoor: Optional[float]
     ) -> None:
         """Calculate the filtration state in hivernage mode."""
 
@@ -164,16 +164,23 @@ class HivernageMixin:
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
-            # Le calcul n'a jamais ete lancé, on le lance maintenant
-            self.calculateTimeFiltrationHivernage(temperatureWater, False)
+            # Le calcul n'a jamais ete lancé, on le lance maintenant.
+            # Sans mesure d'eau, le calcul est reporte au cycle suivant :
+            # la securite gel, elle, reste evaluee plus bas.
+            if temperatureWater is not None:
+                self.calculateTimeFiltrationHivernage(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
-            filtrationFin = self.get_data("filtrationFin", 0)
-            timeNow = time.time()
+                # Verifie si la plage calculée est passée
+                filtrationFin = self.get_data("filtrationFin", 0)
+                timeNow = time.time()
 
-            if timeNow > filtrationFin:
-                # On est apres la plage de filtration, relancer le calcul pour la plage de demain
-                self.calculateTimeFiltrationHivernage(temperatureWater, True)
+                if timeNow > filtrationFin:
+                    # On est apres la plage de filtration, relancer le calcul pour la plage de demain
+                    self.calculateTimeFiltrationHivernage(temperatureWater, True)
+            else:
+                _LOGGER.warning(
+                    "Pas de mesure d'eau : calcul de la plage d'hivernage reporte"
+                )
 
         else:
             if timeNow >= filtrationDebut and timeNow <= filtrationFin:
@@ -182,33 +189,10 @@ class HivernageMixin:
                         60 * self.sondeLocalTechniquePause
                     ):
                         self.updateTemperatureDisplay(temperatureWater)
-
-                        # Determine la temperature maxi pour le prochain calcul
-                        temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                        if temperatureWater > temperatureMaxi:
-                            self.set_data("temperatureMaxi", temperatureWater)
-
-                            _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                            _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                            _LOGGER.debug(
-                                "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                                temperatureWater,
-                            )
+                        self.recordTemperatureMaxi(temperatureWater)
 
                 else:
-                    # Determine la temperature maxi pour le prochain calcul
-                    temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
-
-                    if temperatureWater > temperatureMaxi:
-                        self.set_data("temperatureMaxi", temperatureWater)
-
-                        _LOGGER.debug("temperatureMaxi: %s", temperatureMaxi)
-                        _LOGGER.debug("temperatureWater: %s", temperatureWater)
-                        _LOGGER.debug(
-                            "(temperatureWater > temperatureMaxi) >> temperatureMaxi=: %s",
-                            temperatureWater,
-                        )
+                    self.recordTemperatureMaxi(temperatureWater)
 
                 # Active la filtration
                 filtrationHivernage = 1
@@ -218,7 +202,7 @@ class HivernageMixin:
                     if int(self.get_data("marcheForcee", 0)) == 1:
                         self.set_data("marcheForcee", 0)
 
-            if timeNow > filtrationFin:
+            if timeNow > filtrationFin and temperatureWater is not None:
                 # On est apres la plage de filtration, relancer le calcul pour la plage de demain,
                 # meme si la plage a ete manquee (HA arrete pendant sa duree, plage de duree nulle).
                 # La plage de demain se termine apres maintenant : le calcul ne se repete pas.
@@ -230,7 +214,17 @@ class HivernageMixin:
             self.get_data("filtrationHivernageSecurite", 0)
         )
 
-        if filtrationHivernageSecurite != 0:
+        if temperatureOutdoor is None:
+            # Sonde d'air muette : on conserve l'etat precedent de la securite
+            # gel. La valeur de repli 0.0 des versions anterieures etait au
+            # dessus du seuil, donc une panne de sonde pendant une gelee
+            # desarmait la protection et arretait la filtration.
+            _LOGGER.debug(
+                "Pas de mesure d'air : securite gel conservee a %s",
+                filtrationHivernageSecurite,
+            )
+
+        elif filtrationHivernageSecurite != 0:
             # La filtration etait deja active on verifie si la temperature est remontee suffisament (Hysteresis...)
             if temperatureOutdoor > (
                 self.temperatureSecurite + self.temperatureHysteresis

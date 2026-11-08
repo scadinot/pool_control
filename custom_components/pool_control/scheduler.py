@@ -132,7 +132,10 @@ class SchedulerMixin:
 
         _LOGGER.debug("cron() begin")
 
-        temperatureWater = self.getTemperatureWater()
+        # Une sonde muette ne vaut pas 0 °C : l'eau retombe sur sa dernière
+        # mesure connue, l'air reste à None et la sécurité gel conservera
+        # alors son état plutôt que de se fonder sur une valeur fantôme.
+        temperatureWater = self.getTemperatureWaterOrLast()
         temperatureOutdoor = self.getTemperatureOutdoor()
         # leverSoleil = self.getLeverSoleil()
 
