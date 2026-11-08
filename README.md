@@ -150,7 +150,7 @@ La filtration démarre 2 h avant le lever du soleil (ou à l'heure configurée) 
 Une sonde absente ou en panne ne vaut pas 0 °C : elle ne donne aucune mesure, et l'intégration conserve alors la décision précédente plutôt que d'en prendre une nouvelle sur une valeur fantôme.
 
 - **Sonde d'air** : la sécurité hors-gel garde son état. Si elle était déclenchée, la filtration continue tant que la sonde ne redonne pas de mesure.
-- **Sonde d'eau** : la dernière mesure connue sert de secours pour le calcul de la plage. Si aucune n'a jamais été relevée, le calcul est reporté au cycle suivant.
+- **Sonde d'eau** : la plage déjà calculée continue de s'appliquer, ses transitions ne dépendant que de l'heure. Pour le prochain calcul, la dernière mesure validée sert de secours — validée au sens des règles d'échantillonnage ci-dessous, donc jamais une lecture d'eau stagnante. Si aucune n'a jamais été relevée, le calcul est reporté au cycle suivant.
 - Le journal signale la panne une seule fois, puis le retour à la normale, au lieu d'une erreur par minute.
 
 ### Sonde dans local technique

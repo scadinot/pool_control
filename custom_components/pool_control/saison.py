@@ -196,15 +196,6 @@ class SaisonMixin:
     async def calculateStatusFiltration(self, temperatureWater: Optional[float]) -> None:
         """Calculate the filtration state in Saison mode."""
 
-        if temperatureWater is None:
-            # Aucune mesure d'eau n'a jamais ete vue : fabriquer une plage sur
-            # une valeur fantome donnerait un planning faux. On conserve l'etat
-            # courant, le cycle suivant reprendra des le retour de la sonde.
-            _LOGGER.warning(
-                "Pas de mesure d'eau : planning et etat de filtration conserves"
-            )
-            return
-
         filtrationTemperature = 0
         filtrationDebut = self.get_data("filtrationDebut", 0)
         filtrationPauseDebut = self.get_data("filtrationPauseDebut", 0)
@@ -226,16 +217,23 @@ class SaisonMixin:
         )
 
         if filtrationDebut == 0 or filtrationFin == 0:
-            # Le calcul n'a jamais ete lancé, on le lance maintenant
-            self.calculateTimeFiltration(temperatureWater, False)
+            # Le calcul n'a jamais ete lancé, on le lance maintenant.
+            # Sans mesure, il est reporte au cycle suivant : une plage
+            # fabriquee sur une valeur fantome serait fausse pour la journee.
+            if temperatureWater is not None:
+                self.calculateTimeFiltration(temperatureWater, False)
 
-            # Verifie si la plage calculée est passée
-            filtrationFin = self.get_data("filtrationFin", 0)
-            timeNow = time.time()
+                # Verifie si la plage calculée est passée
+                filtrationFin = self.get_data("filtrationFin", 0)
+                timeNow = time.time()
 
-            if timeNow > filtrationFin:
-                # On est apres la plage de filtration, relancer le calcul pour la plage de demain
-                self.calculateTimeFiltration(temperatureWater, True)
+                if timeNow > filtrationFin:
+                    # On est apres la plage de filtration, relancer le calcul pour la plage de demain
+                    self.calculateTimeFiltration(temperatureWater, True)
+            else:
+                _LOGGER.warning(
+                    "Pas de mesure d'eau : calcul de la plage reporte"
+                )
 
         else:
             if filtrationPauseDebut != filtrationPauseFin:
@@ -256,10 +254,10 @@ class SaisonMixin:
                             60 * self.sondeLocalTechniquePause
                         ):
                             self.updateTemperatureDisplay(temperatureWater)
-                            self.recordTemperatureMaxi(temperatureWater)
+                            self.recordTemperatureWater(temperatureWater)
 
                     else:
-                        self.recordTemperatureMaxi(temperatureWater)
+                        self.recordTemperatureWater(temperatureWater)
 
                     # Active la filtration
                     filtrationTemperature = 1
@@ -270,10 +268,10 @@ class SaisonMixin:
                         60 * self.sondeLocalTechniquePause
                     ):
                         self.updateTemperatureDisplay(temperatureWater)
-                        self.recordTemperatureMaxi(temperatureWater)
+                        self.recordTemperatureWater(temperatureWater)
 
                 else:
-                    self.recordTemperatureMaxi(temperatureWater)
+                    self.recordTemperatureWater(temperatureWater)
 
                 # Active la filtration
                 filtrationTemperature = 1
@@ -283,7 +281,7 @@ class SaisonMixin:
                     if int(self.get_data("marcheForcee", 0)) == 1:
                         self.set_data("marcheForcee", 0)
 
-            if timeNow > filtrationFin:
+            if timeNow > filtrationFin and temperatureWater is not None:
                 # On est apres la plage de filtration, relancer le calcul pour la plage de demain,
                 # meme si la plage a ete manquee (HA arrete pendant sa duree, plage de duree nulle).
                 # La plage de demain se termine apres maintenant : le calcul ne se repete pas.

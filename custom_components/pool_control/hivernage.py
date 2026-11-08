@@ -189,10 +189,10 @@ class HivernageMixin:
                         60 * self.sondeLocalTechniquePause
                     ):
                         self.updateTemperatureDisplay(temperatureWater)
-                        self.recordTemperatureMaxi(temperatureWater)
+                        self.recordTemperatureWater(temperatureWater)
 
                 else:
-                    self.recordTemperatureMaxi(temperatureWater)
+                    self.recordTemperatureWater(temperatureWater)
 
                 # Active la filtration
                 filtrationHivernage = 1

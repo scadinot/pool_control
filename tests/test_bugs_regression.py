@@ -896,45 +896,103 @@ class TestBug11_SondeTemperatureIndisponible:
         assert controller.get_data("filtrationFin") == int(now - 60)
 
     @pytest.mark.asyncio
-    async def test_cron_memorise_la_derniere_temperature_valide(
+    async def test_la_plage_memorisee_est_appliquee_meme_sans_mesure(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Les transitions de la plage dependent de l'heure, pas d'une mesure.
+
+        Sans cette evaluation, un Store contenant filtrationTemperature=1 mais
+        pas encore de secours laissait la pompe demandee apres filtrationFin.
+        """
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        now = datetime(2026, 6, 15, 20, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 7200),
+            "filtrationFin": int(now - 60),
+            # Etat herite d'un Store anterieur : la pompe etait demandee
+            "filtrationTemperature": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(None)
+
+        # La plage est terminee : la pompe n'est plus demandee
+        assert controller.get_data("filtrationTemperature") == 0
+        # ... mais rien n'a ete recalcule sur une valeur fantome
+        controller.calculateTimeFiltration.assert_not_called()
+        assert controller.get_data("filtrationFin") == int(now - 60)
+
+    @pytest.mark.asyncio
+    async def test_la_plage_en_cours_est_maintenue_sans_mesure(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Pendant la plage, la filtration reste demandee sans mesure."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(None)
+
+        assert controller.get_data("filtrationTemperature") == 1
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    def test_seule_une_mesure_validee_alimente_le_secours(
         self, mock_hass, mock_pool_config
     ):
-        """Chaque mesure valide est conservee pour servir de secours."""
+        """Avec la sonde en local technique, lire ne suffit pas a memoriser.
+
+        Hors filtration, une sonde de local technique lit de l'eau stagnante :
+        elle ne doit pas devenir le secours. Seuls les points qui ont passe les
+        gardes d'echantillonnage appellent recordTemperatureWater().
+        """
         from custom_components.pool_control.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.getTemperatureWater = Mock(return_value=19.0)
-        controller.getTemperatureOutdoor = Mock(return_value=12.0)
-        controller.getHivernage = Mock(return_value=False)
-        controller.calculateStatusFiltration = AsyncMock()
-        controller.activatingDevices = AsyncMock()
 
-        await controller.cron()
+        assert controller.getTemperatureWaterOrLast() == 19.0
+        assert controller.get_data("temperatureWaterDerniere") is None
 
+        controller.recordTemperatureWater(19.0)
         assert controller.get_data("temperatureWaterDerniere") == 19.0
 
-    @pytest.mark.asyncio
-    async def test_le_secours_n_est_pas_reecrit_a_chaque_dixieme(
+    def test_le_secours_n_est_pas_reecrit_a_chaque_dixieme(
         self, mock_hass, mock_pool_config
     ):
         """Le Store est sauvegarde a chaque changement : pas pour 0,1 °C."""
         from custom_components.pool_control.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
-        controller.getTemperatureOutdoor = Mock(return_value=12.0)
-        controller.getHivernage = Mock(return_value=False)
-        controller.calculateStatusFiltration = AsyncMock()
-        controller.activatingDevices = AsyncMock()
 
-        controller.getTemperatureWater = Mock(return_value=19.0)
-        await controller.cron()
-
-        controller.getTemperatureWater = Mock(return_value=19.2)
-        await controller.cron()
+        controller.recordTemperatureWater(19.0)
         assert controller.get_data("temperatureWaterDerniere") == 19.0
 
-        controller.getTemperatureWater = Mock(return_value=19.8)
-        await controller.cron()
+        controller.recordTemperatureWater(19.2)
+        assert controller.get_data("temperatureWaterDerniere") == 19.0
+
+        controller.recordTemperatureWater(19.8)
         assert controller.get_data("temperatureWaterDerniere") == 19.8
 
     @pytest.mark.asyncio

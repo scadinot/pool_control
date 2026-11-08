@@ -69,32 +69,42 @@ class SensorMixin:
         return self._readTemperature(self.temperatureOutdoor, "Température de l'air")
 
     def getTemperatureWaterOrLast(self) -> Optional[float]:
-        """Mesure courante de l'eau, ou la dernière connue si la sonde est muette.
+        """Mesure courante de l'eau, ou la dernière validée si la sonde est muette.
 
-        Une sonde d'eau absente ne doit pas effacer le planning du jour : la
-        dernière mesure valide prend le relais. None n'est renvoyé que si
-        aucune mesure n'a jamais été vue, auquel cas le calcul est reporté.
+        Lecture seule : le secours est écrit par ``recordTemperatureWater``,
+        depuis les seuls points où les gardes d'échantillonnage sont passées.
+        None n'est renvoyé que si aucune mesure n'a jamais été validée, auquel
+        cas le calcul de la plage est reporté.
         """
 
         temperatureWater = self.getTemperatureWater()
-        derniere = self.get_data("temperatureWaterDerniere")
 
         if temperatureWater is not None:
-            # Ecriture seulement sur un ecart significatif : la sonde est relue
-            # chaque minute et le Store est sauvegarde a chaque changement de
-            # valeur ; memoriser le moindre dixieme userait le support de
-            # stockage sans rien apporter a un secours.
-            if derniere is None or abs(temperatureWater - float(derniere)) >= 0.5:
-                self.set_data("temperatureWaterDerniere", temperatureWater)
             return temperatureWater
 
+        derniere = self.get_data("temperatureWaterDerniere")
         return float(derniere) if derniere is not None else None
 
-    def recordTemperatureMaxi(self, temperatureWater: Optional[float]) -> None:
-        """Mémorise la température maxi servant au prochain calcul."""
+    def recordTemperatureWater(self, temperatureWater: Optional[float]) -> None:
+        """Mémorise une mesure d'eau validée : secours et température maxi.
+
+        Appelée depuis les seuls points où la filtration tourne et où le délai
+        de ``sondeLocalTechniquePause`` est écoulé. Une sonde installée dans le
+        local technique lit sinon de l'eau stagnante, qui ne doit ni servir de
+        secours ni fausser la durée de filtration calculée.
+        """
 
         if temperatureWater is None:
             return
+
+        # Ecriture du secours seulement sur un ecart significatif : la sonde est
+        # relue chaque minute et le Store est sauvegarde a chaque changement de
+        # valeur ; memoriser le moindre dixieme userait le support de stockage
+        # sans rien apporter.
+        derniere = self.get_data("temperatureWaterDerniere")
+
+        if derniere is None or abs(temperatureWater - float(derniere)) >= 0.5:
+            self.set_data("temperatureWaterDerniere", temperatureWater)
 
         temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
 
