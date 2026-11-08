@@ -1169,6 +1169,151 @@ class TestBug11_SondeTemperatureIndisponible:
         assert records != []
         assert [r for r in records if r.levelno >= logging.WARNING] == []
 
+    # -- Le secours ne retient que de l'eau reellement en circulation -------
+
+    def _saison_controller(self, mock_hass, mock_pool_config):
+        """Controleur en saison, sans effet de bord sur les entites."""
+        from custom_components.pool_control.controller import PoolController
+
+        controller = PoolController(mock_hass, mock_pool_config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.calculateTimeFiltration = Mock()
+        controller.sondeLocalTechnique = False
+        controller.sondeLocalTechniquePause = 10
+        controller.disableMarcheForcee = False
+        return controller
+
+    @pytest.mark.asyncio
+    async def test_le_premier_segment_memorise_le_secours(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Dans une plage avec pause, le premier segment alimente le secours.
+
+        Il ne le faisait pas : une panne survenant avant le second segment
+        privait le calcul suivant de secours, alors qu'une mesure valide
+        venait d'etre lue pompe en marche.
+        """
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+
+        now = datetime(2026, 6, 15, 11, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationPauseDebut": int(now + 3600),
+            "filtrationPauseFin": int(now + 7200),
+            "filtrationFin": int(now + 10800),
+            "temperatureMaxi": 24.0,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 21.0
+        # Le suivi de temperatureMaxi reste reserve au second segment
+        assert controller.get_data("temperatureMaxi") == 24.0
+
+    @pytest.mark.asyncio
+    async def test_le_premier_segment_respecte_le_delai_du_local_technique(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Sonde en local technique : le secours attend la mise en circulation."""
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+
+        now = datetime(2026, 6, 15, 11, 0, tzinfo=ha_time_zone).timestamp()
+        # Filtration demarree depuis 6 minutes : le delai de 10 mn court encore
+        controller.data = {
+            "filtrationDebut": int(now - 360),
+            "filtrationPauseDebut": int(now + 3600),
+            "filtrationPauseFin": int(now + 7200),
+            "filtrationFin": int(now + 10800),
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+
+        # Delai ecoule : la mesure devient valable
+        controller.data["filtrationDebut"] = int(now - 1200)
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 21.0
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_ne_memorise_pas_l_eau_stagnante(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """En mode Inactif la pompe reste arretee malgre la plage horaire.
+
+        cron() continue d'evaluer les plages, mais activatingDevices() garde
+        tout a l'arret : une sonde de local technique ne lit alors que de
+        l'eau stagnante, qui ne doit ni servir de secours ni fausser la duree.
+        """
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(28.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_memorise_une_sonde_en_bassin(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Une sonde dans le bassin lit la vraie eau, pompe a l'arret ou non."""
+        controller = self._saison_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = False
+
+        now = datetime(2026, 6, 15, 14, 0, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltration(28.0)
+
+        assert controller.get_data("temperatureWaterDerniere") == 28.0
+        assert controller.get_data("temperatureMaxi") == 28.0
+
+    @pytest.mark.asyncio
+    async def test_le_mode_inactif_en_hivernage_ne_memorise_pas_non_plus(
+        self, mock_hass, mock_pool_config, ha_time_zone
+    ):
+        """Meme garde en hivernage : le point d'ecriture est commun."""
+        controller = self._hivernage_controller(mock_hass, mock_pool_config)
+        controller.sondeLocalTechnique = True
+        controller.sondeLocalTechniquePause = 10
+        controller.calculateTimeFiltrationHivernage = Mock()
+
+        now = datetime(2026, 1, 15, 9, 30, tzinfo=ha_time_zone).timestamp()
+        controller.data = {
+            "filtrationDebut": int(now - 3600),
+            "filtrationFin": int(now + 3600),
+            "arretTotal": 1,
+        }
+
+        with patch("time.time", return_value=now):
+            await controller.calculateStatusFiltrationHivernage(8.0, 5.0)
+
+        assert controller.get_data("temperatureWaterDerniere") is None
+        assert controller.get_data("temperatureMaxi", 0) == 0
+
 
 @pytest.mark.bugs
 class TestAllBugsRegression:

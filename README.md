@@ -159,6 +159,7 @@ Si la sonde est installée dans le local technique plutôt que dans le bassin :
 
 - La température n'est échantillonnée que pendant la filtration.
 - Une pause configurable laisse l'eau circuler avant que la sonde reflète la température réelle du bassin.
+- En mode **Inactif**, la pompe reste à l'arrêt même pendant la plage horaire : aucune mesure n'est retenue, ni pour la température maxi du jour, ni comme secours. Une sonde placée dans le bassin n'est pas concernée, elle lit la vraie eau que la pompe tourne ou non.
 
 ## Entités exposées
 

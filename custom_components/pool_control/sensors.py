@@ -85,16 +85,43 @@ class SensorMixin:
         derniere = self.get_data("temperatureWaterDerniere")
         return float(derniere) if derniere is not None else None
 
-    def recordTemperatureWater(self, temperatureWater: Optional[float]) -> None:
-        """Mémorise une mesure d'eau validée : secours et température maxi.
+    def _isTemperatureWaterRecordable(
+        self, temperatureWater: Optional[float]
+    ) -> bool:
+        """Dit si une mesure d'eau peut être mémorisée.
 
-        Appelée depuis les seuls points où la filtration tourne et où le délai
-        de ``sondeLocalTechniquePause`` est écoulé. Une sonde installée dans le
-        local technique lit sinon de l'eau stagnante, qui ne doit ni servir de
-        secours ni fausser la durée de filtration calculée.
+        Les appelants sont déjà passés par les gardes horaires de leur plage,
+        mais celles-ci ignorent le mode Inactif : ``cron()`` continue d'évaluer
+        les plages alors qu'``activatingDevices()`` garde tout à l'arrêt. Une
+        sonde placée dans le local technique ne lit alors que de l'eau
+        stagnante. Une sonde dans le bassin, elle, lit la vraie eau que la
+        pompe tourne ou non : la garde ne la concerne pas.
         """
 
         if temperatureWater is None:
+            return False
+
+        if self.sondeLocalTechnique is True:
+            if int(self.get_data("arretTotal", 0)) != 0:
+                _LOGGER.debug(
+                    "Mode Inactif : mesure de local technique non mémorisée"
+                )
+                return False
+
+        return True
+
+    def recordTemperatureWaterFallback(
+        self, temperatureWater: Optional[float]
+    ) -> None:
+        """Mémorise la mesure de secours, sans toucher à la température maxi.
+
+        Appelée depuis les points où la filtration tourne et où le délai de
+        ``sondeLocalTechniquePause`` est écoulé, y compris le premier segment
+        d'une plage avec pause — lequel n'alimente volontairement pas
+        ``temperatureMaxi``.
+        """
+
+        if not self._isTemperatureWaterRecordable(temperatureWater):
             return
 
         # Ecriture du secours seulement sur un ecart significatif : la sonde est
@@ -105,6 +132,20 @@ class SensorMixin:
 
         if derniere is None or abs(temperatureWater - float(derniere)) >= 0.5:
             self.set_data("temperatureWaterDerniere", temperatureWater)
+
+    def recordTemperatureWater(self, temperatureWater: Optional[float]) -> None:
+        """Mémorise une mesure d'eau validée : secours et température maxi.
+
+        Appelée depuis les seuls points où la filtration tourne et où le délai
+        de ``sondeLocalTechniquePause`` est écoulé. Une sonde installée dans le
+        local technique lit sinon de l'eau stagnante, qui ne doit ni servir de
+        secours ni fausser la durée de filtration calculée.
+        """
+
+        if not self._isTemperatureWaterRecordable(temperatureWater):
+            return
+
+        self.recordTemperatureWaterFallback(temperatureWater)
 
         temperatureMaxi = float(self.get_data("temperatureMaxi", 0))
 

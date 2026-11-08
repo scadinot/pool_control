@@ -246,6 +246,16 @@ class SaisonMixin:
                     if timeNow >= filtrationDebut + (60 * 5):
                         self.updateTemperatureDisplay(temperatureWater)
 
+                    # Secours seulement : le suivi de temperatureMaxi reste
+                    # reserve au second segment, comme avant. Sans cette
+                    # ecriture, une panne survenant avant le second segment
+                    # privait le calcul suivant de tout secours, alors qu'une
+                    # mesure valide venait d'etre lue pompe en marche.
+                    if self.sondeLocalTechnique is not True or timeNow >= (
+                        filtrationDebut + (60 * self.sondeLocalTechniquePause)
+                    ):
+                        self.recordTemperatureWaterFallback(temperatureWater)
+
                     # Active la filtration
                     filtrationTemperature = 1
 
