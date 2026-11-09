@@ -6,6 +6,23 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.0.35] — 2026-11-09
+
+### Corrigé
+- **Pause pivot débordant de la plage de filtration** : avec les répartitions `1/1 ↔` et `↔ 1/1`, toute la filtration se place d'un seul côté de l'heure pivot, mais les bornes de la pause étaient encore calculées sur le découpage `1/2 ↔ 1/2`. La pause enjambait donc la plage, ce qui rendait un de ses deux segments inatteignable : la filtration se faisait d'un bloc sur l'autre, et comme la pause est ajoutée à la durée mais seule la moitié en était retirée, le bassin filtrait **une demi-pause de trop chaque jour** — 30 minutes pour une pause de 60.
+- **Température maximale du jour de nouveau suivie en répartition `1/1 ↔`** : le segment inatteignable y était le second, seul endroit où la mesure d'eau est retenue. `temperatureMaxi` restait donc à zéro et la durée de filtration se calculait tous les jours sur la température instantanée au lieu du maximum du jour.
+
+### Modifié
+- Le pivot étant une extrémité de la plage et non son milieu dans ces deux répartitions, une coupure « au milieu du cycle » n'y a pas de place : la pause y est désormais ignorée. Elle n'est plus ajoutée à la durée et la plage redevient continue.
+- Un réglage écarté ne l'étant pas en silence, le rejet de la pause est signalé au journal à chaque calcul, en nommant la répartition concernée.
+- `README.md` : la ligne « Pause pivot » du menu Filtration et un paragraphe expliquant pourquoi elle reste sans effet sur ces deux répartitions.
+- Tests : nouvelle classe de non-régression `TestBug12_PauseHorsDeLaPlage`. La suite passe de 418 à 427 tests.
+- `manifest.json` : `version` `0.0.34` → `0.0.35`.
+
+### Changement de comportement
+- Aucune entité ni option modifiée, aucune intervention à prévoir sur la configuration.
+- En revanche, les installations qui combinent une répartition `1/1 ↔` ou `↔ 1/1` avec une pause non nulle verront leur plage se resserrer de toute la durée de la pause, et leur filtration quotidienne perdre la demi-pause excédentaire. C'est la correction qui opère, mais elle est visible. Les autres répartitions, ainsi que l'hivernage — qui ne gère aucune pause — sont inchangées.
+
 ## [0.0.34] — 2026-11-08
 
 ### Corrigé
