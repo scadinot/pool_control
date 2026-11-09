@@ -15,6 +15,7 @@ Bugs testés:
 9. Bug #9: Plages horaires calculées dans le fuseau du système
 10. Bug #10: Plus aucun recalcul après une plage jamais atteinte
 11. Bug #11: Sonde de température indisponible lue comme 0 °C
+12. Bug #12: Pause pivot débordant de la plage en répartition 1/1 et 1/1 inverse
 """
 
 import pytest
@@ -1313,6 +1314,165 @@ class TestBug11_SondeTemperatureIndisponible:
 
         assert controller.get_data("temperatureWaterDerniere") is None
         assert controller.get_data("temperatureMaxi", 0) == 0
+
+
+@pytest.mark.bugs
+class TestBug12_PauseHorsDeLaPlage:
+    """Test Bug #12: pause pivot débordant de la plage de filtration.
+
+    Bug original: les répartitions 4 (1/1 <>) et 5 (<> 1/1) placent toute la
+    filtration d'un côté du pivot, mais calculaient encore les bornes de la
+    pause sur le découpage 1/2 <> 1/2. La pause enjambait donc la fenêtre :
+    `filtrationPauseFin > filtrationFin` en répartition 4,
+    `filtrationPauseDebut < filtrationDebut` en répartition 5. Un des deux
+    segments devenait inatteignable, la filtration se faisait d'un bloc sur
+    l'autre et durait une demi-pause de trop chaque jour. En répartition 4 le
+    segment mort était le second, seul endroit qui appelle
+    recordTemperatureWater() : temperatureMaxi n'était jamais suivi.
+
+    Correction: le pivot étant une extrémité de la fenêtre et non son milieu,
+    une coupure « au milieu du cycle » n'a pas de place. La pause est ignorée
+    pour ces deux répartitions, et son rejet est journalisé.
+    """
+
+    DUREE_HEURES = 6.0
+
+    def _controller(self, mock_hass, mock_pool_config, distribution, pause_minutes):
+        """Controleur de saison a repartition et pause imposees."""
+        from custom_components.pool_control.controller import PoolController
+
+        config = mock_pool_config.copy()
+        config["distributionDatePivot"] = distribution
+        config["pausePivot"] = pause_minutes
+        config["datePivot"] = "13:00"
+
+        controller = PoolController(mock_hass, config)
+        controller.filtrationTimeStatus = MagicMock()
+        controller.filtrationScheduleStatus = MagicMock()
+        controller.updateTemperatureDisplay = Mock()
+        controller.sondeLocalTechnique = False
+        controller.disableMarcheForcee = False
+        controller.data = {}
+
+        # Duree imposee : on isole la repartition du calcul de duree
+        controller.calculateTimeFiltrationWithCurve = Mock(
+            return_value=self.DUREE_HEURES
+        )
+        controller.calculateTimeFiltrationWithTemperatureReducedByHalf = Mock(
+            return_value=self.DUREE_HEURES
+        )
+        return controller
+
+    def _bornes(self, controller):
+        return (
+            controller.get_data("filtrationDebut"),
+            controller.get_data("filtrationFin"),
+            controller.get_data("filtrationPauseDebut"),
+            controller.get_data("filtrationPauseFin"),
+        )
+
+    @pytest.mark.parametrize("distribution", [4, 5])
+    def test_la_pause_est_ignoree_quand_le_pivot_est_une_extremite(
+        self, mock_hass, mock_pool_config, distribution
+    ):
+        """Repartitions 1/1 <> et <> 1/1 : la pause ne s'applique pas."""
+        controller = self._controller(
+            mock_hass, mock_pool_config, distribution, pause_minutes=60
+        )
+
+        controller.calculateTimeFiltration(21.0, False)
+        debut, fin, pauseDebut, pauseFin = self._bornes(controller)
+
+        # Pause neutralisee : la plage redevient continue
+        assert pauseDebut == pauseFin
+        # La pause n'est plus ajoutee a la duree : la fenetre vaut la duree
+        assert fin - debut == pytest.approx(self.DUREE_HEURES * 3600, abs=1)
+        # Et elle ne deborde plus
+        assert debut <= pauseDebut <= fin
+        assert debut <= pauseFin <= fin
+
+    @pytest.mark.parametrize("distribution", [1, 2, 3])
+    def test_la_pause_reste_active_sur_les_autres_repartitions(
+        self, mock_hass, mock_pool_config, distribution
+    ):
+        """Non-regression : 1, 2 et 3 gardent leur pause, dans la fenetre."""
+        controller = self._controller(
+            mock_hass, mock_pool_config, distribution, pause_minutes=60
+        )
+
+        controller.calculateTimeFiltration(21.0, False)
+        debut, fin, pauseDebut, pauseFin = self._bornes(controller)
+
+        assert pauseDebut != pauseFin
+        assert pauseFin - pauseDebut == pytest.approx(3600, abs=1)
+        # La pause reste bornee par la fenetre
+        assert debut <= pauseDebut and pauseFin <= fin
+        # La fenetre porte toujours duree + pause
+        assert fin - debut == pytest.approx((self.DUREE_HEURES * 3600) + 3600, abs=1)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("distribution", [4, 5])
+    async def test_la_temperature_maxi_est_de_nouveau_suivie(
+        self, mock_hass, mock_pool_config, distribution
+    ):
+        """Le segment mort privait la repartition 4 de sa temperature maxi."""
+        controller = self._controller(
+            mock_hass, mock_pool_config, distribution, pause_minutes=60
+        )
+
+        controller.calculateTimeFiltration(21.0, False)
+        debut, fin, _, _ = self._bornes(controller)
+
+        # Au milieu de la plage, la filtration doit etre demandee et la mesure
+        # retenue comme maximum du jour.
+        milieu = (debut + fin) / 2.0
+
+        with patch("time.time", return_value=milieu):
+            await controller.calculateStatusFiltration(21.0)
+
+        assert int(controller.get_data("filtrationTemperature", 0)) == 1
+        assert controller.get_data("temperatureMaxi") == 21.0
+
+    def test_le_rejet_de_la_pause_est_journalise(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """Un reglage ecarte ne doit pas l'etre en silence."""
+        controller = self._controller(
+            mock_hass, mock_pool_config, 4, pause_minutes=60
+        )
+
+        logger = "custom_components.pool_control.saison"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            controller.calculateTimeFiltration(21.0, False)
+            records = [
+                r
+                for r in caplog.records
+                if r.name == logger and r.levelno >= logging.WARNING
+            ]
+
+        assert len(records) == 1
+        assert "pause" in records[0].getMessage().lower()
+
+    def test_aucun_avertissement_sans_pause_configuree(
+        self, mock_hass, mock_pool_config, caplog
+    ):
+        """Sans pause, il n'y a rien a ecarter : pas d'avertissement."""
+        controller = self._controller(
+            mock_hass, mock_pool_config, 4, pause_minutes=0
+        )
+
+        logger = "custom_components.pool_control.saison"
+
+        with caplog.at_level(logging.DEBUG, logger=logger):
+            controller.calculateTimeFiltration(21.0, False)
+            records = [
+                r
+                for r in caplog.records
+                if r.name == logger and r.levelno >= logging.WARNING
+            ]
+
+        assert records == []
 
 
 @pytest.mark.bugs
