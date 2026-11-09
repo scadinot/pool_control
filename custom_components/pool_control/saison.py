@@ -46,6 +46,23 @@ class SaisonMixin:
             formatDurationHoursMinutes(pausePivotSecondes),
         )
 
+        # Repartitions 1/1 <> et <> 1/1 : toute la filtration est d'un cote du
+        # pivot, qui est donc une extremite de la fenetre et non son milieu.
+        # Une coupure « au milieu du cycle » n'y a pas de place. Les bornes de
+        # la pause etaient pourtant calculees sur le decoupage 1/2 <> 1/2 :
+        # elle enjambait la fenetre, rendait un des deux segments
+        # inatteignable, et faisait filtrer une demi-pause de trop chaque
+        # jour. En repartition 1/1 <> le segment mort etait le second, seul
+        # endroit qui suit temperatureMaxi, perdue elle aussi.
+        if pausePivotSecondes > 0 and self.distributionDatePivot in (4, 5):
+            _LOGGER.warning(
+                "Pause pivot de %s ignoree : sans objet avec la repartition %s, "
+                "qui place toute la filtration d'un seul cote du pivot",
+                formatDurationHoursMinutes(pausePivotSecondes),
+                self.distributionDatePivot,
+            )
+            pausePivotSecondes = 0
+
         # si la somme de filtrationSecondes et pausePivotSecondes est superieure a 24h on reduit pausePivotSecondes
         if (filtrationSecondes + pausePivotSecondes) > (3600 * 24):
             _LOGGER.info(

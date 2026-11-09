@@ -98,8 +98,10 @@ Une fois l'intégration ajoutée, ouvrez **Paramètres** → **Appareils et serv
 | Méthode de calcul | Courbe (1) / Température / 2 (2) | Algorithme de calcul du temps de filtration |
 | Coefficient d'ajustement | 0.3 à 1.7 | Multiplicateur appliqué au temps calculé |
 | Horaire pivot | `HH:MM` (défaut `13:00`) | Heure centrale autour de laquelle la filtration est répartie |
-| Pause pivot | minutes | Coupure au milieu du cycle |
+| Pause pivot | minutes | Coupure au milieu du cycle. Sans effet avec les répartitions `1/1 ↔` et `↔ 1/1` (voir ci-dessous) |
 | Répartition autour du pivot | 1/2 ↔ 1/2, 1/3 ↔ 2/3, 2/3 ↔ 1/3, 1/1 ↔, ↔ 1/1 | Distribution du temps avant/après le pivot |
+
+Avec les répartitions `1/1 ↔` et `↔ 1/1`, toute la filtration se place d'un seul côté de l'heure pivot : celle-ci est donc une extrémité de la plage et non son milieu, et une coupure « au milieu du cycle » n'y a pas de place. La pause est alors ignorée, et le journal le signale à chaque calcul. Pour obtenir une coupure, choisissez une répartition qui encadre le pivot.
 | Temps de filtration minimum | heures | Plancher quotidien |
 
 ### Menu Hivernage
