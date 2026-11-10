@@ -41,23 +41,32 @@ Cette version renomme l'intégration. **Il n'y a pas de migration automatique** 
 Relevez donc vos réglages **avant** de supprimer quoi que ce soit — les entités d'actionneurs et de sondes de l'écran initial, puis les valeurs de chaque menu. Ce sont les seules valeurs qu'aucun défaut ne reconstitue, et elles ne sont plus consultables une fois l'ancienne intégration supprimée.
 
 1. **Sauvegardez** votre instance.
-2. **Relevez** la configuration : **Paramètres** → **Appareils et services** → **Pool Control** → **CONFIGURER**, en notant chaque écran. Notez aussi le **nom exact de l'instance** : il est déterminant à l'étape 6.
+2. **Relevez** trois choses, et dans cet ordre d'importance :
+   - le **préfixe de vos `entity_id`**, lu sur une entité existante — dans `sensor.piscine_filtration_time`, c'est `piscine`. Pas le nom affiché de l'instance : voir plus bas pourquoi les deux peuvent différer ;
+   - vos **modes** : le mode de contrôle (Actif / Auto / Inactif) et le mode saisonnier (Saison / Hivernage), lisibles sur le capteur d'état du contrôle ou dans le panneau ;
+   - la **configuration** : **Paramètres** → **Appareils et services** → **Pool Control** → **CONFIGURER**, en notant chaque écran.
 3. **Supprimez** l'intégration Pool Control, puis son dépôt dans le store.
 4. **Vérifiez** que le dossier `custom_components/pool_control/` a bien disparu, et supprimez-le s'il subsiste.
 5. **Installez** Pool Management, puis redémarrez Home Assistant.
-6. **Ajoutez** l'intégration en lui donnant **exactement le nom d'instance qu'elle portait**, et ressaisissez vos réglages.
+6. **Ajoutez** l'intégration en lui donnant un nom dont le `slugify` **reproduit exactement le préfixe relevé à l'étape 2**, puis ressaisissez vos réglages et réappliquez vos modes.
 
-### Pourquoi le nom d'instance compte autant
+### Pourquoi le préfixe des `entity_id` compte autant
 
-Les `entity_id` de l'intégration ne contiennent pas le domaine : ils sont construits sur le `slugify` du nom d'instance. Une instance nommée « Piscine » produit `sensor.piscine_filtration_time`, quel que soit le domaine.
+Les `entity_id` de l'intégration ne contiennent pas le domaine : ils sont construits sur un préfixe propre à l'instance. Une instance dont le préfixe est `piscine` produit `sensor.piscine_filtration_time`, quel que soit le domaine. En reproduisant le même préfixe, vous retrouvez des `entity_id` identiques : vos cartes et vos automatisations continuent de fonctionner sans retouche, et l'historique enregistré sous ces noms leur reste attaché.
 
-En réutilisant le même nom, vous retrouvez donc des `entity_id` identiques : vos cartes et vos automatisations continuent de fonctionner sans retouche, et l'historique enregistré sous ces noms leur reste attaché. Un nom différent les change tous d'un coup.
+**Ne vous fiez pas au nom affiché de l'instance pour le deviner.** Le préfixe vient de l'`unique_id` de la config entry, figé à la création et jamais modifié ensuite : une instance créée « Piscine » puis renommée « Spa » dans l'interface conserve le préfixe `piscine`. La recréer sous le nom « Spa » changerait donc tous ses `entity_id`.
+
+Lisez le préfixe sur vos entités existantes plutôt que sur le nom : dans `sensor.piscine_filtration_time`, c'est `piscine`. C'est cette valeur que le `slugify` du nouveau nom doit reproduire.
+
+Si certaines entités portent un `entity_id` que vous avez personnalisé à la main, ou hérité d'une version antérieure, le préfixe ne suffira pas à les rétablir : relevez-les séparément et renommez-les après reconfiguration.
 
 ### Ce qui change malgré tout
 
 - L'URL du panneau latéral passe de `/pool-control…` à `/pool-management…` : marque-pages et liens de tableau de bord sont à reprendre.
 - L'appareil est recréé. Sa zone, le nom que vous lui aviez donné et les automatisations ou cartes qui ciblent l'appareil plutôt que ses entités sont à refaire.
-- L'état courant repart de zéro — mode en cours, saison ou hivernage, température maximale du jour — et se reconstruit au premier cycle. Il n'y a rien à saisir.
+- **Les modes ne sont pas restaurés et doivent être réappliqués à la main.** Avec un Store vide, le contrôle repart en **Auto** et en **Saison** : le cron ne rétablit ni Actif ni Inactif, ni l'hivernage. Relevez donc votre mode de contrôle et votre mode saisonnier à l'étape 2, et resélectionnez-les après reconfiguration.
+- **Conséquence à ne pas négliger sur une piscine hivernée** : la protection contre le gel n'est évaluée qu'en mode Hivernage. Tant que vous ne l'avez pas resélectionné, elle n'est pas armée.
+- Le reste de l'état courant, lui, se recalcule seul et n'est pas à saisir : température maximale du jour et plage de filtration du jour.
 
 ## Fonctionnalités
 
