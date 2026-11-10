@@ -1,13 +1,14 @@
-# Pool Control
+# Pool Management
 
-[![Tests](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml)
-[![HACS](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml)
-[![Hassfest](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml)
+[![Tests](https://github.com/scadinot/pool_management/actions/workflows/tests.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/tests.yaml)
+[![HACS](https://github.com/scadinot/pool_management/actions/workflows/Validate%20HACS.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/Validate%20HACS.yaml)
+[![Hassfest](https://github.com/scadinot/pool_management/actions/workflows/Validate%20Hassfest.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/Validate%20Hassfest.yaml)
 
 Composant Home Assistant permettant de gérer la filtration d'une piscine en fonction de la température.
 
 ## Table des matières
 
+- [Passage depuis Pool Control](#passage-depuis-pool-control)
 - [Fonctionnalités](#fonctionnalités)
 - [Prérequis](#prérequis)
 - [Installation](#installation)
@@ -32,6 +33,31 @@ Composant Home Assistant permettant de gérer la filtration d'une piscine en fon
 - [Changelog](#changelog)
 - [Contribuer](#contribuer)
 - [Licence](#licence)
+
+## Passage depuis Pool Control
+
+Cette version renomme l'intégration. **Il n'y a pas de migration automatique** : la configuration existante n'est pas reprise, Home Assistant indexant ses configurations par domaine et celui-ci ayant changé.
+
+Relevez donc vos réglages **avant** de supprimer quoi que ce soit — les entités d'actionneurs et de sondes de l'écran initial, puis les valeurs de chaque menu. Ce sont les seules valeurs qu'aucun défaut ne reconstitue, et elles ne sont plus consultables une fois l'ancienne intégration supprimée.
+
+1. **Sauvegardez** votre instance.
+2. **Relevez** la configuration : **Paramètres** → **Appareils et services** → **Pool Control** → **CONFIGURER**, en notant chaque écran. Notez aussi le **nom exact de l'instance** : il est déterminant à l'étape 6.
+3. **Supprimez** l'intégration Pool Control, puis son dépôt dans le store.
+4. **Vérifiez** que le dossier `custom_components/pool_control/` a bien disparu, et supprimez-le s'il subsiste.
+5. **Installez** Pool Management, puis redémarrez Home Assistant.
+6. **Ajoutez** l'intégration en lui donnant **exactement le nom d'instance qu'elle portait**, et ressaisissez vos réglages.
+
+### Pourquoi le nom d'instance compte autant
+
+Les `entity_id` de l'intégration ne contiennent pas le domaine : ils sont construits sur le `slugify` du nom d'instance. Une instance nommée « Piscine » produit `sensor.piscine_filtration_time`, quel que soit le domaine.
+
+En réutilisant le même nom, vous retrouvez donc des `entity_id` identiques : vos cartes et vos automatisations continuent de fonctionner sans retouche, et l'historique enregistré sous ces noms leur reste attaché. Un nom différent les change tous d'un coup.
+
+### Ce qui change malgré tout
+
+- L'URL du panneau latéral passe de `/pool-control…` à `/pool-management…` : marque-pages et liens de tableau de bord sont à reprendre.
+- L'appareil est recréé. Sa zone, le nom que vous lui aviez donné et les automatisations ou cartes qui ciblent l'appareil plutôt que ses entités sont à refaire.
+- L'état courant repart de zéro — mode en cours, saison ou hivernage, température maximale du jour — et se reconstruit au premier cycle. Il n'y a rien à saisir.
 
 ## Fonctionnalités
 
@@ -58,18 +84,18 @@ Composant Home Assistant permettant de gérer la filtration d'une piscine en fon
 
 1. Installez [HACS](https://hacs.xyz/) si ce n'est pas déjà fait.
 2. Ajoutez ce dépôt comme dépôt personnalisé dans les paramètres HACS.
-3. Recherchez « Pool Control » dans HACS et cliquez sur **TÉLÉCHARGER**.
+3. Recherchez « Pool Management » dans HACS et cliquez sur **TÉLÉCHARGER**.
 4. Redémarrez Home Assistant.
-5. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez « Pool Control ».
+5. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez « Pool Management ».
 
 ### Installation manuelle
 
 1. Ouvrez le répertoire de configuration de Home Assistant (celui qui contient `configuration.yaml`).
 2. Créez le dossier `custom_components/` s'il n'existe pas.
-3. Créez à l'intérieur un dossier `pool_control/`.
-4. Copiez-y l'ensemble des fichiers de `custom_components/pool_control/` de ce dépôt.
+3. Créez à l'intérieur un dossier `pool_management/`.
+4. Copiez-y l'ensemble des fichiers de `custom_components/pool_management/` de ce dépôt.
 5. Redémarrez Home Assistant.
-6. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez « Pool Control ».
+6. Allez dans **Paramètres** → **Appareils et services** → **Ajouter une intégration** et recherchez « Pool Management ».
 
 ## Configuration
 
@@ -89,7 +115,7 @@ Composant Home Assistant permettant de gérer la filtration d'une piscine en fon
 | Pompe à chaleur (optionnel) | Entité de la PAC (`switch`, `input_boolean` ou `climate`), affichée dans le synoptique |
 | Capteur de puissance de la PAC (optionnel) | À renseigner si la consommation de la PAC n'est pas trouvée automatiquement |
 
-Une fois l'intégration ajoutée, ouvrez **Paramètres** → **Appareils et services** → **Pool Control** → **CONFIGURER** pour accéder aux menus suivants.
+Une fois l'intégration ajoutée, ouvrez **Paramètres** → **Appareils et services** → **Pool Management** → **CONFIGURER** pour accéder aux menus suivants.
 
 ### Menu Filtration
 
@@ -165,38 +191,38 @@ Si la sonde est installée dans le local technique plutôt que dans le bassin :
 
 ## Entités exposées
 
-L'intégration crée automatiquement les entités suivantes — aucune `input_*` n'est à déclarer dans `configuration.yaml`. Les `entity_id` sont stables et indépendants de la langue de l'interface ; le nom affiché bascule automatiquement entre français et anglais selon la langue du frontend Home Assistant. Les exemples ci-dessous correspondent à une instance nommée « Pool Control » — pour un autre nom, remplacez le préfixe `pool_control_` par le `slugify` du nom choisi.
+L'intégration crée automatiquement les entités suivantes — aucune `input_*` n'est à déclarer dans `configuration.yaml`. Les `entity_id` sont stables et indépendants de la langue de l'interface ; le nom affiché bascule automatiquement entre français et anglais selon la langue du frontend Home Assistant. Les exemples ci-dessous correspondent à une instance nommée « Pool Management » — pour un autre nom, remplacez le préfixe `pool_management_` par le `slugify` du nom choisi.
 
 ### Capteurs
 
 | Entité | Description |
 |--------|-------------|
-| `sensor.pool_control_control_status` | État du mode de contrôle (Actif/Auto/Inactif + Saison/Hivernage) |
-| `sensor.pool_control_filtration_time` | Temps de filtration calculé |
-| `sensor.pool_control_filtration_schedule` | Plages horaires de filtration et température de référence |
-| `sensor.pool_control_filtration_status` | État courant de la filtration |
-| `sensor.pool_control_booster_status` | État et compte à rebours du surpresseur |
-| `sensor.pool_control_backwash_status` | Étape courante de l'assistant de lavage |
+| `sensor.pool_management_control_status` | État du mode de contrôle (Actif/Auto/Inactif + Saison/Hivernage) |
+| `sensor.pool_management_filtration_time` | Temps de filtration calculé |
+| `sensor.pool_management_filtration_schedule` | Plages horaires de filtration et température de référence |
+| `sensor.pool_management_filtration_status` | État courant de la filtration |
+| `sensor.pool_management_booster_status` | État et compte à rebours du surpresseur |
+| `sensor.pool_management_backwash_status` | Étape courante de l'assistant de lavage |
 
 ### Boutons
 
 | Entité | Action |
 |--------|--------|
-| `button.pool_control_reset` | Recalcule le temps de filtration |
-| `button.pool_control_active` | Mode manuel (marche forcée) |
-| `button.pool_control_auto` | Mode automatique |
-| `button.pool_control_inactive` | Désactive le contrôle automatique |
-| `button.pool_control_season` | Force le mode saison |
-| `button.pool_control_winter` | Force le mode hivernage |
-| `button.pool_control_booster` | Lance le surpresseur pour la durée configurée |
-| `button.pool_control_backwash` | Démarre / avance l'assistant de lavage |
-| `button.pool_control_stop` | Arrête le surpresseur ou l'opération de lavage en cours |
+| `button.pool_management_reset` | Recalcule le temps de filtration |
+| `button.pool_management_active` | Mode manuel (marche forcée) |
+| `button.pool_management_auto` | Mode automatique |
+| `button.pool_management_inactive` | Désactive le contrôle automatique |
+| `button.pool_management_season` | Force le mode saison |
+| `button.pool_management_winter` | Force le mode hivernage |
+| `button.pool_management_booster` | Lance le surpresseur pour la durée configurée |
+| `button.pool_management_backwash` | Démarre / avance l'assistant de lavage |
+| `button.pool_management_stop` | Arrête le surpresseur ou l'opération de lavage en cours |
 
 ## Tableau de bord
 
 ![DashBoard](img/dashboard.png)
 
-Exemple Lovelace exploitant les entités créées automatiquement (instance nommée « Pool Control » ; remplacez le préfixe `pool_control_` par le `slugify` de votre nom d'instance). Les deux premiers capteurs `sensor.shelly_temperature_2_temperature_2` et `sensor.exterieur_sud_temperature` sont des exemples de sondes externes — remplacez-les par les `entity_id` de vos propres capteurs de température eau / air.
+Exemple Lovelace exploitant les entités créées automatiquement (instance nommée « Pool Management » ; remplacez le préfixe `pool_management_` par le `slugify` de votre nom d'instance). Les deux premiers capteurs `sensor.shelly_temperature_2_temperature_2` et `sensor.exterieur_sud_temperature` sont des exemples de sondes externes — remplacez-les par les `entity_id` de vos propres capteurs de température eau / air.
 
 ```yaml
 type: vertical-stack
@@ -210,10 +236,10 @@ cards:
         entity: sensor.exterieur_sud_temperature
         name: Température Air
   - type: entity
-    entity: sensor.pool_control_filtration_time
+    entity: sensor.pool_management_filtration_time
     name: Temps filtration
   - type: entity
-    entity: sensor.pool_control_filtration_schedule
+    entity: sensor.pool_management_filtration_schedule
     name: Planning
   - show_name: true
     show_icon: true
@@ -222,12 +248,12 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_reset
+        entity_id: button.pool_management_reset
     name: Reset
     icon: mdi:restart
     icon_height: 32px
   - type: entity
-    entity: sensor.pool_control_control_status
+    entity: sensor.pool_management_control_status
     name: État
   - type: horizontal-stack
     cards:
@@ -238,7 +264,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_active
+            entity_id: button.pool_management_active
         name: Actif
         icon: mdi:play-circle
         icon_height: 32px
@@ -249,7 +275,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_auto
+            entity_id: button.pool_management_auto
         name: Auto
         icon: mdi:auto-fix
         icon_height: 32px
@@ -260,7 +286,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_inactive
+            entity_id: button.pool_management_inactive
         name: Inactif
         icon: mdi:stop-circle
         icon_height: 32px
@@ -273,7 +299,7 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_season
+            entity_id: button.pool_management_season
         name: Saison
         icon: mdi:weather-sunny
         icon_height: 32px
@@ -284,12 +310,12 @@ cards:
           action: call-service
           service: button.press
           target:
-            entity_id: button.pool_control_winter
+            entity_id: button.pool_management_winter
         name: Hivernage
         icon: mdi:snowflake
         icon_height: 32px
   - type: entity
-    entity: sensor.pool_control_booster_status
+    entity: sensor.pool_management_booster_status
     name: Surpresseur
   - show_name: true
     show_icon: true
@@ -298,12 +324,12 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_booster
+        entity_id: button.pool_management_booster
     name: Surpresseur
     icon: mdi:pump
     icon_height: 32px
   - type: entity
-    entity: sensor.pool_control_backwash_status
+    entity: sensor.pool_management_backwash_status
     name: Lavage
   - show_name: true
     show_icon: true
@@ -312,7 +338,7 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_backwash
+        entity_id: button.pool_management_backwash
     name: Lavage
     icon: mdi:air-filter
     icon_height: 32px
@@ -323,7 +349,7 @@ cards:
       action: call-service
       service: button.press
       target:
-        entity_id: button.pool_control_stop
+        entity_id: button.pool_management_stop
     name: Stop
     icon: mdi:stop
     icon_height: 32px
@@ -331,9 +357,9 @@ cards:
 
 ## Panneau latéral
 
-Depuis la **0.0.23**, l'intégration enregistre automatiquement une entrée **Pool Control** dans la sidebar Home Assistant (à côté de « Vue d'ensemble », « Énergie », …). Aucune configuration supplémentaire n'est requise — l'entrée apparaît dès le premier démarrage après installation, et est retirée si l'intégration est désinstallée.
+Depuis la **0.0.23**, l'intégration enregistre automatiquement une entrée **Pool Management** dans la sidebar Home Assistant (à côté de « Vue d'ensemble », « Énergie », …). Aucune configuration supplémentaire n'est requise — l'entrée apparaît dès le premier démarrage après installation, et est retirée si l'intégration est désinstallée.
 
-Cliquer dessus ouvre une vue pleine page (URL `/pool-control`) qui regroupe :
+Cliquer dessus ouvre une vue pleine page (URL `/pool-management`) qui regroupe :
 
 - un **synoptique réaliste du local technique** : bassin avec skimmer et bonde de fond, pompe avec préfiltre, filtre à sable et vanne 6 voies, pompe à chaleur sur by-pass, pompes doseuses et surpresseur. L'eau s'anime dans les tuyaux dans le sens de circulation, et les vannes du by-pass basculent quand la PAC chauffe ;
 - la **consommation** de chaque équipement, lue sur le capteur de puissance porté par le même appareil que le relais (par exemple une voie de Shelly Pro 4PM). Pour la PAC, un capteur peut aussi être choisi dans la configuration. Sans PAC configurée, elle reste dessinée en grisé. Un équipement dont la voie ne mesure rien — relais utilisé comme simple contact de commande, appareil alimenté ailleurs — s'affiche sans watts ;
@@ -348,7 +374,7 @@ Les actions sensibles (désactivation, hivernage, annulation du lavage) demanden
 
 L'appui sur le bouton **Surpresseur** lance le surpresseur pour la durée configurée. Si la filtration n'est pas active, elle est démarrée d'abord, puis le surpresseur après une temporisation de quelques secondes — cette pause évite d'endommager le surpresseur en attendant que l'eau circule dans le circuit.
 
-Le capteur `sensor.pool_control_surpresseur_status` affiche le temps restant sous forme de compte à rebours. À la fin du cycle, le surpresseur s'arrête, ainsi que la filtration si elle n'était pas active auparavant. Le bouton **Stop** permet d'interrompre le cycle à tout moment.
+Le capteur `sensor.pool_management_booster_status` affiche le temps restant sous forme de compte à rebours. À la fin du cycle, le surpresseur s'arrête, ainsi que la filtration si elle n'était pas active auparavant. Le bouton **Stop** permet d'interrompre le cycle à tout moment.
 
 ## Lavage du filtre à sable
 
@@ -404,16 +430,16 @@ L'historique détaillé des versions est disponible dans [CHANGELOG.md](CHANGELO
 
 ## Contribuer
 
-Les issues et pull requests sont les bienvenues sur [GitHub](https://github.com/scadinot/pool_control). Avant de proposer un changement de comportement significatif, ouvrez d'abord une issue pour en discuter.
+Les issues et pull requests sont les bienvenues sur [GitHub](https://github.com/scadinot/pool_management). Avant de proposer un changement de comportement significatif, ouvrez d'abord une issue pour en discuter.
 
 ### Structure du dépôt
 
 ```
-pool_control/
+pool_management/
 ├── .github/
 │   └── workflows/             # CI GitHub Actions
 ├── custom_components/
-│   └── pool_control/
+│   └── pool_management/
 │       ├── __init__.py
 │       ├── activation.py
 │       ├── brand/             # assets de marque (HA ≥ 2026.3)

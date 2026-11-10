@@ -1,11 +1,11 @@
-"""Pool Control integration sensors."""
+"""Pool Management integration sensors."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .entities import PoolControlStatusSensor
+from .entities import PoolManagementStatusSensor
 
 
 async def async_setup_entry(
@@ -13,7 +13,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Pool Control sensors."""
+    """Set up Pool Management sensors."""
 
     domain_data = hass.data[DOMAIN]
     controller = (
@@ -21,37 +21,37 @@ async def async_setup_entry(
     )
 
     entities = [
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "control_status",
-            "pool_control_asservissement_status",
+            "pool_management_asservissement_status",
             "asservissementStatus",
             default_state="",
             entry=entry,
             restore_state=True,
         ),
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "filtration_time",
-            "pool_control_filtration_time",
+            "pool_management_filtration_time",
             "filtrationTimeStatus",
             default_state="",
             entry=entry,
             restore_state=True,
         ),
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "filtration_schedule",
-            "pool_control_filtration_schedule",
+            "pool_management_filtration_schedule",
             "filtrationScheduleStatus",
             default_state="",
             entry=entry,
             restore_state=True,
         ),
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "filtration_status",
-            "pool_control_filtration_status",
+            "pool_management_filtration_status",
             "filtrationStatus",
             entry=entry,
             restore_state=True,
@@ -59,17 +59,17 @@ async def async_setup_entry(
         # Surpresseur et lavage : pas de restauration, l'affichage est
         # reconstruit à partir du cycle persisté (resumeSecondCron / pull) ;
         # un compte à rebours restauré pourrait être périmé
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "booster_status",
-            "pool_control_surpresseur_status",
+            "pool_management_surpresseur_status",
             "surpresseurStatus",
             entry=entry,
         ),
-        PoolControlStatusSensor(
+        PoolManagementStatusSensor(
             controller,
             "backwash_status",
-            "pool_control_filtre_sable_lavage_status",
+            "pool_management_filtre_sable_lavage_status",
             "filtreSableLavageStatus",
             entry=entry,
         ),

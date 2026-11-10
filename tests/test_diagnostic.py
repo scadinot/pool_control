@@ -22,8 +22,8 @@ def test_custom_component_import():
     """Test que le custom component peut être importé."""
     try:
         import homeassistant  # Doit être importé d'abord
-        from custom_components.pool_control import const
-        assert const.DOMAIN == "pool_control"
+        from custom_components.pool_management import const
+        assert const.DOMAIN == "pool_management"
     except ImportError as e:
         pytest.skip(f"Cannot import: {e}")
 

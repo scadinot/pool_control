@@ -1,12 +1,12 @@
-"""Tests for pool_control entity helpers."""
+"""Tests for pool_management entity helpers."""
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from homeassistant.core import State
 
-from custom_components.pool_control.entities import (
-    PoolControlStatusSensor,
+from custom_components.pool_management.entities import (
+    PoolManagementStatusSensor,
     _build_entity_id,
 )
 
@@ -15,10 +15,10 @@ def _make_sensor(restore_state=True, default_state=""):
     """Build a filtration schedule sensor attached to a mock controller."""
 
     entry = MagicMock(entry_id="entry_id", unique_id="piscine", title="Piscine")
-    return PoolControlStatusSensor(
+    return PoolManagementStatusSensor(
         MagicMock(),
         "filtration_schedule",
-        "pool_control_filtration_schedule",
+        "pool_management_filtration_schedule",
         "filtrationScheduleStatus",
         default_state=default_state,
         entry=entry,
@@ -31,13 +31,13 @@ def _last_state(value):
 
     state = None if value is None else State("sensor.piscine_filtration_schedule", value)
     return patch.object(
-        PoolControlStatusSensor,
+        PoolManagementStatusSensor,
         "async_get_last_state",
         AsyncMock(return_value=state),
     )
 
 
-class TestPoolControlStatusSensorRestore:
+class TestPoolManagementStatusSensorRestore:
     """Restoration of the last known status after a restart."""
 
     async def test_restores_last_state(self):
@@ -106,10 +106,10 @@ class TestSensorPlatformRestore:
     async def test_only_non_timer_statuses_restore(self):
         """Booster and backwash are rebuilt from the persisted cycle instead."""
 
-        from custom_components.pool_control.sensor import async_setup_entry
+        from custom_components.pool_management.sensor import async_setup_entry
 
         hass = MagicMock()
-        hass.data = {"pool_control": {"entry_id": MagicMock()}}
+        hass.data = {"pool_management": {"entry_id": MagicMock()}}
         entry = MagicMock(entry_id="entry_id", unique_id="piscine", title="Piscine")
         added = []
 
@@ -136,20 +136,20 @@ class TestBuildEntityId:
     def test_uses_entry_unique_id_when_set(self):
         """unique_id is the stable slug computed at config flow time."""
 
-        entry = MagicMock(unique_id="pool_control", title="Pool Control")
+        entry = MagicMock(unique_id="pool_management", title="Pool Management")
 
         result = _build_entity_id("button", entry, "active")
 
-        assert result == "button.pool_control_active"
+        assert result == "button.pool_management_active"
 
     def test_unique_id_remains_after_title_rename(self):
         """Renaming the entry must not shift the prefix used for new entities."""
 
-        entry = MagicMock(unique_id="pool_control", title="Renamed By User")
+        entry = MagicMock(unique_id="pool_management", title="Renamed By User")
 
         result = _build_entity_id("sensor", entry, "filtration_time")
 
-        assert result == "sensor.pool_control_filtration_time"
+        assert result == "sensor.pool_management_filtration_time"
 
     @pytest.mark.parametrize("falsy", [None, ""])
     def test_falls_back_to_slugified_title_when_no_unique_id(self, falsy):

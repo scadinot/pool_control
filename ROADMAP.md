@@ -1,6 +1,6 @@
-# Feuille de route — Pool Control
+# Feuille de route — Pool Management
 
-Ce document liste les évolutions envisagées pour Pool Control. Il est volontairement plus large que le `CHANGELOG.md` (qui consigne ce qui a été livré) et a vocation à être discuté via les issues GitHub avant tout démarrage d'implémentation.
+Ce document liste les évolutions envisagées pour Pool Management. Il est volontairement plus large que le `CHANGELOG.md` (qui consigne ce qui a été livré) et a vocation à être discuté via les issues GitHub avant tout démarrage d'implémentation.
 
 ## Vue d'ensemble
 
@@ -19,7 +19,7 @@ La version courante est **0.0.17** : refonte documentaire, alignement de la pré
 
 ### 1. Support multi-instance
 
-Permettre la déclaration de plusieurs piscines ou spas distincts sous le même domaine `pool_control`.
+Permettre la déclaration de plusieurs piscines ou spas distincts sous le même domaine `pool_management`.
 
 - **Motivation** : couvrir les utilisateurs disposant de plusieurs bassins (piscine principale + spa, par exemple), sans avoir à dupliquer l'intégration ou contourner via plusieurs comptes Home Assistant.
 - **Piste technique** :
@@ -46,7 +46,7 @@ Coefficients d'ajustement distincts pour printemps / été / automne, sélection
 - **Piste technique** :
   - Nouvelle clé `seasonProfile` dans l'`OptionsFlow`, sous forme de table de coefficients indexée par mois.
   - Résolution du coefficient courant au début de chaque cycle dans `utils.py::calculateTimeFiltrationWithCurve`.
-  - Sélecteur Lovelace `select.pool_control_season_profile` pour forcer manuellement un profil (utile en demi-saison).
+  - Sélecteur Lovelace `select.pool_management_season_profile` pour forcer manuellement un profil (utile en demi-saison).
 
 ### 4. Notifications optionnelles
 
@@ -62,7 +62,7 @@ Coefficients d'ajustement distincts pour printemps / été / automne, sélection
 
 ### 5. Statistiques de filtration
 
-Capteurs cumulatifs : `sensor.pool_control_total_filtration_minutes_today`, `_this_week`, `_this_month`, `_year_to_date`.
+Capteurs cumulatifs : `sensor.pool_management_total_filtration_minutes_today`, `_this_week`, `_this_month`, `_year_to_date`.
 
 - **Motivation** : permettre à l'utilisateur de vérifier que le temps de filtration réel correspond bien au temps calculé, et d'alimenter ses propres tableaux de bord énergie.
 - **Piste technique** :
@@ -72,7 +72,7 @@ Capteurs cumulatifs : `sensor.pool_control_total_filtration_minutes_today`, `_th
 
 ### 6. Tableau de bord Lovelace dédié
 
-Carte `custom-element` packagée séparément (`pool_control-card`).
+Carte `custom-element` packagée séparément (`pool_management-card`).
 
 - **Motivation** : l'exemple YAML du README est long et peu accessible aux utilisateurs débutants. Une carte unique offre une expérience « plug and play ».
 - **Piste technique** :
@@ -81,7 +81,7 @@ Carte `custom-element` packagée séparément (`pool_control-card`).
 
 ### 7. Calendrier de maintenance
 
-Entité `calendar.pool_control_maintenance` listant les rappels d'entretien.
+Entité `calendar.pool_management_maintenance` listant les rappels d'entretien.
 
 - **Motivation** : l'entretien d'une piscine suit un calendrier à plusieurs strates (lavage filtre, traitement choc, hivernage à date) facile à oublier.
 - **Piste technique** :

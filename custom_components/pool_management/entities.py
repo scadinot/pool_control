@@ -1,4 +1,4 @@
-"""Entities for Pool Control integration."""
+"""Entities for Pool Management integration."""
 
 from typing import Any, Callable, Optional
 
@@ -23,7 +23,7 @@ def _build_device_info(entry: Optional[ConfigEntry]) -> Optional[DeviceInfo]:
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},
         name=entry.title,
-        manufacturer="Pool Control",
+        manufacturer="Pool Management",
         entry_type=DeviceEntryType.SERVICE,
     )
 
@@ -35,7 +35,7 @@ def _build_entity_id(
 
     Home Assistant derives the default object_id from the translated entity
     name in the language active at creation time, which produces French
-    identifiers like ``button.pool_control_actif`` when HA is in French —
+    identifiers like ``button.pool_management_actif`` when HA is in French —
     even though ``translation_key`` is "active". Setting
     ``self.entity_id`` directly in ``__init__`` is the documented way to
     force a stable slug (see ``entity_platform.py`` ``async_add_entities``
@@ -55,8 +55,8 @@ def _build_entity_id(
     return f"{platform}.{prefix}_{translation_key}"
 
 
-class PoolControlStatusSensor(SensorEntity, RestoreEntity):
-    """Sensor générique pour afficher un statut Pool Control."""
+class PoolManagementStatusSensor(SensorEntity, RestoreEntity):
+    """Sensor générique pour afficher un statut Pool Management."""
 
     _attr_has_entity_name = True
 
@@ -70,7 +70,7 @@ class PoolControlStatusSensor(SensorEntity, RestoreEntity):
         entry: Optional[ConfigEntry] = None,
         restore_state: bool = False,
     ) -> None:
-        """Initialize the PoolControlStatusSensor."""
+        """Initialize the PoolManagementStatusSensor."""
 
         self._controller = controller
         self._attr_translation_key = translation_key
@@ -124,8 +124,8 @@ class PoolControlStatusSensor(SensorEntity, RestoreEntity):
             self.async_write_ha_state()
 
 
-class PoolControlButton(ButtonEntity):
-    """Button générique pour Pool Control."""
+class PoolManagementButton(ButtonEntity):
+    """Button générique pour Pool Management."""
 
     _attr_has_entity_name = True
 
@@ -137,7 +137,7 @@ class PoolControlButton(ButtonEntity):
         callback: Callable,
         entry: Optional[ConfigEntry] = None,
     ) -> None:
-        """Initialize the PoolControlButton."""
+        """Initialize the PoolManagementButton."""
 
         self._controller = controller
         self._attr_translation_key = translation_key

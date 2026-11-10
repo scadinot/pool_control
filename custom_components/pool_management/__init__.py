@@ -1,4 +1,4 @@
-"""Integration for Pool Control."""
+"""Integration for Pool Management."""
 
 import logging
 
@@ -20,14 +20,14 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrer les anciennes config entries vers le format multi-instance."""
 
     _LOGGER.info(
-        "Migrating Pool Control entry %s from version %s",
+        "Migrating Pool Management entry %s from version %s",
         entry.entry_id,
         entry.version,
     )
 
     if entry.version == 1:
         # Préserver le titre existant comme nom d'instance
-        name = entry.data.get("name") or entry.title or "Pool Control"
+        name = entry.data.get("name") or entry.title or "Pool Management"
         new_data = {**entry.data, "name": name}
 
         # Récupérer l'unique_id basé sur le nom (compatible Shutters Management)
@@ -93,9 +93,9 @@ async def _async_update_panel(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Installer Pool Control à partir d'un config entry."""
+    """Installer Pool Management à partir d'un config entry."""
 
-    _LOGGER.info("Setting up Pool Control from Config Entry %s", entry.title)
+    _LOGGER.info("Setting up Pool Management from Config Entry %s", entry.title)
 
     conf = {**entry.data, **entry.options}
 
@@ -123,12 +123,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Décharger Pool Control."""
+    """Décharger Pool Management."""
 
-    _LOGGER.info("Unloading Pool Control %s", entry.title)
+    _LOGGER.info("Unloading Pool Management %s", entry.title)
 
     # Retirer le panneau de cette instance uniquement (les autres
-    # instances Pool Control encore chargées conservent le leur)
+    # instances Pool Management encore chargées conservent le leur)
     await async_unregister_panel(hass, _slug_from_entry(entry))
 
     # Arrêter les crons avant de décharger les plateformes

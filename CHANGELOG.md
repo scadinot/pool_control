@@ -1,10 +1,30 @@
 # Changelog
 
-Toutes les évolutions notables de Pool Control sont consignées dans ce fichier.
+Toutes les évolutions notables de Pool Management sont consignées dans ce fichier.
 
 Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr/1.1.0/) et le projet suit [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
+
+## [0.1.0] — 2026-11-10
+
+### Modifié
+- **Renommage de l'intégration en `pool_management` / « Pool Management »**, pour s'aligner sur la convention des projets voisins `energy_management` et `shutters_management` : le domaine, le nom du dossier et le nom du dépôt portent désormais la même valeur.
+- Dossier d'installation : `custom_components/pool_control/` → `custom_components/pool_management/`.
+- Identifiants dérivés du domaine : clé du Store, chemin statique du panneau, URL de la barre latérale, nom du Web Component et suffixes d'`unique_id`.
+- Les classes portant l'ancien nom de produit deviennent `PoolManagement*`. `PoolController` est conservé : c'est du vocabulaire métier — le contrôleur de la piscine — et non la marque.
+- `README.md` : chemin d'installation, badges, URL du dépôt, exemples d'entités et de tableau de bord, et une nouvelle section décrivant la procédure de passage.
+- Tests : nouveau fichier `tests/test_naming.py`, qui verrouille la cohérence des identifiants dérivés les uns des autres et l'absence de toute trace de l'ancien nom. La suite passe de 427 à 436 tests.
+- `manifest.json` : `version` `0.0.35` → `0.1.0`.
+
+### Changement de comportement
+- **Aucune migration automatique.** Cette version ne reprend pas la configuration existante. Relevez vos réglages, supprimez l'ancienne intégration, installez celle-ci, puis reconfigurez — la procédure détaillée est dans le README.
+- **Donnez à l'instance exactement le nom qu'elle portait.** Les `entity_id` sont construits sur le `slugify` du nom d'instance et non sur le domaine : en réutilisant le même nom, vous retrouvez les mêmes `entity_id`, et vos cartes comme vos automatisations continuent de fonctionner sans retouche. Un nom différent les change tous d'un coup.
+- Les réglages sont à ressaisir : les entités d'actionneurs et de sondes de l'écran initial, puis les paramètres des menus. Ce sont les seules valeurs qu'aucun défaut ne reconstitue — relevez-les **avant** de supprimer l'ancienne intégration.
+- L'état courant est perdu : mode en cours, saison ou hivernage, température maximale du jour et plage calculée du jour. Il se reconstruit au premier cycle, il n'y a rien à saisir.
+- L'URL du panneau latéral passe de `/pool-control…` à `/pool-management…` : marque-pages et liens de tableau de bord sont à reprendre.
+- L'appareil est recréé. Sa zone, le nom que vous lui aviez donné et toute automatisation ou carte ciblant l'appareil plutôt que ses entités sont à refaire. Les entités, elles, conservent leur `entity_id` et leur historique si le nom d'instance est réutilisé.
+- L'entité de mise à jour du store est renommée avec le dépôt. Son `entity_id` est décidé par le store et non par cette intégration : repointez ce qui la référence vers celle qu'il crée.
 
 ## [0.0.35] — 2026-11-09
 

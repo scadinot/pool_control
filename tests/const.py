@@ -1,4 +1,4 @@
-"""Constantes pour les tests Pool Control."""
+"""Constantes pour les tests Pool Management."""
 
 # Configuration minimale pour les tests
 MOCK_CONFIG_MINIMAL = {

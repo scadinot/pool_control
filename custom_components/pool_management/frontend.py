@@ -1,7 +1,7 @@
-"""Frontend panel registration for Pool Control.
+"""Frontend panel registration for Pool Management.
 
 Sert le fichier JS du panneau via l'URL statique
-``/pool_control_static/`` et enregistre une entrée latérale **par
+``/pool_management_static/`` et enregistre une entrée latérale **par
 instance** afin de ne pas entrer en collision quand plusieurs piscines
 cohabitent.
 """
@@ -22,24 +22,24 @@ except ImportError:  # pragma: no cover - compat older HA
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_BASE_URL_PATH = "pool-control"        # URL pour l'instance par défaut
-PANEL_TITLE = "Pool Control"
+PANEL_BASE_URL_PATH = "pool-management"        # URL pour l'instance par défaut
+PANEL_TITLE = "Pool Management"
 PANEL_ICON = "mdi:pool"
-PANEL_NAME = "pool-control-panel"          # nom du Web Component
+PANEL_NAME = "pool-management-panel"          # nom du Web Component
 
-STATIC_PATH = "/pool_control_static"       # URL servie par HA
-JS_FILENAME = "pool_control_panel.js"
+STATIC_PATH = "/pool_management_static"       # URL servie par HA
+JS_FILENAME = "pool_management_panel.js"
 
-DEFAULT_SLUG = "pool_control"
+DEFAULT_SLUG = "pool_management"
 
 
 def _panel_url_path(slug: str) -> str:
     """Build a per-instance URL path.
 
-    - L'instance par défaut (``pool_control``) garde l'URL historique
-      ``pool-control`` pour préserver d'éventuels bookmarks utilisateurs.
+    - L'instance par défaut (``pool_management``) prend l'URL de base
+      ``pool-management``, sans suffixe.
     - Les autres instances reçoivent un suffixe dérivé de leur slug
-      (``pool-control-piscine``, ``pool-control-spa``, …) afin que
+      (``pool-management-piscine``, ``pool-management-spa``, …) afin que
       chaque ConfigEntry dispose de sa propre entrée de sidebar et de
       son propre URL.
     """
@@ -67,7 +67,7 @@ async def async_register_panel(
 
     À appeler depuis ``async_setup_entry`` dans ``__init__.py``. Chaque
     instance reçoit une URL et un titre distincts pour pouvoir cohabiter
-    avec d'autres instances Pool Control.
+    avec d'autres instances Pool Management.
 
     Le ``config_entry_data`` est transmis au Web Component via
     ``panel.config`` ; on y passe l'``instance_prefix`` (slug) ainsi que
@@ -75,7 +75,7 @@ async def async_register_panel(
     """
 
     # 1. Servir le dossier statique (une seule fois pour le domaine)
-    if STATIC_PATH not in hass.data.get("pool_control_static_registered", set()):
+    if STATIC_PATH not in hass.data.get("pool_management_static_registered", set()):
         frontend_dir = Path(__file__).parent / "frontend"
         if StaticPathConfig is not None:
             await hass.http.async_register_static_paths(
@@ -83,20 +83,20 @@ async def async_register_panel(
             )
         else:  # pragma: no cover - compat older HA (< 2024.7)
             hass.http.register_static_path(STATIC_PATH, str(frontend_dir), cache_headers=False)
-        hass.data.setdefault("pool_control_static_registered", set()).add(STATIC_PATH)
-        _LOGGER.info("Pool Control: static path %s mounted on %s", STATIC_PATH, frontend_dir)
+        hass.data.setdefault("pool_management_static_registered", set()).add(STATIC_PATH)
+        _LOGGER.info("Pool Management: static path %s mounted on %s", STATIC_PATH, frontend_dir)
 
     url_path = _panel_url_path(slug)
 
     # 2. Enregistrer le panneau pour cette instance (idempotent)
     if url_path in hass.data.get(frontend.DATA_PANELS, {}):
         _LOGGER.debug(
-            "Pool Control panel already registered at /%s, skipping", url_path
+            "Pool Management panel already registered at /%s, skipping", url_path
         )
         return
 
     # Configuration transmise au Web Component via panel.config.
-    # Les clés du config_flow Pool Control sont en camelCase
+    # Les clés du config_flow Pool Management sont en camelCase
     # (temperatureWater, temperatureOutdoor, …) ; on les remappe vers les
     # noms attendus par le Web Component. Les relais permettent au
     # synoptique d'afficher l'état réel des équipements et de retrouver
@@ -126,17 +126,17 @@ async def async_register_panel(
         require_admin=False,
         embed_iframe=False,
     )
-    _LOGGER.info("Pool Control panel registered at /%s", url_path)
+    _LOGGER.info("Pool Management panel registered at /%s", url_path)
 
 
 async def async_unregister_panel(hass: HomeAssistant, slug: str) -> None:
     """Retire uniquement le panneau de cette instance.
 
     À appeler depuis ``async_unload_entry``. Les autres instances
-    Pool Control encore actives conservent leur entrée de sidebar.
+    Pool Management encore actives conservent leur entrée de sidebar.
     """
 
     url_path = _panel_url_path(slug)
     if url_path in hass.data.get(frontend.DATA_PANELS, {}):
         frontend.async_remove_panel(hass, url_path)
-        _LOGGER.info("Pool Control panel unregistered (/%s)", url_path)
+        _LOGGER.info("Pool Management panel unregistered (/%s)", url_path)

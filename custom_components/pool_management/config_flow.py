@@ -1,4 +1,4 @@
-"""Config flow for Pool Control integration."""
+"""Config flow for Pool Management integration."""
 
 from typing import Any, Optional
 
@@ -11,11 +11,11 @@ from homeassistant.helpers.selector import selector
 from homeassistant.util import slugify
 
 from .const import DOMAIN
-from .options_flow import PoolControlOptionsFlowHandler
+from .options_flow import PoolManagementOptionsFlowHandler
 
 
-class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Gestion de la configuration initiale de Pool Control via l'UI."""
+class PoolManagementConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Gestion de la configuration initiale de Pool Management via l'UI."""
 
     VERSION = 2
 
@@ -37,7 +37,7 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required("name", default="Pool Control"): str,
+                    vol.Required("name", default="Pool Management"): str,
                     vol.Required("temperatureWater"): selector(
                         {"entity": {"domain": ["sensor", "input_number"]}}
                     ),
@@ -72,7 +72,7 @@ class PoolControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> PoolControlOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> PoolManagementOptionsFlowHandler:
         """Retourne le flow d'options amélioré."""
 
-        return PoolControlOptionsFlowHandler()
+        return PoolManagementOptionsFlowHandler()

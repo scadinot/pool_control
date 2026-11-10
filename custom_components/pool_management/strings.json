@@ -1,9 +1,9 @@
 {
-  "title": "Pool Control",
+  "title": "Pool Management",
   "config": {
     "step": {
       "user": {
-        "title": "Pool Control Setup",
+        "title": "Pool Management Setup",
         "description": "Configure the required entities. The name is used to distinguish multiple pools.",
         "data": {
           "name": "Instance name",

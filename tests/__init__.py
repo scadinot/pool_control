@@ -1,1 +1,1 @@
-"""Tests pour Pool Control custom component."""
+"""Tests pour Pool Management custom component."""

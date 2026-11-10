@@ -26,7 +26,7 @@ pytest.importorskip("homeassistant")
 @pytest.fixture
 def mock_scheduler_controller(mock_hass, mock_pool_config):
     """Create a mock controller with SchedulerMixin."""
-    from custom_components.pool_control.controller import PoolController
+    from custom_components.pool_management.controller import PoolController
 
     controller = PoolController(mock_hass, mock_pool_config)
 
@@ -76,7 +76,7 @@ class TestStartSecondCron:
         mock_cancel = Mock()
 
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval",
+            "custom_components.pool_management.scheduler.async_track_time_interval",
             return_value=mock_cancel,
         ) as mock_track:
             await mock_scheduler_controller.startSecondCron()
@@ -98,7 +98,7 @@ class TestStartSecondCron:
         mock_scheduler_controller.secondCronCancel = existing_cancel
 
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval",
+            "custom_components.pool_management.scheduler.async_track_time_interval",
             return_value=Mock(),
         ):
             await mock_scheduler_controller.startSecondCron()
@@ -112,7 +112,7 @@ class TestStartSecondCron:
         mock_scheduler_controller.secondCronCancel = None
 
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval",
+            "custom_components.pool_management.scheduler.async_track_time_interval",
             return_value=Mock(),
         ):
             # Should not crash
@@ -379,7 +379,7 @@ class TestStartFirstCron:
     async def test_registers_minute_interval_callback(self, mock_scheduler_controller):
         """Test startFirstCron registers a 1-minute interval callback."""
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval"
+            "custom_components.pool_management.scheduler.async_track_time_interval"
         ) as mock_track:
             await mock_scheduler_controller.startFirstCron()
 
@@ -516,7 +516,7 @@ class TestSchedulerIntegration:
         mock_cancel = Mock()
 
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval",
+            "custom_components.pool_management.scheduler.async_track_time_interval",
             return_value=mock_cancel,
         ):
             # Start cron

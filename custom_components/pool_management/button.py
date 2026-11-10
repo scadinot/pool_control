@@ -1,11 +1,11 @@
-"""Button platform for Pool Control integration."""
+"""Button platform for Pool Management integration."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .entities import PoolControlButton
+from .entities import PoolManagementButton
 
 
 async def async_setup_entry(
@@ -13,7 +13,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Pool Control buttons."""
+    """Set up Pool Management buttons."""
 
     domain_data = hass.data[DOMAIN]
     controller = (
@@ -21,66 +21,66 @@ async def async_setup_entry(
     )
 
     entities = [
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "reset",
-            "pool_control_reset",
+            "pool_management_reset",
             controller.executeButtonReset,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "stop",
-            "pool_control_stop",
+            "pool_management_stop",
             controller.executeButtonStop,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "booster",
-            "pool_control_surpresseur",
+            "pool_management_surpresseur",
             controller.executeSurpresseurOn,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "backwash",
-            "pool_control_lavage",
+            "pool_management_lavage",
             controller.executeFiltreSableLavageOn,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "active",
-            "pool_control_actif",
+            "pool_management_actif",
             controller.executeButtonActif,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "auto",
-            "pool_control_auto",
+            "pool_management_auto",
             controller.executeButtonAuto,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "inactive",
-            "pool_control_inactif",
+            "pool_management_inactif",
             controller.executeButtonInactif,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "winter",
-            "pool_control_hivernage",
+            "pool_management_hivernage",
             controller.executeButtonHivernage,
             entry=entry,
         ),
-        PoolControlButton(
+        PoolManagementButton(
             controller,
             "season",
-            "pool_control_saison",
+            "pool_management_saison",
             controller.executeButtonSaison,
             entry=entry,
         ),

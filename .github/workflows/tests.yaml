@@ -62,5 +62,5 @@ jobs:
 
     - name: Run ruff linter
       run: |
-        ruff check custom_components/pool_control/ || true
+        ruff check custom_components/pool_management/ || true
       continue-on-error: true

@@ -26,13 +26,13 @@ import asyncio
 # Skip all tests if Home Assistant is not installed
 pytest.importorskip("homeassistant")
 
-from custom_components.pool_control.activation import DEVICE_ACTIVATION_DELAY
+from custom_components.pool_management.activation import DEVICE_ACTIVATION_DELAY
 
 
 @pytest.fixture
 def mock_controller(mock_hass, mock_pool_config):
     """Create a mock controller with ActivationMixin."""
-    from custom_components.pool_control.controller import PoolController
+    from custom_components.pool_management.controller import PoolController
 
     controller = PoolController(mock_hass, mock_pool_config)
 

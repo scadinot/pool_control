@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.components import frontend
 
-from custom_components.pool_control.frontend import (
+from custom_components.pool_management.frontend import (
     PANEL_BASE_URL_PATH,
     PANEL_NAME,
     PANEL_TITLE,
@@ -24,16 +24,16 @@ def panel_hass(mock_hass):
 
 
 async def test_register_panel_default_instance(panel_hass):
-    """Le panneau par défaut s'enregistre sous /pool-control avec le titre de base."""
+    """Le panneau par défaut s'enregistre sous /pool-management avec le titre de base."""
 
     with patch(
-        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        "custom_components.pool_management.frontend.panel_custom.async_register_panel",
         new=AsyncMock(),
     ) as mock_register:
         await async_register_panel(
             panel_hass,
-            "pool_control",
-            "Pool Control",
+            "pool_management",
+            "Pool Management",
             {
                 "temperatureWater": "sensor.water",
                 "temperatureOutdoor": "sensor.air",
@@ -45,7 +45,7 @@ async def test_register_panel_default_instance(panel_hass):
     assert kwargs["webcomponent_name"] == PANEL_NAME
     assert kwargs["frontend_url_path"] == PANEL_BASE_URL_PATH
     assert kwargs["sidebar_title"] == PANEL_TITLE
-    assert kwargs["config"]["instance_prefix"] == "pool_control"
+    assert kwargs["config"]["instance_prefix"] == "pool_management"
     assert kwargs["config"]["water_entity"] == "sensor.water"
     assert kwargs["config"]["air_entity"] == "sensor.air"
 
@@ -54,7 +54,7 @@ async def test_register_panel_passes_equipment_configuration(panel_hass):
     """Le synoptique reçoit les relais, la PAC, son capteur de puissance et les durées."""
 
     with patch(
-        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        "custom_components.pool_management.frontend.panel_custom.async_register_panel",
         new=AsyncMock(),
     ) as mock_register:
         await async_register_panel(
@@ -88,10 +88,10 @@ async def test_register_panel_optional_equipment_defaults(panel_hass):
     """Sans équipement optionnel, les entités valent None et les durées 2 min."""
 
     with patch(
-        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        "custom_components.pool_management.frontend.panel_custom.async_register_panel",
         new=AsyncMock(),
     ) as mock_register:
-        await async_register_panel(panel_hass, "pool_control", "Pool Control", {})
+        await async_register_panel(panel_hass, "pool_management", "Pool Management", {})
 
     config = mock_register.call_args.kwargs["config"]
     assert config["treatment_2_entity"] is None
@@ -105,7 +105,7 @@ async def test_register_panel_per_instance_url_and_title(panel_hass):
     """Une 2ᵉ instance reçoit une URL et un titre disambiguïsés."""
 
     with patch(
-        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        "custom_components.pool_management.frontend.panel_custom.async_register_panel",
         new=AsyncMock(),
     ) as mock_register:
         await async_register_panel(
@@ -116,7 +116,7 @@ async def test_register_panel_per_instance_url_and_title(panel_hass):
         )
 
     kwargs = mock_register.call_args.kwargs
-    assert kwargs["frontend_url_path"] == "pool-control-piscine"
+    assert kwargs["frontend_url_path"] == "pool-management-piscine"
     assert kwargs["sidebar_title"] == f"{PANEL_TITLE} · Piscine"
     assert kwargs["config"]["instance_prefix"] == "piscine"
 
@@ -125,13 +125,13 @@ async def test_register_panel_idempotent_per_url(panel_hass):
     """Un 2ᵉ appel pour la même instance ne ré-enregistre pas le panneau."""
 
     with patch(
-        "custom_components.pool_control.frontend.panel_custom.async_register_panel",
+        "custom_components.pool_management.frontend.panel_custom.async_register_panel",
         new=AsyncMock(),
     ) as mock_register:
-        await async_register_panel(panel_hass, "pool_control", "Pool Control", {})
+        await async_register_panel(panel_hass, "pool_management", "Pool Management", {})
         # HA marque le panneau comme déjà enregistré
         panel_hass.data.setdefault(frontend.DATA_PANELS, {})[PANEL_BASE_URL_PATH] = object()
-        await async_register_panel(panel_hass, "pool_control", "Pool Control", {})
+        await async_register_panel(panel_hass, "pool_management", "Pool Management", {})
 
     assert mock_register.call_count == 1
 
@@ -139,23 +139,23 @@ async def test_register_panel_idempotent_per_url(panel_hass):
 async def test_unregister_panel_targets_only_that_instance(panel_hass):
     """``async_unregister_panel`` ne retire que le panneau de l'instance demandée."""
 
-    panel_hass.data.setdefault(frontend.DATA_PANELS, {})["pool-control"] = object()
-    panel_hass.data[frontend.DATA_PANELS]["pool-control-spa"] = object()
+    panel_hass.data.setdefault(frontend.DATA_PANELS, {})["pool-management"] = object()
+    panel_hass.data[frontend.DATA_PANELS]["pool-management-spa"] = object()
 
     with patch(
-        "custom_components.pool_control.frontend.frontend.async_remove_panel",
+        "custom_components.pool_management.frontend.frontend.async_remove_panel",
     ) as mock_remove:
         await async_unregister_panel(panel_hass, "spa")
 
-    mock_remove.assert_called_once_with(panel_hass, "pool-control-spa")
+    mock_remove.assert_called_once_with(panel_hass, "pool-management-spa")
 
 
 async def test_unregister_panel_when_absent(panel_hass):
     """Pas d'erreur si le panneau n'était pas enregistré."""
 
     with patch(
-        "custom_components.pool_control.frontend.frontend.async_remove_panel",
+        "custom_components.pool_management.frontend.frontend.async_remove_panel",
     ) as mock_remove:
-        await async_unregister_panel(panel_hass, "pool_control")
+        await async_unregister_panel(panel_hass, "pool_management")
 
     mock_remove.assert_not_called()
