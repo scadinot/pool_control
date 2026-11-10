@@ -1,4 +1,4 @@
-"""Fixtures communes pour les tests Pool Control."""
+"""Fixtures communes pour les tests Pool Management."""
 import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock
 from datetime import datetime, time
@@ -55,8 +55,8 @@ def mock_config_entry():
     if HAS_HOMEASSISTANT:
         return ConfigEntry(
             version=1,
-            domain="pool_control",
-            title="Pool Control",
+            domain="pool_management",
+            title="Pool Management",
             data={},
             source="user",
             entry_id="test_entry_id",
@@ -66,8 +66,8 @@ def mock_config_entry():
         # Mock simple si HA n'est pas installé
         mock = MagicMock()
         mock.version = 1
-        mock.domain = "pool_control"
-        mock.title = "Pool Control"
+        mock.domain = "pool_management"
+        mock.title = "Pool Management"
         mock.data = {}
         mock.source = "user"
         mock.entry_id = "test_entry_id"

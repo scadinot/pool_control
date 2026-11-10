@@ -1,4 +1,4 @@
-# Requirements pour les tests unitaires Pool Control
+# Requirements pour les tests unitaires Pool Management
 
 # Framework de test
 pytest>=7.4.0

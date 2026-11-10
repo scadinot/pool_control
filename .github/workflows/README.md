@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-Ce dossier contient les workflows GitHub Actions pour l'intégration continue (CI/CD) de Pool Control.
+Ce dossier contient les workflows GitHub Actions pour l'intégration continue (CI/CD) de Pool Management.
 
 ## 🔄 Workflows Disponibles
 
@@ -17,7 +17,7 @@ Ce dossier contient les workflows GitHub Actions pour l'intégration continue (C
 - Exécute les tests par marqueur (unit, integration, bugs)
 - Vérifie la qualité du code avec ruff
 
-**Badge** : [![Tests](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/tests.yaml)
+**Badge** : [![Tests](https://github.com/scadinot/pool_management/actions/workflows/tests.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/tests.yaml)
 
 ### 2. Validate HACS (`Validate HACS.yaml`)
 
@@ -29,7 +29,7 @@ Ce dossier contient les workflows GitHub Actions pour l'intégration continue (C
 **Actions** :
 - Valide que l'intégration est compatible HACS
 
-**Badge** : [![HACS](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20HACS.yaml)
+**Badge** : [![HACS](https://github.com/scadinot/pool_management/actions/workflows/Validate%20HACS.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/Validate%20HACS.yaml)
 
 ### 3. Validate Hassfest (`Validate Hassfest.yaml`)
 
@@ -41,7 +41,7 @@ Ce dossier contient les workflows GitHub Actions pour l'intégration continue (C
 **Actions** :
 - Valide que l'intégration respecte les standards Home Assistant
 
-**Badge** : [![Hassfest](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml/badge.svg)](https://github.com/scadinot/pool_control/actions/workflows/Validate%20Hassfest.yaml)
+**Badge** : [![Hassfest](https://github.com/scadinot/pool_management/actions/workflows/Validate%20Hassfest.yaml/badge.svg)](https://github.com/scadinot/pool_management/actions/workflows/Validate%20Hassfest.yaml)
 
 ## 📊 Visualisation des Tests
 

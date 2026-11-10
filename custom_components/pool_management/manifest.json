@@ -1,0 +1,12 @@
+{
+  "domain": "pool_management",
+  "name": "Pool Management",
+  "codeowners": ["@scadinot"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom"],
+  "documentation": "https://github.com/scadinot/pool_management/blob/main/README.md",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/scadinot/pool_management/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

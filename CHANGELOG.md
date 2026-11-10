@@ -1,10 +1,32 @@
 # Changelog
 
-Toutes les évolutions notables de Pool Control sont consignées dans ce fichier.
+Toutes les évolutions notables de Pool Management sont consignées dans ce fichier.
 
 Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr/1.1.0/) et le projet suit [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
+
+## [0.1.0] — 2026-11-10
+
+### Modifié
+- **Renommage de l'intégration en `pool_management` / « Pool Management »**, pour s'aligner sur la convention des projets voisins `energy_management` et `shutters_management` : le domaine, le nom du dossier et le nom du dépôt portent désormais la même valeur.
+- Dossier d'installation : `custom_components/pool_control/` → `custom_components/pool_management/`.
+- Identifiants dérivés du domaine : clé du Store, chemin statique du panneau, URL de la barre latérale, nom du Web Component et suffixes d'`unique_id`.
+- Les classes portant l'ancien nom de produit deviennent `PoolManagement*`. `PoolController` est conservé : c'est du vocabulaire métier — le contrôleur de la piscine — et non la marque.
+- `README.md` : chemin d'installation, badges, URL du dépôt, exemples d'entités et de tableau de bord, et une nouvelle section décrivant la procédure de passage.
+- Tests : nouveau fichier `tests/test_naming.py`, qui verrouille la cohérence des identifiants dérivés les uns des autres et l'absence de toute trace de l'ancien nom. La suite passe de 427 à 436 tests.
+- `manifest.json` : `version` `0.0.35` → `0.1.0`.
+
+### Changement de comportement
+- **Aucune migration automatique.** Cette version ne reprend pas la configuration existante. Relevez vos réglages, supprimez l'ancienne intégration, installez celle-ci, puis reconfigurez — la procédure détaillée est dans le README.
+- **Reproduisez le préfixe de vos `entity_id`, qui n'est pas forcément le nom affiché.** Les `entity_id` sont construits sur un préfixe issu de l'`unique_id` de la config entry — figé à la création et jamais modifié — et non sur le domaine ni sur le titre courant : une instance créée « Piscine » puis renommée « Spa » garde le préfixe `piscine`. Relevez le préfixe sur une entité existante, et donnez au nouveau nom un `slugify` qui le reproduit ; les `entity_id` sont alors identiques et les cartes comme les automatisations continuent de fonctionner. Les `entity_id` personnalisés à la main, eux, sont à rétablir séparément.
+- Les réglages sont à ressaisir : les entités d'actionneurs et de sondes de l'écran initial, puis les paramètres des menus. Ce sont les seules valeurs qu'aucun défaut ne reconstitue — relevez-les **avant** de supprimer l'ancienne intégration.
+- **Les modes ne sont pas restaurés.** Avec un Store vide, le contrôle repart en **Auto** et en **Saison** : le cron ne rétablit ni Actif ni Inactif, ni l'hivernage. Relevez le mode de contrôle et le mode saisonnier avant la suppression, et resélectionnez-les après reconfiguration.
+- **Sur une piscine hivernée, la protection contre le gel n'est pas armée tant que l'hivernage n'a pas été resélectionné** : elle n'est évaluée que dans ce mode.
+- Le reste de l'état courant se recalcule seul et n'est pas à saisir : température maximale du jour et plage de filtration du jour.
+- L'URL du panneau latéral passe de `/pool-control…` à `/pool-management…` : marque-pages et liens de tableau de bord sont à reprendre.
+- L'appareil est recréé. Sa zone, le nom que vous lui aviez donné et toute automatisation ou carte ciblant l'appareil plutôt que ses entités sont à refaire. Les entités, elles, conservent leur `entity_id` et leur historique si le nom d'instance est réutilisé.
+- L'entité de mise à jour du store est renommée avec le dépôt. Son `entity_id` est décidé par le store et non par cette intégration : repointez ce qui la référence vers celle qu'il crée.
 
 ## [0.0.35] — 2026-11-09
 

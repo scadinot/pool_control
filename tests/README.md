@@ -1,6 +1,6 @@
-# Tests Unitaires Pool Control
+# Tests Unitaires Pool Management
 
-Ce dossier contient les tests unitaires pour le composant Pool Control de Home Assistant.
+Ce dossier contient les tests unitaires pour le composant Pool Management de Home Assistant.
 
 ## 🚀 Installation
 
@@ -20,7 +20,7 @@ pytest
 ### Tests avec couverture
 
 ```bash
-pytest --cov=custom_components.pool_control --cov-report=html
+pytest --cov=custom_components.pool_management --cov-report=html
 ```
 
 Le rapport HTML sera généré dans `htmlcov/index.html`
@@ -124,7 +124,7 @@ Objectif : **>70%**
 
 Vérifier la couverture :
 ```bash
-pytest --cov=custom_components.pool_control --cov-report=term-missing
+pytest --cov=custom_components.pool_management --cov-report=term-missing
 ```
 
 ## 🏷️ Marqueurs

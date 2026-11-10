@@ -23,8 +23,8 @@ from .utils import FiltrationUtilsMixin
 
 _LOGGER = logging.getLogger(__name__)
 STORAGE_VERSION = 1
-STORAGE_KEY = "pool_control_data"
-STORAGE_KEY_PREFIX = "pool_control_data"
+STORAGE_KEY = "pool_management_data"
+STORAGE_KEY_PREFIX = "pool_management_data"
 
 VALID_DISTRIBUTIONS = (1, 2, 3, 4, 5)
 

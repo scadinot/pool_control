@@ -1,4 +1,4 @@
-"""Sensor mixin for Pool Control integration."""
+"""Sensor mixin for Pool Management integration."""
 
 import logging
 from typing import Optional
@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class SensorMixin:
-    """Mixin class providing sensor methods for Pool Control integration."""
+    """Mixin class providing sensor methods for Pool Management integration."""
 
     def _readTemperature(self, entity_id: str, label: str) -> Optional[float]:
         """Lit une sonde de température, ou None s'il n'y a pas de mesure.

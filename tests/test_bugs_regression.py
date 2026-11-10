@@ -37,7 +37,7 @@ class TestBug1_ExecuteButtonStop:
 
     def test_scheduler_has_execute_button_stop(self, mock_hass, mock_pool_config):
         """Vérifie que SchedulerMixin a la méthode executeButtonStop."""
-        from custom_components.pool_control.scheduler import SchedulerMixin
+        from custom_components.pool_management.scheduler import SchedulerMixin
 
         class TestController(SchedulerMixin):
             def __init__(self):
@@ -56,7 +56,7 @@ class TestBug1_ExecuteButtonStop:
     @pytest.mark.asyncio
     async def test_pull_calls_execute_button_stop_when_timeout(self, mock_hass, mock_pool_config):
         """Vérifie que pull() appelle executeButtonStop() quand le temps expire."""
-        from custom_components.pool_control.scheduler import SchedulerMixin
+        from custom_components.pool_management.scheduler import SchedulerMixin
         import time
 
         class TestController(SchedulerMixin):
@@ -94,7 +94,7 @@ class TestBug2_TemperatureMaxiKeyError:
 
     def test_saison_temperature_maxi_has_default(self, mock_hass, mock_pool_config):
         """Vérifie que temperatureMaxi a une valeur par défaut dans saison.py."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
 
@@ -110,7 +110,7 @@ class TestBug2_TemperatureMaxiKeyError:
 
     def test_hivernage_temperature_maxi_has_default(self, mock_hass, mock_pool_config):
         """Vérifie que temperatureMaxi a une valeur par défaut dans hivernage.py."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.data = {}
@@ -121,7 +121,7 @@ class TestBug2_TemperatureMaxiKeyError:
 
     def test_get_data_returns_default_for_missing_keys(self, mock_hass, mock_pool_config):
         """Vérifie que get_data retourne la valeur par défaut pour toute clé manquante."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.data = {}
@@ -143,7 +143,7 @@ class TestBug3_LogMessageIncorrect:
     @pytest.mark.asyncio
     async def test_start_second_cron_logs_correct_message(self, mock_hass, mock_pool_config, caplog):
         """Vérifie que startSecondCron() log le bon message."""
-        from custom_components.pool_control.scheduler import SchedulerMixin
+        from custom_components.pool_management.scheduler import SchedulerMixin
 
         class TestController(SchedulerMixin):
             def __init__(self):
@@ -153,7 +153,7 @@ class TestBug3_LogMessageIncorrect:
         controller = TestController()
 
         with caplog.at_level(logging.INFO):
-            with patch('custom_components.pool_control.scheduler.async_track_time_interval'):
+            with patch('custom_components.pool_management.scheduler.async_track_time_interval'):
                 await controller.startSecondCron()
 
         # Vérifier le message de log
@@ -164,7 +164,7 @@ class TestBug3_LogMessageIncorrect:
     @pytest.mark.asyncio
     async def test_start_first_cron_logs_correct_message(self, mock_hass, mock_pool_config, caplog):
         """Vérifie que startFirstCron() log le bon message."""
-        from custom_components.pool_control.scheduler import SchedulerMixin
+        from custom_components.pool_management.scheduler import SchedulerMixin
 
         class TestController(SchedulerMixin):
             def __init__(self):
@@ -174,7 +174,7 @@ class TestBug3_LogMessageIncorrect:
         controller = TestController()
 
         with caplog.at_level(logging.INFO):
-            with patch('custom_components.pool_control.scheduler.async_track_time_interval'):
+            with patch('custom_components.pool_management.scheduler.async_track_time_interval'):
                 await controller.startFirstCron()
 
         # Vérifier le message de log correct
@@ -191,7 +191,7 @@ class TestBug4_MethodeCalculType:
 
     def test_methode_calcul_is_always_int_from_string(self, mock_hass, mock_pool_config):
         """Vérifie que methodeCalcul est toujours un int même si config contient une string."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         # Configuration avec string
         mock_pool_config["methodeCalcul"] = "2"
@@ -202,7 +202,7 @@ class TestBug4_MethodeCalculType:
 
     def test_methode_calcul_is_always_int_from_int(self, mock_hass, mock_pool_config):
         """Vérifie que methodeCalcul reste un int si config contient déjà un int."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         # Configuration avec int
         mock_pool_config["methodeCalcul"] = 1
@@ -213,7 +213,7 @@ class TestBug4_MethodeCalculType:
 
     def test_methode_calcul_has_default_value(self, mock_hass, mock_pool_config):
         """Vérifie que methodeCalcul a une valeur par défaut si absent."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         # Configuration sans methodeCalcul
         if "methodeCalcul" in mock_pool_config:
@@ -236,7 +236,7 @@ class TestBug5_TraitementNoneCheck:
     @pytest.mark.asyncio
     async def test_traitement_on_no_crash_when_none(self, mock_hass, mock_pool_config):
         """Vérifie qu'il n'y a pas de crash si traitement est None."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         # Configuration sans traitement
         config = mock_pool_config.copy()
@@ -259,7 +259,7 @@ class TestBug5_TraitementNoneCheck:
     @pytest.mark.asyncio
     async def test_traitement_stop_no_crash_when_none(self, mock_hass, mock_pool_config):
         """Vérifie que traitementStop() ne crash pas si traitement est None."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         config = mock_pool_config.copy()
         config["traitement"] = None
@@ -273,7 +273,7 @@ class TestBug5_TraitementNoneCheck:
 
     def test_get_state_traitement_returns_false_when_none(self, mock_hass, mock_pool_config):
         """Vérifie que getStateTraitement() retourne False si traitement est None."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         config = mock_pool_config.copy()
         config["traitement"] = None
@@ -296,7 +296,7 @@ class TestBug6_TemperatureDisplayOptional:
 
     def test_update_temperature_display_exists(self, mock_hass, mock_pool_config):
         """Vérifie que la méthode updateTemperatureDisplay() existe."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
 
@@ -306,7 +306,7 @@ class TestBug6_TemperatureDisplayOptional:
 
     def test_update_temperature_display_no_crash_when_entity_missing(self, mock_hass, mock_pool_config):
         """Vérifie qu'il n'y a pas de crash si l'entité temperatureDisplay n'existe pas."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
 
@@ -323,7 +323,7 @@ class TestBug6_TemperatureDisplayOptional:
 
     def test_update_temperature_display_sets_value_when_entity_exists(self, mock_hass, mock_pool_config):
         """Vérifie que updateTemperatureDisplay() met à jour la valeur si l'entité existe."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
 
@@ -365,7 +365,7 @@ class TestBug7_LeverSoleilFuseau:
     @pytest.fixture
     def controller_with_sunrise(self, setup_hass_states, mock_pool_config):
         """Crée un PoolController dont sensor.sun_next_rising a l'état donné."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         def _create(state):
             states = {} if state is None else {"sensor.sun_next_rising": state}
@@ -412,7 +412,7 @@ class TestBug8_RepriseCycleApresRedemarrage:
     @pytest.mark.asyncio
     async def test_setup_entry_resumes_second_cron(self, mock_hass):
         """Vérifie que async_setup_entry() reprend un cycle interrompu."""
-        from custom_components import pool_control
+        from custom_components import pool_management
 
         controller = MagicMock()
         controller.async_initialize = AsyncMock()
@@ -430,9 +430,9 @@ class TestBug8_RepriseCycleApresRedemarrage:
         mock_hass.config_entries.async_forward_entry_setups = AsyncMock()
 
         with patch.object(
-            pool_control, "PoolController", return_value=controller
-        ), patch.object(pool_control, "async_register_panel", new=AsyncMock()):
-            assert await pool_control.async_setup_entry(mock_hass, entry) is True
+            pool_management, "PoolController", return_value=controller
+        ), patch.object(pool_management, "async_register_panel", new=AsyncMock()):
+            assert await pool_management.async_setup_entry(mock_hass, entry) is True
 
         controller.startFirstCron.assert_awaited_once()
         controller.resumeSecondCron.assert_awaited_once()
@@ -440,7 +440,7 @@ class TestBug8_RepriseCycleApresRedemarrage:
     @pytest.mark.asyncio
     async def test_expired_surpresseur_is_stopped_after_restart(self, mock_hass, mock_pool_config):
         """Vérifie qu'un cycle surpresseur écoulé pendant l'arrêt de HA est terminé."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
         import time
 
         controller = PoolController(mock_hass, mock_pool_config)
@@ -461,7 +461,7 @@ class TestBug8_RepriseCycleApresRedemarrage:
             return Mock()
 
         with patch(
-            "custom_components.pool_control.scheduler.async_track_time_interval",
+            "custom_components.pool_management.scheduler.async_track_time_interval",
             side_effect=fake_track,
         ):
             await controller.resumeSecondCron()
@@ -491,7 +491,7 @@ class TestBug9_FuseauSystemeDifferentDeHA:
     @pytest.fixture
     def controller(self, setup_hass_states, mock_pool_config):
         """PoolController en hivernage, lever du soleil 07:10 à New York (12:10 UTC)."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         hass = setup_hass_states(
             {"sensor.sun_next_rising": "2025-12-15T12:10:00+00:00"}
@@ -554,7 +554,7 @@ class TestBug10_PlageManqueeBloqueRecalcul:
     @pytest.fixture
     def saison_controller(self, mock_hass, mock_pool_config):
         """PoolController en mode saison : pivot 13:00, répartition 1/3 <> 2/3."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -633,7 +633,7 @@ class TestBug10_PlageManqueeBloqueRecalcul:
     @pytest.mark.asyncio
     async def test_hivernage_missed_range_is_recalculated(self, mock_hass, mock_pool_config, ha_time_zone):
         """Plage d'hivernage du 15 (06:00-10:00) manquée, HA redémarré à 12:00 : plage du 16."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -682,7 +682,7 @@ class TestBug11_SondeTemperatureIndisponible:
 
     def _hivernage_controller(self, mock_hass, mock_pool_config):
         """Controleur en hivernage, hors plage de filtration."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -702,7 +702,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, mock_state_factory
     ):
         """Un etat 'unavailable' ne doit plus etre converti en 0 °C."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         mock_hass.states.get.return_value = mock_state_factory(
@@ -716,7 +716,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config
     ):
         """Une entite inexistante ne doit plus etre convertie en 0 °C."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         mock_hass.states.get.return_value = None
@@ -728,7 +728,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, mock_state_factory
     ):
         """Non-regression : une mesure valide reste lue telle quelle."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         mock_hass.states.get.return_value = mock_state_factory(
@@ -741,14 +741,14 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, mock_state_factory, caplog
     ):
         """cron() appelle le getter chaque minute : une panne = une ligne."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         mock_hass.states.get.return_value = mock_state_factory(
             "sensor.exterieur", "unavailable"
         )
 
-        logger_name = "custom_components.pool_control.sensors"
+        logger_name = "custom_components.pool_management.sensors"
         with caplog.at_level(logging.DEBUG, logger=logger_name):
             for _ in range(10):
                 controller.getTemperatureOutdoor()
@@ -761,10 +761,10 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, mock_state_factory, caplog
     ):
         """Le retablissement doit etre visible dans le journal."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
-        logger_name = "custom_components.pool_control.sensors"
+        logger_name = "custom_components.pool_management.sensors"
 
         with caplog.at_level(logging.DEBUG, logger=logger_name):
             mock_hass.states.get.return_value = mock_state_factory(
@@ -870,7 +870,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, ha_time_zone
     ):
         """Sans mesure, aucun planning ne doit etre fabrique sur 0 °C."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -905,7 +905,7 @@ class TestBug11_SondeTemperatureIndisponible:
         Sans cette evaluation, un Store contenant filtrationTemperature=1 mais
         pas encore de secours laissait la pompe demandee apres filtrationFin.
         """
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -937,7 +937,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config, ha_time_zone
     ):
         """Pendant la plage, la filtration reste demandee sans mesure."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -968,7 +968,7 @@ class TestBug11_SondeTemperatureIndisponible:
         elle ne doit pas devenir le secours. Seuls les points qui ont passe les
         gardes d'echantillonnage appellent recordTemperatureWater().
         """
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.getTemperatureWater = Mock(return_value=19.0)
@@ -983,7 +983,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config
     ):
         """Le Store est sauvegarde a chaque changement : pas pour 0,1 °C."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
 
@@ -1001,7 +1001,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config
     ):
         """Sonde eau en panne : on repart de la derniere mesure connue."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.getTemperatureWater = Mock(return_value=None)
@@ -1020,7 +1020,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config
     ):
         """Aucune mesure n'a jamais ete vue : le calcul est reporte."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.getTemperatureWater = Mock(return_value=None)
@@ -1038,7 +1038,7 @@ class TestBug11_SondeTemperatureIndisponible:
         self, mock_hass, mock_pool_config
     ):
         """Le bouton Recalculer ne doit pas ecraser le planning ni temperatureMaxi."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.getHivernage = Mock(return_value=False)
@@ -1131,7 +1131,7 @@ class TestBug11_SondeTemperatureIndisponible:
         WARNING a chaque passage du cron : la panne redevenait un message par
         minute, ce que cette correction visait justement a supprimer.
         """
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -1141,7 +1141,7 @@ class TestBug11_SondeTemperatureIndisponible:
         controller.sondeLocalTechnique = False
         controller.disableMarcheForcee = False
 
-        logger = "custom_components.pool_control.saison"
+        logger = "custom_components.pool_management.saison"
 
         with caplog.at_level(logging.DEBUG, logger=logger):
             for _ in range(3):
@@ -1160,7 +1160,7 @@ class TestBug11_SondeTemperatureIndisponible:
         controller = self._hivernage_controller(mock_hass, mock_pool_config)
         controller.calculateTimeFiltrationHivernage = Mock()
 
-        logger = "custom_components.pool_control.hivernage"
+        logger = "custom_components.pool_management.hivernage"
 
         with caplog.at_level(logging.DEBUG, logger=logger):
             for _ in range(3):
@@ -1174,7 +1174,7 @@ class TestBug11_SondeTemperatureIndisponible:
 
     def _saison_controller(self, mock_hass, mock_pool_config):
         """Controleur en saison, sans effet de bord sur les entites."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         controller = PoolController(mock_hass, mock_pool_config)
         controller.filtrationTimeStatus = MagicMock()
@@ -1339,7 +1339,7 @@ class TestBug12_PauseHorsDeLaPlage:
 
     def _controller(self, mock_hass, mock_pool_config, distribution, pause_minutes):
         """Controleur de saison a repartition et pause imposees."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         config = mock_pool_config.copy()
         config["distributionDatePivot"] = distribution
@@ -1441,7 +1441,7 @@ class TestBug12_PauseHorsDeLaPlage:
             mock_hass, mock_pool_config, 4, pause_minutes=60
         )
 
-        logger = "custom_components.pool_control.saison"
+        logger = "custom_components.pool_management.saison"
 
         with caplog.at_level(logging.DEBUG, logger=logger):
             controller.calculateTimeFiltration(21.0, False)
@@ -1462,7 +1462,7 @@ class TestBug12_PauseHorsDeLaPlage:
             mock_hass, mock_pool_config, 4, pause_minutes=0
         )
 
-        logger = "custom_components.pool_control.saison"
+        logger = "custom_components.pool_management.saison"
 
         with caplog.at_level(logging.DEBUG, logger=logger):
             controller.calculateTimeFiltration(21.0, False)
@@ -1481,7 +1481,7 @@ class TestAllBugsRegression:
 
     def test_all_bugs_are_fixed(self, mock_hass, mock_pool_config):
         """Test global vérifiant que le PoolController s'initialise correctement."""
-        from custom_components.pool_control.controller import PoolController
+        from custom_components.pool_management.controller import PoolController
 
         # Configuration qui aurait déclenché tous les bugs avant corrections
         config = mock_pool_config.copy()

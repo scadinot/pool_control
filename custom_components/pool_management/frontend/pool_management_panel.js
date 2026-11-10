@@ -1,5 +1,5 @@
 /**
- * Pool Control — Panel custom pour Home Assistant
+ * Pool Management — Panel custom pour Home Assistant
  *
  * Synoptique réaliste du local technique et assistant de lavage du filtre.
  * Web Component vanilla JS — pas de build, pas de dépendances.
@@ -20,7 +20,7 @@ const VALVE_POSITIONS = ['filtration', 'lavage', 'rinçage', 'égout', 'circulat
 // Pipes : aspiration, refoulement, sortie filtre, by-pass / PAC, retour, surpresseur
 const PIPES = 'M224 104V250M128 196V250H256M300 232V100H414M432 82V40H492M450 100H640V430H26V120H40M508 100V160M596 160V100M90 430V366M70 334V196';
 
-class PoolControlPanel extends HTMLElement {
+class PoolManagementPanel extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -63,7 +63,7 @@ class PoolControlPanel extends HTMLElement {
 
   /* ---------------------------------------------------------------- données */
 
-  _prefix() { return this._cfg.instance_prefix || 'pool_control'; }
+  _prefix() { return this._cfg.instance_prefix || 'pool_management'; }
   _lang() { return (this._hass && ((this._hass.locale && this._hass.locale.language) || this._hass.language)) || 'fr'; }
 
   _state(id) {
@@ -273,7 +273,7 @@ class PoolControlPanel extends HTMLElement {
         <button class="menu-btn" id="menu-btn" aria-label="Menu">
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
         </button>
-        <h1 id="title">Pool Control</h1>
+        <h1 id="title">Pool Management</h1>
       </div>
       <div class="wrap">
         <div class="status">
@@ -386,7 +386,7 @@ class PoolControlPanel extends HTMLElement {
     const c = this._cfg;
 
     this.toggleAttribute('dark', !!(this._hass.themes && this._hass.themes.darkMode));
-    $('title').textContent = (this.panel && this.panel.title) || 'Pool Control';
+    $('title').textContent = (this.panel && this.panel.title) || 'Pool Management';
 
     /* Températures */
     const water = this._fmtTemp(c.water_entity);
@@ -947,4 +947,4 @@ class PoolControlPanel extends HTMLElement {
   }
 }
 
-customElements.define('pool-control-panel', PoolControlPanel);
+customElements.define('pool-management-panel', PoolManagementPanel);

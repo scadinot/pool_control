@@ -1,9 +1,9 @@
 {
-  "title": "Pool Control",
+  "title": "Pool Management",
   "config": {
     "step": {
       "user": {
-        "title": "Configuration de Pool Control",
+        "title": "Configuration de Pool Management",
         "description": "Configurez les entités nécessaires. Le nom permet de différencier plusieurs piscines.",
         "data": {
           "name": "Nom de l'instance",

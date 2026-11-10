@@ -18,7 +18,7 @@ pytest.importorskip("homeassistant")
 @pytest.fixture
 def mock_filtration_controller(mock_hass, mock_pool_config):
     """Create a mock controller with FiltrationMixin."""
-    from custom_components.pool_control.controller import PoolController
+    from custom_components.pool_management.controller import PoolController
 
     controller = PoolController(mock_hass, mock_pool_config)
 

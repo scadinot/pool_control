@@ -1,4 +1,4 @@
-"""Options flow for Pool Control integration."""
+"""Options flow for Pool Management integration."""
 
 from typing import Any, Optional
 
@@ -11,8 +11,8 @@ from homeassistant.helpers.selector import selector
 from .controller import _validate_distribution
 
 
-class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
-    """Gestion des options de Pool Control avec menu de navigation."""
+class PoolManagementOptionsFlowHandler(config_entries.OptionsFlow):
+    """Gestion des options de Pool Management avec menu de navigation."""
 
     def __init__(self) -> None:
         """Initialize the options flow."""
@@ -277,4 +277,4 @@ class PoolControlOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_confirm(self, user_input: Optional[dict[str, Any]] = None) -> FlowResult:
         """Handle the confirm step of the options flow."""
 
-        return self.async_create_entry(title="Pool Control", data=self.options)
+        return self.async_create_entry(title="Pool Management", data=self.options)
