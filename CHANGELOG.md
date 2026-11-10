@@ -6,6 +6,15 @@ Le format est inspiré de [Keep a Changelog 1.1.0](https://keepachangelog.com/fr
 
 ## [Non publié]
 
+## [0.1.1] — 2026-11-10
+
+### Corrigé
+- **Les champs d'entité optionnels de l'écran « Configurer » bloquaient la validation.** Laissés vides, « Pompe à chaleur » et « Traitement 2 » faisaient échouer le formulaire sur `Entity None is neither a valid entity ID nor a valid UUID`, rendant l'écran infranchissable pour toute installation sans pompe à chaleur — ou sans second relais de traitement. Ces champs étaient déclarés avec `default=`, or `vol.Optional` assorti d'un `default` n'en propose pas la valeur : il injecte la clé absente puis la valide, et le sélecteur d'entité refuse `None`. Ils passent à `description={"suggested_value": ...}`, le pattern déjà utilisé par « Capteur de puissance de la PAC ». L'écran d'ajout initial (`config_flow.py`) n'était pas concerné, ses champs optionnels étant déclarés sans `default`.
+- **Un champ d'entité optionnel ne pouvait plus être effacé une fois renseigné.** Un champ vidé est absent des données soumises, et `options.update()` ne supprime rien : l'ancienne valeur survivait. Les clés optionnelles absentes sont désormais retirées explicitement, ce qui rend enfin vrai ce que le code promettait déjà en commentaire.
+
+### Ajouté
+- Tests : nouveau fichier `tests/test_options_flow.py`, qui couvre le schéma de l'écran des entités — validation sans pompe à chaleur et sans second traitement, pré-remplissage des valeurs existantes, maintien des champs requis, effacement d'un champ vidé et préservation des réglages des autres menus. L'options flow n'était jusqu'ici couvert par aucun test, ce qui explique que ces défauts aient survécu.
+
 ## [0.1.0] — 2026-11-10
 
 ### Modifié
