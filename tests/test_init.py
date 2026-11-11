@@ -20,6 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 
 from custom_components.pool_management import (
+    _async_reload_entry,
     async_setup_entry,
     async_unload_entry,
 )
@@ -64,6 +65,8 @@ def _controller() -> MagicMock:
     controller.resumeSecondCron = AsyncMock()
     controller.stopFirstCron = AsyncMock()
     controller.stopSecondCron = AsyncMock()
+    controller.stop_replaced_relays = AsyncMock()
+    controller.async_save_data = AsyncMock()
     return controller
 
 
@@ -187,3 +190,183 @@ async def test_les_options_priment_sur_les_donnees_initiales():
 
     config = classe.call_args[0][1]
     assert config["datePivot"] == "09:00"
+
+
+def _etat(valeur: str) -> MagicMock:
+    """État Home Assistant réduit à sa valeur."""
+
+    etat = MagicMock()
+    etat.state = valeur
+    return etat
+
+
+def _controleur_reel(hass: MagicMock, config: dict) -> PoolController:
+    """Vrai contrôleur, dont seuls le Store et les services sont simulés."""
+
+    hass.services.async_call = AsyncMock()
+    with patch("custom_components.pool_management.controller.Store"):
+        return PoolController(hass, config, _entry())
+
+
+@pytest.mark.bugs
+async def test_un_relais_remplace_est_coupe_avant_le_rechargement():
+    """Un actionneur actif retiré de la configuration doit être coupé.
+
+    Régression : le contrôleur reconstruit ne connaît plus l'ancien
+    identifiant. Un relais qu'on lui retire resterait allumé sans personne
+    pour l'éteindre — une pompe doseuse orpheline doserait indéfiniment.
+    """
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=_etat("on"))
+    controleur = _controleur_reel(hass, {"surpresseur": "switch.ancien"})
+
+    await controleur.stop_replaced_relays({"surpresseur": "switch.nouveau"})
+
+    hass.services.async_call.assert_awaited_once_with(
+        "switch", "turn_off", {"entity_id": "switch.ancien"}
+    )
+
+
+@pytest.mark.bugs
+async def test_la_filtration_est_coupee_en_dernier():
+    """L'ordre d'arrêt doit protéger le matériel.
+
+    L'eau doit circuler tant qu'un équipement tourne : traitements
+    d'abord, surpresseur ensuite, filtration en dernier.
+    """
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=_etat("on"))
+    controleur = _controleur_reel(
+        hass,
+        {
+            "filtration": "switch.pompe",
+            "traitement": "switch.chlore",
+            "traitement_2": "switch.ph",
+            "surpresseur": "switch.booster",
+        },
+    )
+
+    # Configuration vide : tous les actionneurs sont retirés
+    await controleur.stop_replaced_relays({})
+
+    coupes = [
+        appel.args[2]["entity_id"]
+        for appel in hass.services.async_call.await_args_list
+    ]
+    assert coupes == [
+        "switch.chlore",
+        "switch.ph",
+        "switch.booster",
+        "switch.pompe",
+    ]
+
+
+async def test_un_relais_inchange_n_est_pas_coupe():
+    """Un actionneur conservé ne doit pas être touché."""
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=_etat("on"))
+    config = {"surpresseur": "switch.booster", "filtration": "switch.pompe"}
+    controleur = _controleur_reel(hass, config)
+
+    await controleur.stop_replaced_relays(dict(config))
+
+    hass.services.async_call.assert_not_awaited()
+
+
+async def test_un_relais_deja_eteint_n_est_pas_commande():
+    """Inutile de couper ce qui est déjà à l'arrêt."""
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=_etat("off"))
+    controleur = _controleur_reel(hass, {"surpresseur": "switch.ancien"})
+
+    await controleur.stop_replaced_relays({"surpresseur": "switch.nouveau"})
+
+    hass.services.async_call.assert_not_awaited()
+
+
+async def test_un_relais_introuvable_n_est_pas_commande():
+    """Une entité disparue du registre ne doit pas provoquer d'erreur."""
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=None)
+    controleur = _controleur_reel(hass, {"surpresseur": "switch.disparu"})
+
+    await controleur.stop_replaced_relays({"surpresseur": "switch.nouveau"})
+
+    hass.services.async_call.assert_not_awaited()
+
+
+async def test_le_domaine_du_service_suit_l_entite():
+    """Un ``input_boolean`` se coupe par son propre domaine."""
+
+    hass = _hass()
+    hass.states.get = Mock(return_value=_etat("on"))
+    controleur = _controleur_reel(hass, {"traitement": "input_boolean.chlore"})
+
+    await controleur.stop_replaced_relays({})
+
+    hass.services.async_call.assert_awaited_once_with(
+        "input_boolean", "turn_off", {"entity_id": "input_boolean.chlore"}
+    )
+
+
+@pytest.mark.bugs
+async def test_le_rechargement_coupe_les_relais_retires_d_abord():
+    """Les actionneurs orphelins doivent être coupés avant le rechargement.
+
+    Une fois l'entrée rechargée, l'ancien contrôleur a disparu et
+    l'identifiant du relais retiré avec lui.
+    """
+
+    hass = _hass()
+    entry = _entry(options={"surpresseur": "switch.nouveau"})
+    controller = _controller()
+    hass.data[DOMAIN] = {entry.entry_id: controller}
+
+    journal: list[str] = []
+    controller.stop_replaced_relays = AsyncMock(
+        side_effect=lambda config: journal.append("arret")
+    )
+    hass.config_entries.async_reload = AsyncMock(
+        side_effect=lambda entry_id: journal.append("rechargement")
+    )
+
+    await _async_reload_entry(hass, entry)
+
+    assert journal == ["arret", "rechargement"]
+    config = controller.stop_replaced_relays.await_args[0][0]
+    assert config["surpresseur"] == "switch.nouveau"
+
+
+async def test_le_rechargement_fonctionne_sans_controleur():
+    """Une entrée sans contrôleur en mémoire se recharge quand même."""
+
+    hass, entry = _hass(), _entry()
+
+    await _async_reload_entry(hass, entry)
+
+    hass.config_entries.async_reload.assert_awaited_once_with(entry.entry_id)
+
+
+@pytest.mark.bugs
+async def test_decharger_sauvegarde_l_etat_avant_reconstruction():
+    """Le déchargement doit fixer l'état sur disque.
+
+    ``set_data`` planifie ses sauvegardes en tâche de fond : une écriture
+    encore en vol serait relue par le contrôleur reconstruit, qui
+    repartirait d'un état périmé — un hivernage tout juste activé, par
+    exemple.
+    """
+
+    hass, entry = _hass(), _entry()
+    controller = _controller()
+    hass.data[DOMAIN] = {entry.entry_id: controller}
+
+    with patch(f"{MODULE}.async_unregister_panel", new=AsyncMock()):
+        assert await async_unload_entry(hass, entry) is True
+
+    controller.async_save_data.assert_awaited_once()

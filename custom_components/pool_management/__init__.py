@@ -101,6 +101,14 @@ async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     mesure plus basse, et pourrait écourter la filtration en cours.
     """
 
+    # Les actionneurs retirés de la configuration doivent être coupés
+    # pendant que ce contrôleur connaît encore leurs identifiants : une
+    # fois l'entrée rechargée, plus personne ne saurait les éteindre.
+    controller = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+
+    if controller is not None:
+        await controller.stop_replaced_relays({**entry.data, **entry.options})
+
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -148,6 +156,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if controller is not None:
         await controller.stopFirstCron()
         await controller.stopSecondCron()
+
+        # set_data planifie ses sauvegardes en tâche de fond : une écriture
+        # encore en vol serait relue par un contrôleur reconstruit, qui
+        # repartirait alors d'un état périmé — un hivernage tout juste
+        # activé, par exemple. Une sauvegarde attendue ici fixe l'état sur
+        # disque avant toute réinstallation.
+        await controller.async_save_data()
 
         # Sans ce détachement, chaque rechargement laisse derrière lui un
         # contrôleur toujours abonné à l'extinction de Home Assistant : il y
