@@ -82,14 +82,26 @@ def _slug_from_entry(entry: ConfigEntry) -> str:
     return entry.unique_id or slugify(entry.title)
 
 
-async def _async_update_panel(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Recharger le panneau de cette instance quand ses options changent."""
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Recharger l'entrée quand ses options changent.
 
-    slug = _slug_from_entry(entry)
-    await async_unregister_panel(hass, slug)
-    await async_register_panel(
-        hass, slug, entry.title, {**entry.data, **entry.options}
-    )
+    Le contrôleur recopie chaque réglage dans un attribut à sa construction
+    et ne relit jamais la configuration ensuite : seule sa reconstruction
+    applique une option modifiée. Rafraîchir le seul panneau, comme le
+    faisait la version précédente, laissait le contrôleur sur ses anciennes
+    valeurs jusqu'au prochain redémarrage.
+
+    Le rechargement décharge puis réinstalle l'entrée, ce qui ré-enregistre
+    aussi le panneau : inutile de le refaire ici.
+
+    La plage de filtration du jour, en revanche, n'est pas recalculée : elle
+    ne l'est qu'à zéro ou une fois écoulée. Les paramètres de calcul prennent
+    donc effet au prochain calcul quotidien, et non en cours de plage — un
+    recalcul y repartirait d'un ``temperatureMaxi`` remis à zéro, donc d'une
+    mesure plus basse, et pourrait écourter la filtration en cours.
+    """
+
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -110,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Enregistrer le panneau latéral spécifique à cette instance
     slug = _slug_from_entry(entry)
     await async_register_panel(hass, slug, entry.title, conf)
-    entry.async_on_unload(entry.add_update_listener(_async_update_panel))
+    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
 
     # Ensuite on peut lancer le cron
     await controller.startFirstCron()
@@ -136,6 +148,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if controller is not None:
         await controller.stopFirstCron()
         await controller.stopSecondCron()
+
+        # Sans ce détachement, chaque rechargement laisse derrière lui un
+        # contrôleur toujours abonné à l'extinction de Home Assistant : il y
+        # sauvegarderait son état figé sur la même clé de Store que son
+        # successeur. Le dernier qui écrit gagne, et un état périmé peut
+        # ainsi revenir — un mode hivernage repassant en saison désarmerait
+        # la protection hors-gel.
+        controller.detach_stop_listener()
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 

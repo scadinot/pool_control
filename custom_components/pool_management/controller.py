@@ -91,6 +91,9 @@ class PoolController(
         self.store = Store(hass, STORAGE_VERSION, storage_key)
         self.data = {}
         self.initialized = False
+        # Handle de désabonnement du listener d'extinction, conservé pour
+        # pouvoir le détacher au déchargement (voir detach_stop_listener).
+        self._stop_listener = None
 
         # Configuration capteurs
         self.temperatureWater = config.get("temperatureWater")
@@ -151,7 +154,22 @@ class PoolController(
 
         self.initialized = True
 
-        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_save_data)
+        self._stop_listener = self.hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STOP, self.async_save_data
+        )
+
+    def detach_stop_listener(self) -> None:
+        """Détacher l'abonnement à l'extinction de Home Assistant.
+
+        À appeler au déchargement de l'entrée. Sans cela, un contrôleur
+        remplacé par un rechargement reste abonné et sauvegarde son état
+        figé à l'extinction, sur la même clé de Store que son successeur :
+        le dernier qui écrit gagne, et un état périmé peut revenir.
+        """
+
+        if self._stop_listener is not None:
+            self._stop_listener()
+            self._stop_listener = None
 
     async def async_save_data(self, event: Optional[Any] = None) -> None:
         """Save the current data to the store."""
