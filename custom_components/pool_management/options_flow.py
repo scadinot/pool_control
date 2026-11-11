@@ -14,6 +14,12 @@ from .controller import _validate_distribution
 class PoolManagementOptionsFlowHandler(config_entries.OptionsFlow):
     """Gestion des options de Pool Management avec menu de navigation."""
 
+    #: Entités facultatives de l'écran « user » : second relais de
+    #: traitement, pompe à chaleur et son capteur de puissance. Elles
+    #: reçoivent un ``suggested_value`` plutôt qu'un ``default`` (voir
+    #: ``async_step_user``) et peuvent être effacées.
+    CHAMPS_OPTIONNELS = ("traitement_2", "heatPump", "heatPumpPower")
+
     def __init__(self) -> None:
         """Initialize the options flow."""
 
@@ -43,6 +49,14 @@ class PoolManagementOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle the user step of the options flow."""
 
         if user_input is not None:
+            # Un champ optionnel laissé vide est absent des données
+            # soumises. ``update`` ne supprimant rien, il faut le retirer
+            # explicitement : sans cela une entité choisie une fois ne
+            # pourrait plus jamais être effacée.
+            for champ in self.CHAMPS_OPTIONNELS:
+                if champ not in user_input:
+                    self.options.pop(champ, None)
+
             self.options.update(user_input)
             return await self.async_step_init()
 
@@ -66,18 +80,26 @@ class PoolManagementOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         "traitement", default=self.options.get("traitement")
                     ): selector({"entity": {"domain": ["switch", "input_boolean"]}}),
+                    # Champs optionnels : ``suggested_value`` et non
+                    # ``default``. Avec un ``default``, voluptuous injecte la
+                    # clé absente puis la valide, et le sélecteur d'entité
+                    # refuse ``None`` — le champ optionnel devient alors
+                    # impossible à laisser vide.
                     vol.Optional(
-                        "traitement_2", default=self.options.get("traitement_2")
+                        "traitement_2",
+                        description={
+                            "suggested_value": self.options.get("traitement_2")
+                        },
                     ): selector({"entity": {"domain": ["switch", "input_boolean"]}}),
                     vol.Required(
                         "surpresseur", default=self.options.get("surpresseur")
                     ): selector({"entity": {"domain": ["switch", "input_boolean"]}}),
                     vol.Optional(
-                        "heatPump", default=self.options.get("heatPump")
+                        "heatPump",
+                        description={"suggested_value": self.options.get("heatPump")},
                     ): selector(
                         {"entity": {"domain": ["switch", "input_boolean", "climate"]}}
                     ),
-                    # suggested_value (et non default) : le champ peut être vidé
                     vol.Optional(
                         "heatPumpPower",
                         description={
