@@ -28,6 +28,11 @@ STORAGE_KEY_PREFIX = "pool_management_data"
 
 VALID_DISTRIBUTIONS = (1, 2, 3, 4, 5)
 
+#: Actionneurs commandés par le contrôleur, dans l'ordre où il est sûr de les
+#: couper : traitements d'abord, surpresseur ensuite, filtration en dernier.
+#: L'eau doit circuler tant qu'un équipement tourne.
+RELAIS = ("traitement", "traitement_2", "surpresseur", "filtration")
+
 
 def _validate_distribution(value: Any, name: str, default: int) -> int:
     """Validate that a distribution config value is in the allowed range.
@@ -91,6 +96,9 @@ class PoolController(
         self.store = Store(hass, STORAGE_VERSION, storage_key)
         self.data = {}
         self.initialized = False
+        # Handle de désabonnement du listener d'extinction, conservé pour
+        # pouvoir le détacher au déchargement (voir detach_stop_listener).
+        self._stop_listener = None
 
         # Configuration capteurs
         self.temperatureWater = config.get("temperatureWater")
@@ -151,7 +159,60 @@ class PoolController(
 
         self.initialized = True
 
-        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_save_data)
+        self._stop_listener = self.hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STOP, self.async_save_data
+        )
+
+    def detach_stop_listener(self) -> None:
+        """Détacher l'abonnement à l'extinction de Home Assistant.
+
+        À appeler au déchargement de l'entrée. Sans cela, un contrôleur
+        remplacé par un rechargement reste abonné et sauvegarde son état
+        figé à l'extinction, sur la même clé de Store que son successeur :
+        le dernier qui écrit gagne, et un état périmé peut revenir.
+        """
+
+        if self._stop_listener is not None:
+            self._stop_listener()
+            self._stop_listener = None
+
+    async def stop_replaced_relays(self, config: dict) -> None:
+        """Couper les actionneurs que la nouvelle configuration retire.
+
+        À appeler avant un rechargement, tant que ce contrôleur connaît
+        encore les identifiants en place. Le contrôleur reconstruit ne
+        connaîtra que les nouveaux : un relais actif qu'on lui retire
+        resterait allumé sans personne pour l'éteindre, et une pompe
+        doseuse orpheline doserait indéfiniment.
+
+        Les actionneurs conservés ne sont pas touchés : le nouveau
+        contrôleur en reprend la main sans coupure.
+        """
+
+        for nom in RELAIS:
+            ancien = getattr(self, nom, None)
+
+            if not ancien or ancien == config.get(nom):
+                continue
+
+            etat = self.hass.states.get(ancien)
+
+            if etat is None or etat.state == "off":
+                continue
+
+            _LOGGER.warning(
+                "%s (%s) retiré de la configuration alors qu'il était actif : "
+                "arrêt avant rechargement",
+                nom,
+                ancien,
+            )
+
+            await self._safe_service_call(
+                domain=ancien.split(".")[0],
+                service="turn_off",
+                service_data={"entity_id": ancien},
+                entity_name=nom,
+            )
 
     async def async_save_data(self, event: Optional[Any] = None) -> None:
         """Save the current data to the store."""
